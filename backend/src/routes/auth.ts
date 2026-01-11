@@ -70,7 +70,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
         id: true,
         email: true,
         name: true,
-        role: true,
+        // role: true, // Removed to bypass P2032 error
         ...({ countryCode: true } as any),
         createdAt: true
       }
