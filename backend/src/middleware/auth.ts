@@ -55,6 +55,7 @@ export const requireRole = (allowedRoles: Array<'CREATOR' | 'EDITOR' | 'ADMIN'>)
     }
 
     if (!allowedRoles.includes(req.userRole)) {
+      console.log(`[AuthDebug] Role Mismatch. Required: ${allowedRoles.join(', ')}, Current: ${req.userRole} (Type: ${typeof req.userRole})`);
       res.status(403).json({
         error: 'Insufficient permissions',
         required: allowedRoles,

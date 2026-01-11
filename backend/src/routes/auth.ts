@@ -125,8 +125,8 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
 
     // Generate JWT token
     const token = generateToken({
-      userId: user.id,
-      role: user.role
+      userId: String(user.id),
+      role: String(user.role)
     });
 
     return res.json({
