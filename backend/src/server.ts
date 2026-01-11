@@ -25,11 +25,26 @@ const allowedOrigins = new Set(
   ].filter(Boolean) as string[]
 );
 
+// Simple logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.url} [Origin: ${req.headers.origin}]`);
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+
+    // Allow localhost
     if (allowedOrigins.has(origin)) return callback(null, true);
     if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return callback(null, true);
+
+    // Allow any Vercel deployment
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+
+    // Fallback: Log blocked origin
+    console.log('Blocked by CORS:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true

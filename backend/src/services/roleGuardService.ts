@@ -25,7 +25,7 @@ export class RoleGuardService {
 
     return {
       hasConflict: false, // Single role system, no conflicts
-      roles: [role]
+      roles: [role as UserRole]
     };
   }
 
@@ -43,7 +43,7 @@ export class RoleGuardService {
     }
 
     return {
-      role: user.role,
+      role: user.role as UserRole,
       needsRedirect: false
     };
   }

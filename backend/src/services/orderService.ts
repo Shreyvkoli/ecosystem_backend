@@ -287,7 +287,7 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
   }
 
   // Validate transition
-  if (!canTransitionStatus(order.status, data.status, data.userRole)) {
+  if (!canTransitionStatus(order.status as OrderStatus, data.status, data.userRole)) {
     throw new Error(
       `Invalid status transition from ${order.status} to ${data.status} for role ${data.userRole}`
     );

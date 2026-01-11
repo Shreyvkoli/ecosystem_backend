@@ -239,10 +239,10 @@ router.post('/multipart/initiate', authenticate, uploadLimiter, async (req: Auth
         s3Region: process.env.AWS_REGION || 'us-east-1',
         uploadStatus: 'uploading',
         version,
-        metadata: {
+        metadata: JSON.stringify({
           uploadId,
           uploadType: 'multipart'
-        }
+        })
       }
     });
 
