@@ -110,8 +110,13 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
 
     // Find user by email (case-insensitive)
     // Find user by email (case-insensitive) using raw query to bypass Prisma type checks
-    const users: any[] = await prisma.$queryRaw`SELECT * FROM "User" WHERE email = ${email.toLowerCase()}`;
+    // Using explicit column selection to ensure keys match
+    const users: any[] = await prisma.$queryRaw`SELECT "id", "email", "password", "name", "role", "countryCode" FROM "User" WHERE email = ${email.toLowerCase()}`;
     const user = users[0];
+
+    if (user) {
+      console.log('[LoginDebug] Raw User:', JSON.stringify(user));
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -164,7 +169,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
     }
 
     // Use raw query to fetch user to bypass Prisma type checks
-    const users: any[] = await prisma.$queryRaw`SELECT * FROM "User" WHERE id = ${req.userId}`;
+    const users: any[] = await prisma.$queryRaw`SELECT "id", "email", "name", "role", "countryCode", "createdAt", "updatedAt" FROM "User" WHERE id = ${req.userId}`;
     const rawUser = users[0];
 
     if (!rawUser) {
