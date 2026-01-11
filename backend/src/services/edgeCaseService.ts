@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { OrderStatus, ApplicationStatus, WalletTransactionType } from '../utils/enums.js';
-import { sendEmail } from '../utils/email';
+import { sendEmail } from '../utils/email.js';
 
 const prisma = new PrismaClient();
 
