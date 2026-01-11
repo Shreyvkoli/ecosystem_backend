@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --bg-a: 255, 255, 255;
+  --bg-b: 248, 250, 252;
+  --bg-c: 241, 245, 249;
+  --bg-gradient-1: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.05) 50%, rgba(236, 72, 153, 0.03) 100%);
+  --bg-gradient-2: linear-gradient(120deg, rgba(8, 228, 255, 0.06) 0%, rgba(99, 102, 241, 0.04) 100%);
+  --primary-rgb: 99, 102, 241;
+  --primary-hover-rgb: 79, 70, 229;
+  --accent-rgb: 236, 72, 153;
+  --accent-hover-rgb: 219, 39, 119;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background-color: rgb(var(--bg-a));
+  background-image:
+    radial-gradient(1200px circle at 15% 20%, rgba(99, 102, 241, 0.12), transparent 60%),
+    radial-gradient(1000px circle at 85% 30%, rgba(168, 85, 247, 0.08), transparent 60%),
+    radial-gradient(1100px circle at 50% 80%, rgba(236, 72, 153, 0.06), transparent 65%),
+    radial-gradient(900px circle at 25% 70%, rgba(8, 228, 255, 0.04), transparent 55%),
+    var(--bg-gradient-1),
+    var(--bg-gradient-2);
+  background-size: 160% 160%;
+  animation: cutflow-bg 20s ease-in-out infinite;
+  min-height: 100vh;
+}
+
+/* Light gradient backgrounds for components */
+.light-gradient-1 {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.05) 50%, rgba(236, 72, 153, 0.03) 100%);
+}
+
+.light-gradient-2 {
+  background: linear-gradient(120deg, rgba(8, 228, 255, 0.06) 0%, rgba(99, 102, 241, 0.04) 100%);
+}
+
+.light-gradient-3 {
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.06) 0%, rgba(168, 85, 247, 0.04) 100%);
+}
+
+.light-gradient-4 {
+  background: linear-gradient(110deg, rgba(236, 72, 153, 0.05) 0%, rgba(8, 228, 255, 0.03) 100%);
+}
+
+/* Dark theme styles */
+html.dark body {
+  --foreground-rgb: 255, 255, 255;
+  --bg-a: 8, 12, 28;
+  --bg-b: 16, 10, 38;
+  --bg-c: 8, 28, 38;
+  background-color: rgb(var(--bg-a));
+  background-image:
+    radial-gradient(900px circle at 10% 10%, rgba(99, 102, 241, 0.16), transparent 55%),
+    radial-gradient(800px circle at 90% 20%, rgba(8, 228, 255, 0.10), transparent 55%),
+    radial-gradient(900px circle at 70% 90%, rgba(168, 85, 247, 0.14), transparent 60%),
+    linear-gradient(120deg, rgb(var(--bg-a)) 0%, rgb(var(--bg-b)) 45%, rgb(var(--bg-c)) 100%);
+}
+
+html.dark {
+  --foreground-rgb: 255, 255, 255;
+  --bg-a: 8, 12, 28;
+  --bg-b: 16, 10, 38;
+  --bg-c: 8, 28, 38;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+  }
+}
+
+@keyframes cutflow-bg {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* Premium Futuristic Styles */
+@layer components {
+  .glass-morphism {
+    @apply bg-white/70 backdrop-blur-lg border border-gray-200 rounded-xl;
+  }
+  
+  .premium-button {
+    @apply relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25;
+  }
+  
+  .premium-button::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700;
+  }
+  
+  .premium-button:hover::before {
+    @apply translate-x-full;
+  }
+
+  .premium-button-no-shimmer {
+    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25;
+  }
+  
+  .premium-card {
+    @apply bg-white/90 backdrop-blur-md border border-gray-200 rounded-2xl p-6 transition-all duration-200 hover:bg-white hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/50;
+  }
+  
+  .neon-glow {
+    @apply relative;
+  }
+  
+  .neon-glow::after {
+    content: '';
+    @apply absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-md -z-10;
+  }
+  
+  .floating-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  
+  .shimmer::before {
+    content: '';
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000;
+  }
+  
+  .shimmer:hover::before {
+    @apply translate-x-full;
+  }
+
+  /* Magnetic cursor effect */
+  .magnetic-cursor {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* Enhanced hover states */
+  .hover-lift {
+    @apply transition-all duration-200 hover:-translate-y-0.5;
+  }
+
+  /* Glow text effect */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgb(99, 102, 241), rgb(168, 85, 247));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, rgb(79, 70, 229), rgb(147, 51, 234));
+  }
+}
+

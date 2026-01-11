@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model OrderApplication {
+  id              String            @id @default(uuid())
+  orderId         String
+  editorId        String
+  status          String            @default("APPLIED")
+  depositAmount   Float
+  createdAt       DateTime          @default(now())
+  depositDeadline DateTime?
+  editor          User              @relation("EditorApplications", fields: [editorId], references: [id], onDelete: Cascade)
+  order           Order             @relation("OrderApplications", fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, editorId])
+  @@index([orderId])
+  @@index([editorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([depositDeadline])
+}
+
+model WalletTransaction {
+  id        String                @id @default(uuid())
+  userId    String
+  orderId   String?
+  type      String
+  amount    Float
+  createdAt DateTime              @default(now())
+  order     Order?                @relation("OrderWalletTransactions", fields: [orderId], references: [id])
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  password           String
+  name               String
+  role               String
+  countryCode        String              @default("IN")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  walletBalance      Float               @default(0)
+  walletLocked       Float               @default(0)
+  youtubeAccount      YouTubeAccount?
+  creatorProfile     CreatorProfile?
+  editorProfile      EditorProfile?
+  messages           Message[]
+  creatorOrders      Order[]             @relation("CreatorOrders")
+  editorOrders       Order[]             @relation("EditorOrders")
+  editorApplications OrderApplication[]  @relation("EditorApplications")
+  payments           Payment[]
+  editorDeposits     EditorDeposit[]
+  walletTransactions WalletTransaction[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model CreatorProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EditorProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  bio       String?
+  avatarUrl String   // Made mandatory for editors
+  rate      Float?
+  skills    String // SQLite does not support arrays
+  portfolio String // SQLite does not support arrays
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  available Boolean  @default(true)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Order {
+  id                 String              @id @default(uuid())
+  title              String
+  description        String?
+  brief              String?
+  status             String              @default("OPEN")
+  amount             Float?
+  currency           String              @default("INR")
+  paymentGateway     String?
+  paymentStatus      String              @default("PENDING")
+  payoutStatus       String              @default("PENDING")
+  editorDepositRequired Boolean          @default(false)
+  editorDepositStatus String             @default("PENDING")
+  youtubeVideoId     String?
+  youtubeVideoUrl    String?
+  publishedAt        DateTime?
+  creatorId          String
+  editorId           String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  completedAt        DateTime?
+  deadline           DateTime?
+  assignedAt         DateTime?
+  autoCancelAt       DateTime?
+  inProgressAt       DateTime?
+  lastActivityAt     DateTime?
+  revisionCount      Int                 @default(0)
+  files              File[]
+  messages           Message[]
+  creator            User                @relation("CreatorOrders", fields: [creatorId], references: [id])
+  editor             User?               @relation("EditorOrders", fields: [editorId], references: [id])
+  applications       OrderApplication[]  @relation("OrderApplications")
+  payments           Payment[]
+  editorDeposits     EditorDeposit[]
+  walletTransactions WalletTransaction[] @relation("OrderWalletTransactions")
+
+  @@index([creatorId])
+  @@index([editorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([autoCancelAt])
+}
+
+model YouTubeAccount {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  channelId            String?
+  accessTokenEnc       String
+  refreshTokenEnc      String
+  scope                String?
+  tokenType            String?
+  expiryDate           DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([channelId])
+}
+
+model File {
+  id           String    @id @default(uuid())
+  orderId      String
+  type         String
+  fileName     String
+  fileSize     Float
+  mimeType     String?
+  s3Key        String
+  s3Bucket     String
+  s3Region     String?
+  duration     Int?
+  version      Int       @default(1)
+  uploadStatus String    @default("pending")
+  metadata     String?   // SQLite does not support Json
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  messages     Message[]
+
+  @@index([orderId])
+  @@index([type])
+  @@index([s3Key])
+  @@index([uploadStatus])
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  orderId   String
+  fileId    String?
+  userId    String
+  type      String      @default("COMMENT")
+  content   String
+  timestamp Float?
+  x         Float?
+  y         Float?
+  resolved  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  file      File?       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([fileId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String
+  userId            String
+  amount            Float
+  currency          String        @default("INR")
+  gateway           String        @default("RAZORPAY")
+  kind              String        @default("CREATOR_PAYMENT")
+  status            String        @default("PENDING")
+  razorpayOrderId   String?       @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  stripePaymentIntentId String?    @unique
+  processedAt       DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  releaseNote       String?
+  releasedAt        DateTime?
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@index([releasedAt])
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+  @@index([createdAt])
+}
+
+model EditorDeposit {
+  id                   String             @id @default(uuid())
+  orderId               String
+  editorId              String
+  amount                Float
+  currency              String
+  gateway               String
+  status                String            @default("PENDING")
+  razorpayOrderId        String?          @unique
+  razorpayPaymentId      String?
+  razorpaySignature      String?
+  stripePaymentIntentId  String?          @unique
+  processedAt            DateTime?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  order                  Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  editor                 User             @relation(fields: [editorId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, editorId])
+  @@index([orderId])
+  @@index([editorId])
+  @@index([status])
+  @@index([createdAt])
+}

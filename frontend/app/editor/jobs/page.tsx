@@ -1,0 +1,658 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { editorApi, ordersApi } from '@/lib/api'
+import { getUser } from '@/lib/auth'
+import Navbar from '@/components/Navbar'
+import EditorTimeline from '@/components/EditorTimeline'
+import Link from 'next/link'
+
+export default function EditorJobsPage() {
+  const router = useRouter()
+  const user = getUser()
+  const queryClient = useQueryClient()
+
+  const [tab, setTab] = useState<'available' | 'my' | 'profile'>('available')
+  const [topupAmount, setTopupAmount] = useState<number>(5000)
+  const [profileForm, setProfileForm] = useState({
+    bio: '',
+    rate: '',
+    skills: '',
+    portfolio: '',
+    available: true,
+    avatarUrl: '',
+  })
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+    } else if (user.role !== 'EDITOR') {
+      router.push('/dashboard')
+    }
+  }, [user, router])
+
+  const { data: openOrders, isLoading: openLoading } = useQuery({
+    queryKey: ['orders', 'available'],
+    queryFn: async () => {
+      const [openRes, assignedRes] = await Promise.all([
+        ordersApi.listAvailable(),
+        ordersApi.listAssigned()
+      ]);
+      // Combine OPEN and ASSIGNED orders
+      return [...(openRes.data || []), ...(assignedRes.data || [])];
+    },
+    enabled: !!user && user.role === 'EDITOR',
+  })
+
+  const { data: myOrders, isLoading: myLoading } = useQuery({
+    queryKey: ['orders', 'mine'],
+    queryFn: async () => (await ordersApi.list()).data,
+    enabled: !!user && user.role === 'EDITOR',
+  })
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['editorProfile'],
+    queryFn: async () => (await editorApi.profile()).data,
+    enabled: !!user && user.role === 'EDITOR',
+  })
+
+  const { data: activeJobData, isLoading: activeJobLoading } = useQuery({
+    queryKey: ['activeJobCount'],
+    queryFn: async () => (await ordersApi.getActiveJobCount()).data,
+    enabled: !!user && user.role === 'EDITOR',
+  })
+
+  useEffect(() => {
+    if (!profile) return
+    const ep = profile.editorProfile
+    setProfileForm({
+      bio: ep?.bio || '',
+      rate: ep?.rate != null ? String(ep.rate) : '',
+      skills: (ep?.skills as any) || '',
+      portfolio: (ep?.portfolio as any) || '',
+      available: ep?.available ?? true,
+      avatarUrl: ep?.avatarUrl || '',
+    })
+  }, [profile])
+
+  const applyMutation = useMutation({
+    mutationFn: (orderId: string) => ordersApi.apply(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', 'available'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
+      queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
+      queryClient.invalidateQueries({ queryKey: ['activeJobCount'] })
+      alert('Applied successfully')
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.error || 'Failed to apply')
+    },
+  })
+
+  const topupMutation = useMutation({
+    mutationFn: () => editorApi.walletTopup(topupAmount),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.error || 'Failed to top up')
+    },
+  })
+
+  const updateProfileMutation = useMutation({
+    mutationFn: () =>
+      editorApi.updateProfile({
+        bio: profileForm.bio,
+        rate: profileForm.rate ? Number(profileForm.rate) : undefined,
+        skills: profileForm.skills,
+        portfolio: profileForm.portfolio,
+        available: profileForm.available,
+        avatarUrl: profileForm.avatarUrl,
+      } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
+      alert('Profile updated')
+    },
+    onError: (err: any) => {
+      console.error('Update profile error:', err);
+      if (err?.response?.data?.details) {
+        // Show the first validation error detail
+        const firstError = err.response.data.details[0];
+        alert(`Validation Error: ${firstError.message} (Field: ${firstError.path.join('.')})`);
+      } else {
+        alert(err?.response?.data?.error || 'Failed to update profile');
+      }
+    },
+  })
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size too large. Maximum 5MB allowed.')
+      return
+    }
+
+    setUploadingPhoto(true)
+    try {
+      // Get upload URL
+      const uploadResponse = await editorApi.uploadProfilePhoto({
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type
+      })
+
+      // Upload file to S3 (simplified - in production you'd use the actual upload URL)
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // For now, create a temporary URL
+      const temporaryUrl = URL.createObjectURL(file)
+      setProfileForm(prev => ({ ...prev, avatarUrl: temporaryUrl }))
+
+      alert('Photo uploaded successfully!')
+    } catch (error: any) {
+      alert(error?.response?.data?.error || 'Failed to upload photo')
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  const getStatusColor = (status: string, isNotApproved?: boolean) => {
+    if (isNotApproved) {
+      return 'bg-red-100 text-red-700 border border-red-300'
+    }
+    const colors: Record<string, string> = {
+      OPEN: 'bg-gray-100 text-gray-700 border border-gray-300',
+      APPLIED: 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+      ASSIGNED: 'bg-green-100 text-green-700 border border-green-300',
+      IN_PROGRESS: 'bg-purple-100 text-purple-700 border border-purple-300',
+      PREVIEW_SUBMITTED: 'bg-orange-100 text-orange-700 border border-orange-300',
+      REVISION_REQUESTED: 'bg-red-100 text-red-700 border border-red-300',
+      FINAL_SUBMITTED: 'bg-indigo-100 text-indigo-700 border border-indigo-300',
+      COMPLETED: 'bg-green-100 text-green-700 border border-green-300',
+      CANCELLED: 'bg-gray-100 text-gray-700 border border-gray-300',
+    }
+    return colors[status] || 'bg-gray-100 text-gray-700 border border-gray-300'
+  }
+
+  if (!user || user.role !== 'EDITOR') return null
+
+  const appliedJobs = useMemo(
+    () => myOrders?.filter((o) =>
+      o.applications && o.applications.length > 0 &&
+      o.applications.some((app: any) => app.editorId === user?.id && app.status === 'APPLIED')
+    ) || [],
+    [myOrders, user?.id]
+  )
+
+  const rejectedJobs = useMemo(
+    () => myOrders?.filter((o) =>
+      o.applications && o.applications.length > 0 &&
+      o.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED')
+    ) || [],
+    [myOrders, user?.id]
+  )
+
+  const activeJobs = useMemo(
+    () =>
+      myOrders?.filter((o) =>
+        ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED'].includes(o.status)
+      ) || [],
+    [myOrders]
+  )
+
+  const completedJobs = useMemo(
+    () => myOrders?.filter((o) => o.status === 'COMPLETED') || [],
+    [myOrders]
+  )
+
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent floating-animation">
+                  Editor Dashboard
+                </span>
+              </h1>
+              <p className="text-gray-600">Find and manage video editing jobs</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTab('available')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
+                  ? 'premium-button'
+                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                Available Jobs
+              </button>
+              <button
+                onClick={() => setTab('my')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'my'
+                  ? 'premium-button'
+                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                My Jobs
+              </button>
+              <button
+                onClick={() => setTab('profile')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
+                  ? 'premium-button'
+                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                Profile
+              </button>
+            </div>
+          </div>
+
+          {tab === 'available' && (
+            <div>
+              {openLoading ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading jobs...</p>
+                </div>
+              ) : !openOrders || openOrders.length === 0 ? (
+                <div className="glass-morphism p-12 text-center">
+                  <div className="mb-6">
+                    <svg className="w-16 h-16 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No available jobs</h3>
+                  <p className="text-gray-600">Check back later for new opportunities</p>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {openOrders.map((order) => (
+                    <div key={order.id} className="premium-card group hover:scale-105 transition-all duration-300">
+                      <div className="mb-4">
+                        <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                          {order.title}
+                        </h3>
+                      </div>
+                      {order.description && (
+                        <p className="text-gray-600 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors">
+                          {order.description}
+                        </p>
+                      )}
+                      <div className="flex justify-between items-center text-sm mb-4">
+                        <span className="text-gray-500">Creator: {order.creator?.name}</span>
+                        {order.amount && (
+                          <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                        )}
+                      </div>
+                      {order.status === 'OPEN' &&
+                        !(order.applications && order.applications.some((app: any) =>
+                          app.editorId === user?.id && app.status === 'APPLIED'
+                        )) &&
+                        order.editorId !== user?.id ? (
+                        <button
+                          onClick={() => applyMutation.mutate(order.id)}
+                          disabled={applyMutation.isPending}
+                          className="premium-button w-full neon-glow"
+                        >
+                          {applyMutation.isPending ? 'Applying...' : 'Apply to Job'}
+                        </button>
+                      ) : (
+                        <div className="text-center">
+                          {order.applications && order.applications.some((app: any) =>
+                            app.editorId === user?.id && app.status === 'REJECTED'
+                          )
+                            ? 'Not Approved'
+                            : order.applications && order.applications.some((app: any) =>
+                              app.editorId === user?.id && app.status === 'APPLIED'
+                            )
+                              ? 'Applied'
+                              : order.status === 'ASSIGNED' && order.editorId === user?.id
+                                ? 'Assigned'
+                                : order.status === 'ASSIGNED' && order.editorId !== user?.id
+                                  ? 'Not Approved'
+                                  : order.status.replace('_', ' ')
+                          }
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'my' && (
+            <div className="space-y-8">
+              {myLoading ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading your jobs...</p>
+                </div>
+              ) : (
+                <>
+                  {appliedJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-lg mr-3">Applied</span>
+                        <span className="text-gray-500 text-sm font-normal">{appliedJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {appliedJobs.map((order) => (
+                          <Link
+                            key={order.id}
+                            href={`/editor/jobs/${order.id}`}
+                            className="premium-card group hover:scale-105 transition-all duration-300"
+                          >
+                            <div className="flex justify-between items-start mb-4">
+                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                {order.title}
+                              </h3>
+                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
+                                {order.applications && order.applications.some((app: any) =>
+                                  app.editorId === user?.id && app.status === 'REJECTED'
+                                )
+                                  ? 'Not Approved'
+                                  : order.applications && order.applications.some((app: any) =>
+                                    app.editorId === user?.id && app.status === 'APPLIED'
+                                  )
+                                    ? 'Applied'
+                                    : order.status.replace('_', ' ')
+                                }
+                              </span>
+                            </div>
+                            <p className="text-gray-600 mb-4 group-hover:text-gray-200 transition-colors">Waiting for creator approval</p>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
+                              {order.amount && (
+                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg mr-3">Active</span>
+                        <span className="text-gray-500 text-sm font-normal">{activeJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {activeJobs.map((order) => (
+                          <Link
+                            key={order.id}
+                            href={`/editor/jobs/${order.id}`}
+                            className="premium-card group hover:scale-105 transition-all duration-300"
+                          >
+                            <div className="flex justify-between items-start mb-4">
+                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                {order.title}
+                              </h3>
+                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
+                                {order.applications && order.applications.some((app: any) =>
+                                  app.editorId === user?.id && app.status === 'REJECTED'
+                                )
+                                  ? 'Not Approved'
+                                  : order.applications && order.applications.some((app: any) =>
+                                    app.editorId === user?.id && app.status === 'APPLIED'
+                                  )
+                                    ? 'Applied'
+                                    : order.status.replace('_', ' ')
+                                }
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
+                              {order.amount && (
+                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {completedJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-green-500/20 text-green-300 px-3 py-1 rounded-lg mr-3">Completed</span>
+                        <span className="text-gray-500 text-sm font-normal">{completedJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {completedJobs.map((order) => (
+                          <Link
+                            key={order.id}
+                            href={`/editor/jobs/${order.id}`}
+                            className="premium-card group hover:scale-105 transition-all duration-300"
+                          >
+                            <div className="flex justify-between items-start mb-4">
+                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                {order.title}
+                              </h3>
+                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
+                                {order.applications && order.applications.some((app: any) =>
+                                  app.editorId === user?.id && app.status === 'REJECTED'
+                                )
+                                  ? 'Not Approved'
+                                  : order.applications && order.applications.some((app: any) =>
+                                    app.editorId === user?.id && app.status === 'APPLIED'
+                                  )
+                                    ? 'Applied'
+                                    : order.status.replace('_', ' ')
+                                }
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
+                              {order.amount && (
+                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {tab === 'profile' && (
+            <div className="space-y-8">
+              {profileLoading || !profile ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading profile...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-lg mr-3">Wallet</span>
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="glass-morphism p-6 border border-green-500/30">
+                        <div className="text-sm text-gray-500 mb-2">Available Balance</div>
+                        <div className="text-3xl font-bold text-green-400">₹{Number(profile.walletBalance || 0).toLocaleString()}</div>
+                      </div>
+                      <div className="glass-morphism p-6 border border-yellow-500/30">
+                        <div className="text-sm text-gray-500 mb-2">Locked (Deposits)</div>
+                        <div className="text-3xl font-bold text-yellow-400">₹{Number(profile.walletLocked || 0).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex gap-4 items-end">
+                      <div className="flex-1 max-w-xs">
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Test Top-up Amount</label>
+                        <input
+                          type="number"
+                          value={topupAmount}
+                          onChange={(e) => setTopupAmount(Number(e.target.value))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          min="100"
+                          step="100"
+                        />
+                      </div>
+                      <button
+                        onClick={() => topupMutation.mutate()}
+                        disabled={topupMutation.isPending}
+                        className="premium-button neon-glow"
+                      >
+                        {topupMutation.isPending ? 'Adding...' : 'Add Test Money'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
+                    </h2>
+                    <div className="glass-morphism p-6 border border-indigo-500/30">
+                      <div className="text-sm text-gray-500 mb-2">Active jobs count</div>
+                      <div className="text-3xl font-bold text-indigo-400">
+                        {activeJobLoading ? '...' : `${activeJobData?.activeJobs || 0} / ${activeJobData?.maxActiveJobs || 2}`}
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500">
+                        {activeJobLoading ? 'Loading...' :
+                          activeJobData?.canApply ?
+                            'You can apply for new jobs' :
+                            'Complete an active job to apply for new ones'
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
+                    </h2>
+                    <div className="space-y-6">
+                      {/* Profile Photo */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Profile Photo *</label>
+                        <div className="flex items-center space-x-4">
+                          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                            {profileForm.avatarUrl ? (
+                              <img
+                                src={profileForm.avatarUrl}
+                                alt="Profile"
+                                className="w-20 h-20 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-indigo-600 font-bold text-2xl">
+                                {user?.name?.charAt(0).toUpperCase() || 'E'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="space-y-2">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Upload Photo (Recommended)</label>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handlePhotoUpload}
+                                  disabled={uploadingPhoto}
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
+                                />
+                                {uploadingPhoto && (
+                                  <p className="text-xs text-indigo-600">Uploading...</p>
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Or enter image URL</label>
+                                <input
+                                  type="url"
+                                  value={profileForm.avatarUrl}
+                                  onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 text-sm"
+                                  placeholder="https://example.com/your-photo.jpg"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Profile photo is mandatory. Upload an image or enter a valid URL.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Bio</label>
+                        <textarea
+                          value={profileForm.bio}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          rows={4}
+                          placeholder="Tell creators about your editing style and expertise..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Rate (₹ per project)</label>
+                        <input
+                          value={profileForm.rate}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, rate: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="Your typical rate per project"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Skills (comma separated)</label>
+                        <input
+                          value={profileForm.skills}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, skills: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="e.g., color grading, motion graphics, sound design"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Portfolio URLs (comma separated)</label>
+                        <input
+                          value={profileForm.portfolio}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, portfolio: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="e.g., https://vimeo.com/yourwork, https://youtube.com/yourchannel"
+                        />
+                      </div>
+                      <label className="flex items-center gap-3 text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={profileForm.available}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, available: e.target.checked }))}
+                          className="w-5 h-5 rounded border-gray-300 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
+                        />
+                        <span className="font-medium">Available for new projects</span>
+                      </label>
+                      <button
+                        onClick={() => updateProfileMutation.mutate()}
+                        disabled={updateProfileMutation.isPending}
+                        className="premium-button neon-glow"
+                      >
+                        {updateProfileMutation.isPending ? 'Saving Profile...' : 'Save Profile'}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
