@@ -1,11 +1,11 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { EdgeCaseService } from './edgeCaseService';
+import { EdgeCaseService } from './edgeCaseService.js';
 
 export class SchedulerService {
   private static instance: SchedulerService;
   private jobs: ScheduledTask[] = [];
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): SchedulerService {
     if (!SchedulerService.instance) {
@@ -19,7 +19,7 @@ export class SchedulerService {
    */
   public startAll() {
     console.log('Starting scheduler service...');
-    
+
     // Run edge case checks every hour
     const edgeCaseJob = cron.schedule('0 * * * *', async () => {
       console.log('Running scheduled edge case checks...');
@@ -48,7 +48,7 @@ export class SchedulerService {
     });
 
     this.jobs.push(edgeCaseJob, cleanupJob, communicationJob);
-    
+
     console.log(`Scheduler started with ${this.jobs.length} jobs`);
   }
 
