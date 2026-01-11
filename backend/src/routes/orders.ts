@@ -162,14 +162,18 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
     const desc = data.description || '';
     const brief = data.brief || '';
 
-    // Using simple INSERT query
+    // Using simple INSERT query with explicit casts for Enums
     // Note: Use parameterized query in production properly to avoid injection. 
     // Here we use template literals for speed, relying on Zod validation which sanitize input somewhat but unsafe for text.
     // Better: use $queryRaw with prepared statement.
+    const currency = 'INR';
+    const pendingPayment = 'PENDING';
+    const pendingPayout = 'PENDING';
+    const pendingDeposit = 'PENDING';
 
     await prisma.$queryRaw`
       INSERT INTO "Order" ("id", "title", "description", "brief", "amount", "creatorId", "status", "createdAt", "updatedAt", "currency", "paymentStatus", "payoutStatus", "editorDepositRequired", "editorDepositStatus", "revisionCount")
-      VALUES (${id}, ${data.title}, ${desc}, ${brief}, ${amount}, ${creatorId}, ${status}, ${new Date()}, ${new Date()}, 'INR', 'PENDING', 'PENDING', false, 'PENDING', 0)
+      VALUES (${id}, ${data.title}, ${desc}, ${brief}, ${amount}, ${creatorId}, ${status}::"OrderStatus", ${new Date()}, ${new Date()}, ${currency}, ${pendingPayment}::"OrderPaymentStatus", ${pendingPayout}::"PayoutStatus", false, ${pendingDeposit}::"EditorDepositStatus", 0)
     `;
 
     // Fetch back
