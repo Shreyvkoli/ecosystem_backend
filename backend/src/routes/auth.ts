@@ -83,7 +83,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
     });
 
     return res.status(201).json({
-      user,
+      user: { ...user, role: String(role) },
       token
     });
   } catch (error: any) {
@@ -109,9 +109,9 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
     const { email, password } = loginSchema.parse(req.body);
 
     // Find user by email (case-insensitive)
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
-    });
+    // Find user by email (case-insensitive) using raw query to bypass Prisma type checks
+    const users: any[] = await prisma.$queryRaw`SELECT * FROM "User" WHERE email = ${email.toLowerCase()}`;
+    const user = users[0];
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -163,34 +163,36 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        ...({ countryCode: true } as any),
-        createdAt: true,
-        updatedAt: true,
-        creatorProfile: {
-          select: {
-            id: true,
-            bio: true,
-            avatarUrl: true
-          }
-        },
-        editorProfile: {
-          select: {
-            id: true,
-            bio: true,
-            avatarUrl: true,
-            rate: true,
-            skills: true
-          }
-        }
-      }
+    // Use raw query to fetch user to bypass Prisma type checks
+    const users: any[] = await prisma.$queryRaw`SELECT * FROM "User" WHERE id = ${req.userId}`;
+    const rawUser = users[0];
+
+    if (!rawUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Fetch profiles manually
+    const creatorProfile = await prisma.creatorProfile.findUnique({
+      where: { userId: rawUser.id },
+      select: { id: true, bio: true, avatarUrl: true }
     });
+
+    const editorProfile = await prisma.editorProfile.findUnique({
+      where: { userId: rawUser.id },
+      select: { id: true, bio: true, avatarUrl: true, rate: true, skills: true }
+    });
+
+    const user = {
+      id: rawUser.id,
+      email: rawUser.email,
+      name: rawUser.name,
+      role: rawUser.role,
+      countryCode: rawUser.countryCode,
+      createdAt: rawUser.createdAt,
+      updatedAt: rawUser.updatedAt,
+      creatorProfile,
+      editorProfile
+    };
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
