@@ -63,7 +63,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role: String(role),
+        role: role as any,
         ...({ countryCode: (countryCode || 'IN').toUpperCase() } as any)
       },
       select: {
