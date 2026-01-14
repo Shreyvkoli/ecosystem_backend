@@ -46,9 +46,10 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
     const { email, password, name, role, countryCode } = registerSchema.parse(req.body);
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
-    });
+    // Check if user already exists
+    // Use raw query to bypass Prisma type checks for role/enum
+    const existingUsers: any[] = await prisma.$queryRaw`SELECT id FROM "User" WHERE email = ${email.toLowerCase()} LIMIT 1`;
+    const existingUser = existingUsers[0];
 
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
@@ -79,7 +80,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
     // Generate JWT token
     const token = generateToken({
       userId: String(user.id),
-      role: String(user.role)
+      role: String(role)
     });
 
     return res.status(201).json({
