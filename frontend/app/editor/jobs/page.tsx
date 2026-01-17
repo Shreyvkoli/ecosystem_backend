@@ -223,19 +223,19 @@ export default function EditorJobsPage() {
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent floating-animation">
                   Editor Dashboard
                 </span>
               </h1>
               <p className="text-gray-600">Find and manage video editing jobs</p>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 sm:flex gap-2 w-full md:w-auto">
               <button
                 onClick={() => setTab('available')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
+                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
@@ -244,7 +244,7 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'active'
+                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'active'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
@@ -253,7 +253,7 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('history')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
+                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
@@ -262,7 +262,7 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('profile')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
+                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
