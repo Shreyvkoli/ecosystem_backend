@@ -12,6 +12,14 @@ export default function Home() {
         <Link href="/" className="flex items-center">
           <Logo showWordmark size={26} />
         </Link>
+        <div className="hidden md:flex items-center gap-6">
+          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Pricing</Link>
+          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">How it works</Link>
+          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Trust & Safety</Link>
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">About</Link>
+          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Support</Link>
+        </div>
+
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
             Login
