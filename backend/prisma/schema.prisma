@@ -229,7 +229,7 @@ model Message {
   resolved  Boolean     @default(false)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  file      File?       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  file      File?       @relation(fields: [fileId], references: [id], onDelete: SetNull)
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id])
 
