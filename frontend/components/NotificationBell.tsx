@@ -87,7 +87,7 @@ export default function NotificationBell({ user }: NotificationBellProps) {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-screen max-w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black ring-opacity-5">
+                <div className="fixed inset-x-2 top-16 sm:top-auto sm:inset-x-auto sm:absolute sm:right-0 sm:mt-2 sm:w-96 bg-white rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black ring-opacity-5">
                     <div className="p-3 border-b flex justify-between items-center bg-gray-50">
                         <h3 className="font-semibold text-gray-700 text-sm sm:text-base">Notifications</h3>
                         {unreadCount > 0 && (
