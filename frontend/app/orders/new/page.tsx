@@ -24,6 +24,7 @@ export default function NewOrderPage() {
   })
 
   const [recommendedBudget, setRecommendedBudget] = useState<number | null>(null)
+  const [budgetError, setBudgetError] = useState<string | null>(null)
 
   useEffect(() => {
     const currentUser = getUser()
@@ -70,10 +71,37 @@ export default function NewOrderPage() {
     total = Math.ceil(total / 500) * 500
 
     setRecommendedBudget(total)
+
+    // Auto-set the amount to the recommended budget description
+    setFormData(prev => ({ ...prev, amount: total.toString() }))
+    setBudgetError(null)
   }, [formData.expectedDuration, formData.rawFootageDuration, formData.editingLevel])
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setFormData({ ...formData, amount: val })
+
+    if (recommendedBudget && val) {
+      const numVal = parseFloat(val)
+      const min = recommendedBudget * 0.9
+      const max = recommendedBudget * 1.1
+
+      if (numVal < min || numVal > max) {
+        setBudgetError(`Budget must be within 10% (₹${Math.round(min)} - ₹${Math.round(max)}) to ensure quality.`)
+      } else {
+        setBudgetError(null)
+      }
+    } else {
+      setBudgetError(null)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Block submit if error exists
+    if (budgetError) return
+
     createMutation.mutate({
       title: formData.title,
       description: formData.description || undefined,
@@ -87,7 +115,7 @@ export default function NewOrderPage() {
     })
   }
 
-  // Define interfaces here if needed to avoid typescript errors in mutationFn, 
+  // Define interfaces here if needed to avoid typescript errors in mutationFn,
   // but better to rely on type inference or implicit any for now to be fast.
   const createMutation = useMutation({
     mutationFn: (data: any) =>
@@ -316,12 +344,20 @@ export default function NewOrderPage() {
                 id="amount"
                 min="0"
                 step="0.01"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm px-3 py-2 text-gray-900 ${budgetError
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                  }`}
                 value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                onChange={handleAmountChange}
                 placeholder={recommendedBudget ? `Suggested: ₹${recommendedBudget}` : 'Enter amount'}
               />
-              {recommendedBudget !== null && (
+              {budgetError && (
+                <p className="mt-1 text-xs text-red-600 font-medium">
+                  {budgetError}
+                </p>
+              )}
+              {recommendedBudget !== null && !budgetError && (
                 <p className="mt-1 text-xs text-gray-500">
                   Based on {formData.expectedDuration} min {formData.editingLevel.toLowerCase()} edit + raw footage processing.
                 </p>
