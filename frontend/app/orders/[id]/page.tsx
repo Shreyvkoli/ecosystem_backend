@@ -39,8 +39,11 @@ export default function OrderDetailPage() {
   useEffect(() => {
     if (!user) {
       router.push('/login')
+    } else if (user.role === 'EDITOR') {
+      // Redirect editors to their specific job page
+      router.push(`/editor/jobs/${orderId}`)
     }
-  }, [user, router])
+  }, [user, router, orderId])
 
 
 
