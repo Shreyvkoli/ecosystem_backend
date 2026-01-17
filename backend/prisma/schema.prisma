@@ -33,7 +33,7 @@ model WalletTransaction {
   type      String
   amount    Float
   createdAt DateTime              @default(now())
-  order     Order?                @relation("OrderWalletTransactions", fields: [orderId], references: [id])
+  order     Order?                @relation("OrderWalletTransactions", fields: [orderId], references: [id], onDelete: Cascade)
   user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
