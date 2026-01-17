@@ -41,7 +41,7 @@ export default function Home() {
             Cutflow uses refundable editor wallet balances, private file handling, and a clean review workflow so projects move fast and finish right.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-4 mt-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-4 mt-4 w-full sm:w-auto">
             <Magnetic strength={0.35}>
               <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow w-full sm:w-auto text-center justify-center">
                 Apply as Creator
