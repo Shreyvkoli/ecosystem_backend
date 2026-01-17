@@ -569,3 +569,32 @@ export async function raiseDispute(
   });
 }
 
+/**
+ * Delete an order
+ */
+export async function deleteOrder(orderId: string, userId: string, userRole: 'CREATOR' | 'ADMIN') {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) {
+    throw new Error('Order not found');
+  }
+
+  // Permission check
+  if (userRole !== 'ADMIN' && order.creatorId !== userId) {
+    throw new Error('Access denied');
+  }
+
+  // Status check: Can only delete if OPEN or APPLIED (no active work/money yet)
+  const deletableStatuses = [OrderStatus.OPEN, OrderStatus.APPLIED];
+  if (!deletableStatuses.includes(order.status as OrderStatus) && userRole !== 'ADMIN') {
+    throw new Error('Cannot delete order in progress. Please contact support or cancel instead.');
+  }
+
+  // Delete
+  return prisma.order.delete({
+    where: { id: orderId }
+  });
+}
+

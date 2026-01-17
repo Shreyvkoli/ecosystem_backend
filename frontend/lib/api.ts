@@ -228,6 +228,7 @@ export const ordersApi = {
     ),
   getActiveJobCount: () => api.get<{ activeJobs: number; maxActiveJobs: number; canApply: boolean }>('/orders/editor/active-count'),
   reportDispute: (id: string, reason: string) => api.post(`/orders/${id}/dispute`, { reason }),
+  delete: (id: string) => api.delete(`/orders/${id}`),
 };
 
 export const editorApi = {

@@ -107,6 +107,27 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
+
+/**
+ * DELETE /api/orders/:id
+ * Delete an order (CREATOR only, if OPEN/APPLIED)
+ */
+router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) => {
+  try {
+    const { deleteOrder } = await import('../services/orderService.js');
+    await deleteOrder(
+      req.params.id,
+      req.userId!,
+      req.userRole as 'CREATOR' | 'ADMIN'
+    );
+    return res.status(204).send();
+  } catch (error: any) {
+    const message = error instanceof Error ? error.message : 'Failed to delete order';
+    const statusCode = message.includes('not found') ? 404 : 403;
+    return res.status(statusCode).json({ error: message });
+  }
+});
+
 /**
  * POST /api/orders
  * Create a new order (CREATOR only)
