@@ -51,11 +51,7 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
     }
 
     // Role restrictions
-    if (isCreator && data.type !== 'RAW_VIDEO') {
-      if (data.type !== 'RAW_VIDEO' && data.type !== 'DOCUMENT') {
-        // loose check
-      }
-    }
+    // Creator allowed all types (mostly RAW_VIDEO, but maybe others manually)
     if (isEditor && data.type === 'RAW_VIDEO') {
       return res.status(403).json({ error: 'Editors cannot upload raw videos' });
     }
@@ -109,14 +105,14 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
       });
     }
 
-    res.json(file);
+    return res.json(file);
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
     console.error('Register file error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

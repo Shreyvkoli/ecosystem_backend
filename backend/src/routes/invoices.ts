@@ -22,7 +22,9 @@ router.get('/order/:orderId', authenticate, async (req: AuthRequest, res: Respon
             include: { creator: true, editor: true }
         });
 
-        if (!order) return res.status(404).json({ error: 'Order not found' });
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
 
         // Access Control
         if (order.creatorId !== userId && order.editorId !== userId && req.userRole !== 'ADMIN') {
@@ -46,12 +48,14 @@ router.get('/order/:orderId', authenticate, async (req: AuthRequest, res: Respon
         };
 
         generateInvoice(invoiceData, res);
+        return;
 
     } catch (error) {
         console.error('Invoice generation error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to generate invoice' });
+            return res.status(500).json({ error: 'Failed to generate invoice' });
         }
+        return;
     }
 });
 
