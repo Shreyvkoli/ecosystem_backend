@@ -12,15 +12,13 @@ export default function Home() {
         <Link href="/" className="flex items-center">
           <Logo showWordmark size={26} />
         </Link>
-        <div className="flex overflow-x-auto md:overflow-visible items-center gap-3 pb-2 md:pb-0 hide-scrollbar">
-          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Pricing</Link>
-          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">How it works</Link>
-          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Trust & Safety</Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">About</Link>
-          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Support</Link>
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
+            Login
+          </Link>
           <Magnetic strength={0.25}>
-            <Link href="/login" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap">
-              Login
+            <Link href="/register" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 text-sm font-semibold whitespace-nowrap">
+              Join
             </Link>
           </Magnetic>
         </div>
