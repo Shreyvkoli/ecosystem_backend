@@ -20,7 +20,8 @@ export default function NewOrderPage() {
     rawFootageDuration: '',
     expectedDuration: '',
     editingLevel: 'BASIC',
-    referenceLink: ''
+    referenceLink: '',
+    deadline: ''
   })
 
   const [recommendedBudget, setRecommendedBudget] = useState<number | null>(null)
@@ -112,6 +113,7 @@ export default function NewOrderPage() {
       expectedDuration: formData.expectedDuration ? parseFloat(formData.expectedDuration) : undefined,
       editingLevel: formData.editingLevel,
       referenceLink: formData.referenceLink || undefined,
+      deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
     })
   }
 
@@ -298,6 +300,20 @@ export default function NewOrderPage() {
             </div>
 
             <div>
+              <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
+                Deadline (By when do you need this?)
+              </label>
+              <input
+                type="date"
+                id="deadline"
+                min={new Date().toISOString().split('T')[0]}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                value={formData.deadline}
+                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              />
+            </div>
+
+            <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                 Description
               </label>
@@ -345,8 +361,8 @@ export default function NewOrderPage() {
                 min="0"
                 step="0.01"
                 className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm px-3 py-2 text-gray-900 ${budgetError
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
                   }`}
                 value={formData.amount}
                 onChange={handleAmountChange}

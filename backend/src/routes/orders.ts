@@ -143,7 +143,8 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
       rawFootageDuration: z.number().min(0, "Duration must be positive").optional(),
       expectedDuration: z.number().min(0, "Duration must be positive").optional(),
       editingLevel: z.enum(['BASIC', 'PROFESSIONAL', 'PREMIUM']).optional(),
-      referenceLink: z.string().url().optional().or(z.literal(''))
+      referenceLink: z.string().url().optional().or(z.literal('')),
+      deadline: z.string().datetime().optional()
     });
 
     const data = schema.parse(req.body);

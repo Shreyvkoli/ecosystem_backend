@@ -14,6 +14,7 @@ export interface CreateOrderData {
   expectedDuration?: number;
   editingLevel?: string;
   referenceLink?: string;
+  deadline?: string;
 }
 
 export interface UpdateOrderStatusData {
@@ -116,6 +117,7 @@ export async function createOrder(data: CreateOrderData) {
       expectedDuration: data.expectedDuration,
       editingLevel: data.editingLevel,
       referenceLink: data.referenceLink,
+      deadline: data.deadline,
     },
     include: {
       creator: {
