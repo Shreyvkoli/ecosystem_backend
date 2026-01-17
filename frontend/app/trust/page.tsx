@@ -23,8 +23,8 @@ export default function TrustPage() {
           <div className="premium-card group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative">
-            <h2 className="text-2xl font-bold text-gray-900">Why deposits exist</h2>
-          </div>
+              <h2 className="text-2xl font-bold text-gray-900">Why deposits exist</h2>
+            </div>
             <p className="text-gray-600 mt-3">
               Editors lock a refundable deposit when they apply. This reduces spam and ensures editors take assignments seriously.
             </p>
@@ -32,8 +32,8 @@ export default function TrustPage() {
           <div className="premium-card group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative">
-            <h2 className="text-2xl font-bold text-gray-900">What happens if someone ghosts</h2>
-          </div>
+              <h2 className="text-2xl font-bold text-gray-900">What happens if someone ghosts</h2>
+            </div>
             <p className="text-gray-600 mt-3">
               If an editor is assigned and then ghosts, their deposit can be deducted as per policy. If a creator disappears after approval, the job can be cancelled and deposits are released.
             </p>
@@ -41,8 +41,8 @@ export default function TrustPage() {
           <div className="premium-card group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative">
-            <h2 className="text-2xl font-bold text-gray-900">Disputes & fairness</h2>
-          </div>
+              <h2 className="text-2xl font-bold text-gray-900">Disputes & fairness</h2>
+            </div>
             <p className="text-gray-600 mt-3">
               We use a milestone-based workflow (preview → revision → final). If there’s a dispute, we review chat + file timeline and apply the policy fairly.
             </p>
@@ -50,8 +50,8 @@ export default function TrustPage() {
           <div className="premium-card group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative">
-            <h2 className="text-2xl font-bold text-gray-900">File security</h2>
-          </div>
+              <h2 className="text-2xl font-bold text-gray-900">File security</h2>
+            </div>
             <p className="text-gray-600 mt-3">
               Raw files are stored privately (S3). Only the creator (and admin) can access raw downloads until an editor is assigned. After assignment, only the assigned editor can download.
             </p>
@@ -63,7 +63,7 @@ export default function TrustPage() {
             <div className="text-2xl font-bold text-gray-900">Want the full rules?</div>
             <div className="text-gray-600 mt-1">Read the exact legal policies for deposits and refunds.</div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Magnetic strength={0.35}>
               <Link href="/legal/editor-deposit" className="premium-button">Editor Deposit Policy</Link>
             </Magnetic>

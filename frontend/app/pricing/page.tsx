@@ -39,7 +39,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Magnetic strength={0.35}>
                 <Link href="/register?role=CREATOR" className="premium-button">Apply as Creator</Link>
               </Magnetic>
@@ -78,7 +78,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Magnetic strength={0.35}>
                 <Link href="/register?role=EDITOR" className="premium-button">Apply as Editor</Link>
               </Magnetic>

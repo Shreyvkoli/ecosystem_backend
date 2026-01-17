@@ -83,7 +83,7 @@ export default function HowItWorksPage() {
                 <div className="text-gray-600 mt-1">Payment (90% of order value) is instantly released to your wallet upon completion.</div>
               </div>
             </div>
-            <div className="mt-8 flex gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Magnetic strength={0.35}>
                 <Link href="/register?role=EDITOR" className="premium-button">Apply as Editor</Link>
               </Magnetic>
