@@ -87,16 +87,16 @@ export default function NotificationBell({ user }: NotificationBellProps) {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black ring-opacity-5">
+                <div className="absolute right-0 mt-2 w-screen max-w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black ring-opacity-5">
                     <div className="p-3 border-b flex justify-between items-center bg-gray-50">
-                        <h3 className="font-semibold text-gray-700">Notifications</h3>
+                        <h3 className="font-semibold text-gray-700 text-sm sm:text-base">Notifications</h3>
                         {unreadCount > 0 && (
-                            <button onClick={handleMarkAllRead} className="text-xs text-blue-600 hover:underline">
+                            <button onClick={handleMarkAllRead} className="text-xs text-blue-600 hover:underline whitespace-nowrap">
                                 Mark all read
                             </button>
                         )}
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
                         {notifications.length === 0 ? (
                             <div className="p-4 text-center text-gray-500 text-sm">No notifications</div>
                         ) : (
@@ -110,8 +110,8 @@ export default function NotificationBell({ user }: NotificationBellProps) {
                                         setIsOpen(false)
                                     }}
                                 >
-                                    <p className="text-sm font-medium text-gray-800">{notif.title}</p>
-                                    <p className="text-sm text-gray-600 line-clamp-2">{notif.message}</p>
+                                    <p className="text-sm font-medium text-gray-800 break-words">{notif.title}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 break-words">{notif.message}</p>
                                     <p className="text-xs text-gray-400 mt-1">{formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}</p>
                                 </Link>
                             ))
