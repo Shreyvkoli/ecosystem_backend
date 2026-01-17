@@ -293,21 +293,21 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {openOrders.map((order) => (
-                    <div key={order.id} className="premium-card group hover:scale-105 transition-all duration-300">
+                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300">
                       <div className="mb-4">
-                        <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 break-words group-hover:text-indigo-600 transition-colors">
                           {order.title}
                         </h3>
                       </div>
                       {order.description && (
-                        <p className="text-gray-600 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors">
+                        <p className="text-gray-600 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors text-sm">
                           {order.description}
                         </p>
                       )}
-                      <div className="flex justify-between items-center text-sm mb-4">
-                        <span className="text-gray-500">Creator: {order.creator?.name}</span>
+                      <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
+                        <span className="text-gray-500 truncate max-w-[60%]">Creator: {order.creator?.name}</span>
                         {order.amount && (
-                          <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                          <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
                         )}
                       </div>
 
@@ -362,8 +362,8 @@ export default function EditorJobsPage() {
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {/* Applied Jobs Map */}
                         {appliedJobs.map((order) => (
-                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
-                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Applied</span>
                           </Link>
                         ))}
@@ -379,10 +379,10 @@ export default function EditorJobsPage() {
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {activeJobs.map((order) => (
-                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
-                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">{order.status}</span>
-                            <div className="mt-2 text-sm text-gray-500">Creator: {order.creator?.name}</div>
+                            <div className="mt-2 text-sm text-gray-500 truncate">Creator: {order.creator?.name}</div>
                           </Link>
                         ))}
                       </div>
@@ -411,8 +411,8 @@ export default function EditorJobsPage() {
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {completedJobs.map((order) => (
-                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
-                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded">Completed</span>
                             <div className="mt-2 font-bold text-indigo-400">₹{order.amount?.toLocaleString()}</div>
                           </Link>
@@ -607,19 +607,19 @@ export default function EditorJobsPage() {
 
         {/* Job Details Modal */}
         {selectedJob && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
-                <h2 className="text-xl font-bold text-gray-900">{selectedJob.title}</h2>
+              <div className="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-start gap-3 z-10">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 break-words pr-2">{selectedJob.title}</h2>
                 <button
                   onClick={() => setSelectedJob(null)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
                 >
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Header Info */}
                 <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
                   <div>
