@@ -178,17 +178,19 @@ export default function Home() {
           <div className="text-2xl font-bold text-gray-900">Ready to ship your next edit?</div>
           <div className="text-gray-600 mt-1">Apply as a creator on Cutflow or apply as an editor in under 2 minutes.</div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-4 w-full sm:w-auto mt-4 sm:mt-0">
           <Magnetic strength={0.35}>
-            <Link href="/register?role=CREATOR" className="premium-button-no-shimmer">Apply as Creator</Link>
+            <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow w-full sm:w-auto text-center justify-center">
+              Apply as Creator
+            </Link>
           </Magnetic>
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full sm:w-auto">
             <Magnetic strength={0.35}>
-              <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all">
+              <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all w-full sm:w-auto text-center block">
                 Apply as Editor
               </Link>
             </Magnetic>
-            <div className="text-xs text-gray-400 mt-4 max-w-xs">
+            <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
               For editors: Your wallet balance is never platform profit. It is refundable or adjusted in your first payout.
             </div>
           </div>
