@@ -205,18 +205,37 @@ export default function NewOrderPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Editing Level</label>
-              <div className="grid grid-cols-3 gap-3">
-                {['BASIC', 'PROFESSIONAL', 'PREMIUM'].map((level) => (
+              <label className="block text-sm font-medium text-gray-700 mb-3">Editing Level</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { id: 'BASIC', label: 'Basic', desc: 'Standard cuts, basic titles, and background music.' },
+                  { id: 'PROFESSIONAL', label: 'Professional', desc: 'Motion graphics, sound effects, B-roll, and dynamic subtitles.', popular: true },
+                  { id: 'PREMIUM', label: 'Premium', desc: 'Advanced VFX, custom storytelling, high-end sound design, and cinematic grading.' }
+                ].map((option) => (
                   <div
-                    key={level}
-                    onClick={() => setFormData({ ...formData, editingLevel: level })}
-                    className={`cursor-pointer rounded-lg border p-4 text-center text-sm font-medium transition-all ${formData.editingLevel === level
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500'
-                      : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                    key={option.id}
+                    onClick={() => setFormData({ ...formData, editingLevel: option.id })}
+                    className={`relative cursor-pointer rounded-xl border p-4 text-left transition-all hover:shadow-lg ${formData.editingLevel === option.id
+                      ? 'border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-500'
+                      : 'border-gray-200 bg-white hover:border-indigo-300'
                       }`}
                   >
-                    {level}
+                    {option.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] uppercase tracking-wider font-bold px-3 py-0.5 rounded-full shadow-sm">
+                        Most Popular
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className={`font-bold ${formData.editingLevel === option.id ? 'text-indigo-900' : 'text-gray-900'}`}>
+                        {option.label}
+                      </div>
+                      {formData.editingLevel === option.id && (
+                        <div className="h-4 w-4 rounded-full bg-indigo-600"></div>
+                      )}
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 leading-relaxed">
+                      {option.desc}
+                    </div>
                   </div>
                 ))}
               </div>
