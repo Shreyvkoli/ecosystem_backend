@@ -181,5 +181,13 @@ html.dark {
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, rgb(79, 70, 229), rgb(147, 51, 234));
   }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 

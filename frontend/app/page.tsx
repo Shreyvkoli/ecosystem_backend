@@ -12,23 +12,17 @@ export default function Home() {
         <Link href="/" className="flex items-center">
           <Logo showWordmark size={26} />
         </Link>
-        <div className="hidden md:flex items-center gap-3">
-          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</Link>
-          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How it works</Link>
-          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors">Trust & Safety</Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
-          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Support</Link>
+        <div className="flex overflow-x-auto md:overflow-visible items-center gap-3 pb-2 md:pb-0 hide-scrollbar">
+          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Pricing</Link>
+          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">How it works</Link>
+          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Trust & Safety</Link>
+          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">About</Link>
+          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">Support</Link>
           <Magnetic strength={0.25}>
-            <Link href="/login" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900">
+            <Link href="/login" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap">
               Login
             </Link>
           </Magnetic>
-        </div>
-        {/* Mobile Login Button (Visible only on mobile) */}
-        <div className="md:hidden">
-          <Link href="/login" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 text-sm">
-            Login
-          </Link>
         </div>
       </div>
 
@@ -47,19 +41,19 @@ export default function Home() {
             Cutflow uses refundable editor wallet balances, private file handling, and a clean review workflow so projects move fast and finish right.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-4 mt-4 w-full sm:w-auto">
             <Magnetic strength={0.35}>
-              <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow">
+              <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow w-full sm:w-auto text-center justify-center">
                 Apply as Creator
               </Link>
             </Magnetic>
-            <div className="flex flex-col">
+            <div className="flex flex-col w-full sm:w-auto">
               <Magnetic strength={0.35}>
-                <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all">
+                <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all w-full sm:w-auto text-center block">
                   Apply as Editor
                 </Link>
               </Magnetic>
-              <div className="text-xs text-gray-400 mt-4 max-w-xs">
+              <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
                 For editors: Your wallet balance is never platform profit. It is refundable or adjusted in your first payout.
               </div>
             </div>
