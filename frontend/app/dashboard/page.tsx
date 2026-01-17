@@ -97,39 +97,41 @@ export default function DashboardPage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent floating-animation">
                   Creator Dashboard
                 </span>
               </h1>
               <p className="text-gray-700">Manage your video editing orders</p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {user.role === 'CREATOR' && (
                 <>
                   {youtubeStatus?.data.connected ? (
-                    <div className="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg border border-green-300">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-lg border border-green-300 text-sm">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      YouTube Connected
+                      <span className="hidden sm:inline">YouTube Connected</span>
+                      <span className="sm:hidden">Connected</span>
                     </div>
                   ) : (
                     <button
                       onClick={() => setShowYouTubeConnectModal(true)}
-                      className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="flex items-center px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                     >
-                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                       </svg>
-                      Connect YouTube
+                      <span className="hidden sm:inline">Connect YouTube</span>
+                      <span className="sm:hidden">Connect</span>
                     </button>
                   )}
                   <Link
                     href="/orders/new"
-                    className="premium-button flex items-center space-x-2"
+                    className="premium-button flex items-center space-x-2 text-sm sm:text-base"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     <span>New Order</span>
@@ -140,10 +142,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-4 mb-6 border-b border-gray-200">
+          <div className="flex space-x-2 sm:space-x-4 mb-6 border-b border-gray-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab('active')}
-              className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'active'
+              className={`pb-2 px-3 sm:px-4 font-medium transition-colors border-b-2 whitespace-nowrap text-sm sm:text-base ${activeTab === 'active'
                 ? 'border-indigo-600 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
@@ -152,7 +154,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'history'
+              className={`pb-2 px-3 sm:px-4 font-medium transition-colors border-b-2 whitespace-nowrap text-sm sm:text-base ${activeTab === 'history'
                 ? 'border-indigo-600 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
@@ -162,7 +164,7 @@ export default function DashboardPage() {
             {user.role === 'CREATOR' && (
               <button
                 onClick={() => setActiveTab('saved')}
-                className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'saved'
+                className={`pb-2 px-3 sm:px-4 font-medium transition-colors border-b-2 whitespace-nowrap text-sm sm:text-base ${activeTab === 'saved'
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
@@ -188,18 +190,18 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {savedEditors.map((editor: any) => (
-                  <div key={editor.id} className="premium-card group hover:scale-105 transition-all duration-300 relative">
+                  <div key={editor.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative">
                     <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
                         {editor.avatarUrl ? (
-                          <img src={editor.avatarUrl} alt={editor.name} className="w-14 h-14 rounded-full object-cover" />
+                          <img src={editor.avatarUrl} alt={editor.name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover" />
                         ) : (
-                          <span className="text-indigo-600 font-bold text-xl">{editor.name.charAt(0).toUpperCase()}</span>
+                          <span className="text-indigo-600 font-bold text-lg sm:text-xl">{editor.name.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 truncate">{editor.name}</h3>
-                        <p className="text-sm text-gray-500 truncate">{editor.email}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 break-words">{editor.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 truncate">{editor.email}</p>
                       </div>
                     </div>
 
@@ -275,27 +277,27 @@ export default function DashboardPage() {
                   <Link
                     key={order.id}
                     href={`/orders/${order.id}`}
-                    className="premium-card group hover:scale-105 transition-all duration-300"
+                    className="premium-card group md:hover:scale-105 transition-all duration-300"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                    <div className="flex justify-between items-start gap-3 mb-4">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words flex-1 group-hover:text-indigo-600 transition-colors">
                         {order.title}
                       </h3>
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status)} transition-all duration-300`}>
+                      <span className={`px-2 sm:px-3 py-1 text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0 ${getStatusColor(order.status)} transition-all duration-300`}>
                         {order.status.replace('_', ' ')}
                       </span>
                     </div>
                     {order.description && (
-                      <p className="text-gray-700 mb-4 line-clamp-2 group-hover:text-gray-800 transition-colors">
+                      <p className="text-gray-700 mb-4 line-clamp-2 group-hover:text-gray-800 transition-colors text-sm">
                         {order.description}
                       </p>
                     )}
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">
+                    <div className="flex flex-wrap justify-between items-center gap-2 text-sm">
+                      <span className="text-gray-600 truncate max-w-[60%]">
                         {user.role === 'CREATOR' ? order.editor?.name || 'Unassigned' : order.creator?.name}
                       </span>
                       {order.amount && (
-                        <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
+                        <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
                       )}
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between text-xs text-gray-600">
