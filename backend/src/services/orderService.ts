@@ -589,7 +589,7 @@ export async function deleteOrder(orderId: string, userId: string, userRole: 'CR
   }
 
   // Status check: Can only delete if OPEN or APPLIED (no active work/money yet)
-  const deletableStatuses = [OrderStatus.OPEN, OrderStatus.APPLIED];
+  const deletableStatuses: OrderStatus[] = [OrderStatus.OPEN, OrderStatus.APPLIED];
   if (!deletableStatuses.includes(order.status as OrderStatus) && userRole !== 'ADMIN') {
     throw new Error('Cannot delete order in progress. Please contact support or cancel instead.');
   }
