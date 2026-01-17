@@ -16,8 +16,14 @@ export default function NewOrderPage() {
     description: '',
     brief: '',
     amount: '',
-    editorId: ''
+    editorId: '',
+    rawFootageDuration: '',
+    expectedDuration: '',
+    editingLevel: 'BASIC',
+    referenceLink: ''
   })
+
+  const [recommendedBudget, setRecommendedBudget] = useState<number | null>(null)
 
   useEffect(() => {
     const currentUser = getUser()
@@ -29,13 +35,28 @@ export default function NewOrderPage() {
     }
   }, [router])
 
-  const createMutation = useMutation({
-    mutationFn: (data: { title: string; description?: string; brief?: string; amount?: number; editorId?: string }) =>
-      ordersApi.create(data),
-    onSuccess: (response) => {
-      router.push(`/orders/${response.data.id}`)
-    },
-  })
+  // Calculate Recommended Budget logic
+  useEffect(() => {
+    const finalMins = parseFloat(formData.expectedDuration) || 0
+    const rawMins = parseFloat(formData.rawFootageDuration) || 0
+
+    if (finalMins <= 0) {
+      setRecommendedBudget(null)
+      return
+    }
+
+    let ratePerMin = 500 // Basic
+    if (formData.editingLevel === 'PROFESSIONAL') ratePerMin = 1500
+    if (formData.editingLevel === 'PREMIUM') ratePerMin = 3000
+
+    // Formula: (FinalMins * Rate) + (RawMins * 10 Rs/min processing fee)
+    let total = (finalMins * ratePerMin) + (rawMins * 10)
+
+    // Round to nearest 100
+    total = Math.ceil(total / 100) * 100
+
+    setRecommendedBudget(total)
+  }, [formData.expectedDuration, formData.rawFootageDuration, formData.editingLevel])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,8 +66,22 @@ export default function NewOrderPage() {
       brief: formData.brief || undefined,
       amount: formData.amount ? parseFloat(formData.amount) : undefined,
       editorId: formData.editorId || undefined,
+      rawFootageDuration: formData.rawFootageDuration ? parseFloat(formData.rawFootageDuration) : undefined,
+      expectedDuration: formData.expectedDuration ? parseFloat(formData.expectedDuration) : undefined,
+      editingLevel: formData.editingLevel,
+      referenceLink: formData.referenceLink || undefined,
     })
   }
+
+  // Define interfaces here if needed to avoid typescript errors in mutationFn, 
+  // but better to rely on type inference or implicit any for now to be fast.
+  const createMutation = useMutation({
+    mutationFn: (data: any) =>
+      ordersApi.create(data),
+    onSuccess: (response) => {
+      router.push(`/orders/${response.data.id}`)
+    },
+  })
 
   // Fetch Saved Editors
   const { data: savedEditors } = useQuery({
@@ -137,6 +172,70 @@ export default function NewOrderPage() {
               />
             </div>
 
+            {/* New Detailed Fields */}
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="rawFootageDuration" className="block text-sm font-medium text-gray-700">
+                  Raw Footage Duration (Minutes)
+                </label>
+                <input
+                  type="number"
+                  id="rawFootageDuration"
+                  min="0"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  value={formData.rawFootageDuration}
+                  onChange={(e) => setFormData({ ...formData, rawFootageDuration: e.target.value })}
+                  placeholder="e.g. 60"
+                />
+              </div>
+              <div>
+                <label htmlFor="expectedDuration" className="block text-sm font-medium text-gray-700">
+                  Expected Final Duration (Minutes)
+                </label>
+                <input
+                  type="number"
+                  id="expectedDuration"
+                  min="0"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  value={formData.expectedDuration}
+                  onChange={(e) => setFormData({ ...formData, expectedDuration: e.target.value })}
+                  placeholder="e.g. 5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Editing Level</label>
+              <div className="grid grid-cols-3 gap-3">
+                {['BASIC', 'PROFESSIONAL', 'PREMIUM'].map((level) => (
+                  <div
+                    key={level}
+                    onClick={() => setFormData({ ...formData, editingLevel: level })}
+                    className={`cursor-pointer rounded-lg border p-4 text-center text-sm font-medium transition-all ${formData.editingLevel === level
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500'
+                      : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                      }`}
+                  >
+                    {level}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="referenceLink" className="block text-sm font-medium text-gray-700">
+                Reference Link (Style Inspiration)
+              </label>
+              <input
+                type="url"
+                id="referenceLink"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                value={formData.referenceLink}
+                onChange={(e) => setFormData({ ...formData, referenceLink: e.target.value })}
+                placeholder="https://youtube.com/..."
+              />
+            </div>
+
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                 Description
@@ -166,9 +265,19 @@ export default function NewOrderPage() {
             </div>
 
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Budget (₹)
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                  Budget (₹)
+                </label>
+                {recommendedBudget !== null && (
+                  <div
+                    onClick={() => setFormData({ ...formData, amount: recommendedBudget.toString() })}
+                    className="cursor-pointer flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full hover:bg-green-200 transition-colors"
+                  >
+                    <span>✨ Recommended: ₹{recommendedBudget}</span>
+                  </div>
+                )}
+              </div>
               <input
                 type="number"
                 id="amount"
@@ -177,7 +286,13 @@ export default function NewOrderPage() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder={recommendedBudget ? `Suggested: ₹${recommendedBudget}` : 'Enter amount'}
               />
+              {recommendedBudget !== null && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Based on {formData.expectedDuration} min {formData.editingLevel.toLowerCase()} edit + raw footage processing.
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3">

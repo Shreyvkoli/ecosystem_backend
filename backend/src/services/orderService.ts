@@ -10,6 +10,10 @@ export interface CreateOrderData {
   amount?: number;
   creatorId: string;
   editorId?: string;
+  rawFootageDuration?: number;
+  expectedDuration?: number;
+  editingLevel?: string;
+  referenceLink?: string;
 }
 
 export interface UpdateOrderStatusData {
@@ -108,6 +112,10 @@ export async function createOrder(data: CreateOrderData) {
       editorId: data.editorId, // Optional direct assignment
       status: data.editorId ? OrderStatus.ASSIGNED : OrderStatus.OPEN,
       assignedAt: data.editorId ? new Date() : undefined,
+      rawFootageDuration: data.rawFootageDuration,
+      expectedDuration: data.expectedDuration,
+      editingLevel: data.editingLevel,
+      referenceLink: data.referenceLink,
     },
     include: {
       creator: {

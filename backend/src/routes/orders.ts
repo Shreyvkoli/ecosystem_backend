@@ -118,7 +118,11 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
       description: z.string().optional(),
       brief: z.string().optional(),
       amount: z.number().positive().optional(),
-      editorId: z.string().uuid().optional() // Allow creator to optionally set editorId directly
+      editorId: z.string().uuid().optional(), // Allow creator to optionally set editorId directly
+      rawFootageDuration: z.number().min(0, "Duration must be positive").optional(),
+      expectedDuration: z.number().min(0, "Duration must be positive").optional(),
+      editingLevel: z.enum(['BASIC', 'PROFESSIONAL', 'PREMIUM']).optional(),
+      referenceLink: z.string().url().optional().or(z.literal(''))
     });
 
     const data = schema.parse(req.body);

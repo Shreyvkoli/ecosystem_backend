@@ -143,6 +143,12 @@ model Order {
   inProgressAt       DateTime?
   lastActivityAt     DateTime?
   revisionCount      Int                 @default(0)
+
+  // New Detailed Fields
+  rawFootageDuration Float?              // in minutes
+  expectedDuration   Float?              // in minutes
+  editingLevel       String?             // BASIC, PROFESSIONAL, PREMIUM
+  referenceLink      String?
   files              File[]
   messages           Message[]
   creator            User                @relation("CreatorOrders", fields: [creatorId], references: [id])
