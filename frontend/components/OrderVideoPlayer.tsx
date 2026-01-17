@@ -93,6 +93,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
       if (internalPlayerRef.current) {
         internalPlayerRef.current.seekTo(seconds, 'seconds')
         setCommentTimestamp(seconds)
+        setPlaying(true) // Auto-play when seeking via button/timestamp
       }
     }
 
@@ -213,8 +214,8 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
                       <button
                         onClick={() => handleSeek(message.timestamp!)}
                         className={`px-2 py-1 text-xs rounded transition-all hover:scale-105 ${message.resolved
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 cursor-pointer'
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 cursor-pointer'
                           }`}
                         title={message.resolved ? 'Resolved' : `Jump to ${formatTime(message.timestamp)}`}
                       >
