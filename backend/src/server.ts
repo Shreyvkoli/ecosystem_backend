@@ -139,7 +139,7 @@ io.on('connection', (socket) => {
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('Backend restarted with updated order schema.');
+  console.log('Backend restarted with FULL order schema (Deadline + Durations + Ref).');
 
   if (process.env.ENABLE_SCHEDULER === 'true') {
     SchedulerService.getInstance().startAll();

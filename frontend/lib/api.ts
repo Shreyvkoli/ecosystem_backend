@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_URL = 'https://ecosystem-backend-1.onrender.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecosystem-backend-1.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -37,6 +37,11 @@ export interface Order {
   status: string;
   amount?: number;
   currency?: string;
+  rawFootageDuration?: number;
+  expectedDuration?: number;
+  editingLevel?: 'BASIC' | 'PROFESSIONAL' | 'PREMIUM';
+  referenceLink?: string;
+  deadline?: string;
   paymentGateway?: string | null;
   paymentStatus?: string;
   payoutStatus?: string;
@@ -200,7 +205,18 @@ export const ordersApi = {
   listAvailable: () => api.get<Order[]>('/orders', { params: { status: 'OPEN' } }),
   listAssigned: () => api.get<Order[]>('/orders', { params: { status: 'ASSIGNED' } }),
   get: (id: string) => api.get<Order>(`/orders/${id}`),
-  create: (data: { title: string; description?: string; brief?: string; amount?: number }) =>
+  create: (data: {
+    title: string;
+    description?: string;
+    brief?: string;
+    amount?: number;
+    editorId?: string;
+    rawFootageDuration?: number;
+    expectedDuration?: number;
+    editingLevel?: string;
+    referenceLink?: string;
+    deadline?: string;
+  }) =>
     api.post<Order>('/orders', data),
   assign: (id: string, editorId: string) =>
     api.patch(`/orders/${id}/assign`, { editorId }),

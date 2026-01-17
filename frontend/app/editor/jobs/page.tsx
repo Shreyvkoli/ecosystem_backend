@@ -619,14 +619,31 @@ export default function EditorJobsPage() {
                 </button>
               </div>
 
+              {/* DEBUG DATA DUMP */}
+              <div className="px-6 py-2 bg-yellow-50 border-b border-yellow-100">
+                <details>
+                  <summary className="text-xs text-yellow-700 cursor-pointer">Debug Data (Click to expand)</summary>
+                  <pre className="mt-2 text-[10px] text-gray-800 bg-white p-2 rounded border overflow-auto max-h-40">
+                    {JSON.stringify(selectedJob, null, 2)}
+                  </pre>
+                </details>
+              </div>
+
               <div className="p-6 space-y-6">
+                {console.log('Rendering Job Details:', selectedJob)}
+                {console.log('=== FULL ORDER DATA ===', selectedJob)}
+                {console.log('Deadline:', selectedJob.deadline)}
+                {console.log('Raw Footage Duration:', selectedJob.rawFootageDuration)}
+                {console.log('Expected Duration:', selectedJob.expectedDuration)}
+                {console.log('Reference Link:', selectedJob.referenceLink)}
+                {console.log('Editing Level:', selectedJob.editingLevel)}
                 {/* Header Info */}
                 <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
                   <div>
                     <span className="text-xs font-semibold text-gray-500 uppercase">Deadline</span>
                     <div className={`flex items-center font-bold mt-1 ${selectedJob.deadline ? 'text-red-600' : 'text-gray-700'}`}>
                       <Calendar className="w-4 h-4 mr-2" />
-                      {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Flexible'}
+                      {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Not Specified'}
                     </div>
                   </div>
                   <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
@@ -640,7 +657,7 @@ export default function EditorJobsPage() {
                   <div>
                     <span className="text-xs font-semibold text-gray-500 uppercase">Level</span>
                     <div className="text-indigo-600 font-bold mt-1">
-                      {selectedJob.editingLevel || 'Basic'}
+                      {selectedJob.editingLevel || 'Not Specified'}
                     </div>
                   </div>
                 </div>
@@ -670,14 +687,14 @@ export default function EditorJobsPage() {
                     <span className="text-xs text-gray-500 block mb-1">Raw Footage</span>
                     <div className="flex items-center text-gray-900 font-medium">
                       <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedJob.rawFootageDuration ? `${selectedJob.rawFootageDuration} mins` : 'N/A'}
+                      {selectedJob.rawFootageDuration ? `${selectedJob.rawFootageDuration} mins` : 'Not Specified'}
                     </div>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <span className="text-xs text-gray-500 block mb-1">Expected Duration</span>
                     <div className="flex items-center text-gray-900 font-medium">
                       <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedJob.expectedDuration ? `${selectedJob.expectedDuration} mins` : 'N/A'}
+                      {selectedJob.expectedDuration ? `${selectedJob.expectedDuration} mins` : 'Not Specified'}
                     </div>
                   </div>
                 </div>

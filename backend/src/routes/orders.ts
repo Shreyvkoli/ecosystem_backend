@@ -73,6 +73,20 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       filteredOrders = orders.filter((o: any) => o.status === statusParam);
     }
 
+    if (filteredOrders.length > 0) {
+      console.log('--- GET /orders DEBUG ---');
+      const first = filteredOrders[0];
+      console.log('Sample Order ID:', first.id);
+      console.log('Sample Keys:', Object.keys(first));
+      console.log('=== DETAILED FIELD CHECK ===');
+      console.log('Deadline:', first.deadline);
+      console.log('Raw Footage Duration:', first.rawFootageDuration);
+      console.log('Expected Duration:', first.expectedDuration);
+      console.log('Reference Link:', first.referenceLink);
+      console.log('Editing Level:', first.editingLevel);
+      console.log('=== END FIELD CHECK ===');
+    }
+
     return res.json(filteredOrders);
   } catch (error: any) {
     console.error('Get orders error:', error);
@@ -147,12 +161,17 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
       deadline: z.string().datetime().optional()
     });
 
+    console.log('--- CREATE ORDER REQUEST ---');
+    console.log('Raw Payload:', JSON.stringify(req.body, null, 2));
+
     const data = schema.parse(req.body);
+    console.log('Parsed Data:', JSON.stringify(data, null, 2));
 
     const order = await createOrder({
       ...data,
       creatorId: req.userId!
     });
+    console.log('Created Order:', JSON.stringify(order, null, 2));
 
     return res.status(201).json(order);
   } catch (error: any) {

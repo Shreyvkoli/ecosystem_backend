@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
 
 const prisma = new PrismaClient();
+console.log('OrderService: Prisma Client Initialized (Check for new fields support)');
 
 export interface CreateOrderData {
   title: string;
