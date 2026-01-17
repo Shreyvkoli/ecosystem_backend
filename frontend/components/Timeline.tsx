@@ -105,7 +105,10 @@ export default function Timeline({ order }: TimelineProps) {
 
                 {stage.key === 'PREVIEW_SUBMITTED' && (
                   <div className="mt-2">
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                    <button
+                      onClick={() => document.getElementById('main-video-player')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
                       View Preview →
                     </button>
                   </div>
@@ -113,7 +116,10 @@ export default function Timeline({ order }: TimelineProps) {
 
                 {stage.key === 'FINAL_SUBMITTED' && (
                   <div className="mt-2">
-                    <button className="text-xs text-green-600 hover:text-green-800 font-medium">
+                    <button
+                      onClick={() => document.getElementById('main-video-player')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="text-xs text-green-600 hover:text-green-800 font-medium"
+                    >
                       Download Final Video →
                     </button>
                   </div>

@@ -260,7 +260,7 @@ export default function OrderDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main video area */}
-            <div className="lg:col-span-2 space-y-6">
+            <div id="main-video-player" className="lg:col-span-2 space-y-6">
               {displayFile ? (
                 <OrderVideoPlayer
                   fileId={displayFile.id}
