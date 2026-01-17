@@ -39,21 +39,35 @@ export default function NewOrderPage() {
   useEffect(() => {
     const finalMins = parseFloat(formData.expectedDuration) || 0
     const rawMins = parseFloat(formData.rawFootageDuration) || 0
+    const rawHours = rawMins / 60 // Convert minutes to hours
 
+    // Config based on User's Formula:
+    // Basic: Base 500, Final 100/min, Raw 100/hr
+    // Professional: Base 2000, Final 300/min, Raw 250/hr
+    // Premium: Base 5000, Final 800/min, Raw 600/hr
+
+    let config = {
+      'BASIC': { base: 500, perMin: 100, rawHr: 100 },
+      'PROFESSIONAL': { base: 2000, perMin: 300, rawHr: 250 },
+      'PREMIUM': { base: 5000, perMin: 800, rawHr: 600 }
+    }
+
+    // Default to BASIC if undefined/invalid
+    const levelKey = (formData.editingLevel || 'BASIC') as keyof typeof config
+    const s = config[levelKey] || config['BASIC']
+
+    // If inputs are empty/zero, show nothing or just Base rate?
+    // Let's show nothing until at least Final Duration is entered.
     if (finalMins <= 0) {
       setRecommendedBudget(null)
       return
     }
 
-    let ratePerMin = 500 // Basic
-    if (formData.editingLevel === 'PROFESSIONAL') ratePerMin = 1500
-    if (formData.editingLevel === 'PREMIUM') ratePerMin = 3000
+    // Formula: Base + (FinalMins * Rate) + (RawHours * Fee)
+    let total = s.base + (finalMins * s.perMin) + (rawHours * s.rawHr)
 
-    // Formula: (FinalMins * Rate) + (RawMins * 10 Rs/min processing fee)
-    let total = (finalMins * ratePerMin) + (rawMins * 10)
-
-    // Round to nearest 100
-    total = Math.ceil(total / 100) * 100
+    // Rounding off to nearest 500 for a clean look
+    total = Math.ceil(total / 500) * 500
 
     setRecommendedBudget(total)
   }, [formData.expectedDuration, formData.rawFootageDuration, formData.editingLevel])
