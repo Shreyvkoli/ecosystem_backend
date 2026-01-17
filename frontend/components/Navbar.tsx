@@ -31,7 +31,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
             <Link href="/dashboard" className="flex items-center px-2 py-2 floating-animation">
               <Logo showWordmark size={24} />
             </Link>
-            <div className="flex ml-4 space-x-4">
+            <div className="flex ml-2 sm:ml-4 space-x-2 sm:space-x-4">
               {user.role === 'CREATOR' ? (
                 <>
                   <Magnetic strength={0.2}>
@@ -84,7 +84,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
             <Magnetic strength={0.3}>
               <button
                 onClick={handleLogout}
-                className="premium-button text-sm px-4 py-2 hover-lift"
+                className="premium-button text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 hover-lift"
               >
                 Logout
               </button>
