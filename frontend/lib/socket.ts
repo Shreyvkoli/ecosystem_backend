@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
 
 let socket: Socket | null = null;
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+const SOCKET_URL = 'https://ecosystem-backend-1.onrender.com';
 
 export const getSocket = () => {
     if (!socket) {
