@@ -95,7 +95,7 @@ export default function DashboardPage() {
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
                 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent floating-animation">

@@ -31,7 +31,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
             <Link href="/dashboard" className="flex items-center px-2 py-2 floating-animation">
               <Logo showWordmark size={24} />
             </Link>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="flex ml-4 space-x-4">
               {user.role === 'CREATOR' ? (
                 <>
                   <Magnetic strength={0.2}>
@@ -45,7 +45,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/orders/new"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
                     >
                       New Order
                     </Link>
@@ -73,10 +73,10 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
               ) : null}
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <NotificationBell user={user} />
             <div className={`text-sm ${lightTheme ? 'text-gray-600' : 'text-gray-700'}`}>
-              <span className={`font-medium ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
+              <span className={`font-medium hidden md:inline ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
               <span className={`ml-2 px-2 py-1 ${lightTheme ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-200 text-gray-700'} rounded-full text-xs`}>
                 {user.role}
               </span>
