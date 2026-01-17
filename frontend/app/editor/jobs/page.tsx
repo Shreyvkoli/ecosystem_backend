@@ -619,24 +619,7 @@ export default function EditorJobsPage() {
                 </button>
               </div>
 
-              {/* DEBUG DATA DUMP */}
-              <div className="px-6 py-2 bg-yellow-50 border-b border-yellow-100">
-                <details>
-                  <summary className="text-xs text-yellow-700 cursor-pointer">Debug Data (Click to expand)</summary>
-                  <pre className="mt-2 text-[10px] text-gray-800 bg-white p-2 rounded border overflow-auto max-h-40">
-                    {JSON.stringify(selectedJob, null, 2)}
-                  </pre>
-                </details>
-              </div>
-
               <div className="p-6 space-y-6">
-                {console.log('Rendering Job Details:', selectedJob)}
-                {console.log('=== FULL ORDER DATA ===', selectedJob)}
-                {console.log('Deadline:', selectedJob.deadline)}
-                {console.log('Raw Footage Duration:', selectedJob.rawFootageDuration)}
-                {console.log('Expected Duration:', selectedJob.expectedDuration)}
-                {console.log('Reference Link:', selectedJob.referenceLink)}
-                {console.log('Editing Level:', selectedJob.editingLevel)}
                 {/* Header Info */}
                 <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
                   <div>
