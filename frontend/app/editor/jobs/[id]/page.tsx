@@ -1,14 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ordersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
-import OrderVideoPlayer from '@/components/OrderVideoPlayer'
-import EditorVideoUploader from '@/components/EditorVideoUploader'
+import OrderVideoPlayer, { OrderVideoPlayerRef } from '@/components/OrderVideoPlayer'
+import LinkSubmission from '@/components/LinkSubmission'
+import EditorToDoList from '@/components/EditorToDoList'
 import EditorDepositButton from '@/components/EditorDepositButton'
+import ChatRoom from '@/components/ChatRoom'
+import ReviewModal from '@/components/ReviewModal'
 import Link from 'next/link'
 
 export default function EditorJobDetailPage() {
@@ -18,6 +21,8 @@ export default function EditorJobDetailPage() {
   const user = getUser()
   const queryClient = useQueryClient()
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
+  const playerRef = useRef<OrderVideoPlayerRef>(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -84,7 +89,7 @@ export default function EditorJobDetailPage() {
   const latestPreview = previewVideos?.[0]
   const finalVideo = order?.files?.find((f) => f.type === 'FINAL_VIDEO' && f.uploadStatus === 'completed')
 
-  const displayFile = selectedFileId 
+  const displayFile = selectedFileId
     ? order?.files?.find((f) => f.id === selectedFileId)
     : latestPreview || finalVideo || rawVideo
 
@@ -182,11 +187,24 @@ export default function EditorJobDetailPage() {
             {/* Main video area */}
             <div className="lg:col-span-2 space-y-6">
               {displayFile ? (
-                <OrderVideoPlayer
-                  fileId={displayFile.id}
-                  orderId={orderId}
-                  fileName={displayFile.fileName}
-                />
+                <>
+                  <OrderVideoPlayer
+                    ref={playerRef}
+                    fileId={displayFile.id}
+                    orderId={orderId}
+                    fileName={displayFile.fileName}
+                    publicLink={displayFile.publicLink}
+                  />
+
+                  {/* Editor To-Do List */}
+                  {user.role === 'EDITOR' && (
+                    <EditorToDoList
+                      orderId={orderId}
+                      fileId={displayFile.id}
+                      onSeek={(time: number) => playerRef.current?.seekTo(time)}
+                    />
+                  )}
+                </>
               ) : (
                 <div className="bg-black aspect-video flex items-center justify-center text-white rounded-lg">
                   <p>No video available</p>
@@ -202,11 +220,10 @@ export default function EditorJobDetailPage() {
                       <button
                         key={video.id}
                         onClick={() => setSelectedFileId(video.id)}
-                        className={`w-full text-left px-3 py-2 rounded border ${
-                          selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
-                            ? 'border-indigo-500 bg-indigo-50'
-                            : 'border-gray-300 hover:bg-gray-50'
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded border ${selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-gray-300 hover:bg-gray-50'
+                          }`}
                       >
                         Preview v{video.version} - {new Date(video.createdAt).toLocaleDateString()}
                       </button>
@@ -238,6 +255,13 @@ export default function EditorJobDetailPage() {
                 </div>
               </div>
 
+              {/* Chat Room */}
+              <ChatRoom
+                orderId={orderId}
+                currentUser={user}
+                recipientName={order.creator?.name}
+              />
+
               {/* Download raw video */}
               {(
                 order.status === 'ASSIGNED' ||
@@ -246,17 +270,17 @@ export default function EditorJobDetailPage() {
                 order.status === 'REVISION_REQUESTED' ||
                 order.status === 'FINAL_SUBMITTED'
               ) && rawVideo && (
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-3">Raw Video</h3>
-                  <p className="text-sm text-gray-600 mb-3">{rawVideo.fileName}</p>
-                  <button
-                    onClick={() => downloadRawVideo(rawVideo.id)}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Download Raw Video
-                  </button>
-                </div>
-              )}
+                  <div className="bg-white rounded-lg shadow p-4">
+                    <h3 className="font-semibold mb-3">Raw Video</h3>
+                    <p className="text-sm text-gray-600 mb-3">{rawVideo.fileName}</p>
+                    <button
+                      onClick={() => downloadRawVideo(rawVideo.id)}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download Raw Video
+                    </button>
+                  </div>
+                )}
 
               {/* Start work button */}
               {order.status === 'ASSIGNED' && (
@@ -288,12 +312,14 @@ export default function EditorJobDetailPage() {
               {/* Upload preview */}
               {order.status === 'IN_PROGRESS' && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-3">Upload Preview</h3>
-                  <EditorVideoUploader
+                  <h3 className="font-semibold mb-3">Submit Preview Link</h3>
+                  <p className="text-sm text-gray-600 mb-3">Upload your video to your Cloud Storage and paste the shareable link here.</p>
+                  <LinkSubmission
                     orderId={orderId}
                     fileType="PREVIEW_VIDEO"
-                    onUploadComplete={() => {
+                    onSuccess={() => {
                       handleSubmitPreview()
+                      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
                     }}
                   />
                 </div>
@@ -302,13 +328,14 @@ export default function EditorJobDetailPage() {
               {/* Upload revised preview */}
               {order.status === 'REVISION_REQUESTED' && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-3">Upload Revised Preview</h3>
-                  <p className="text-sm text-gray-600 mb-3">Creator requested changes. Upload the revised version.</p>
-                  <EditorVideoUploader
+                  <h3 className="font-semibold mb-3">Submit Revised Preview Link</h3>
+                  <p className="text-sm text-gray-600 mb-3">Creator requested changes. Paste the new link.</p>
+                  <LinkSubmission
                     orderId={orderId}
                     fileType="PREVIEW_VIDEO"
-                    onUploadComplete={() => {
+                    onSuccess={() => {
                       handleSubmitPreview()
+                      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
                     }}
                   />
                 </div>
@@ -317,13 +344,14 @@ export default function EditorJobDetailPage() {
               {/* Upload final video */}
               {order.status === 'IN_PROGRESS' && rawVideo && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-3">Upload Final Video</h3>
-                  <p className="text-sm text-gray-600 mb-3">Upload the final deliverable when ready.</p>
-                  <EditorVideoUploader
+                  <h3 className="font-semibold mb-3">Submit Final Video Link</h3>
+                  <p className="text-sm text-gray-600 mb-3">Paste the final delivery link.</p>
+                  <LinkSubmission
                     orderId={orderId}
                     fileType="FINAL_VIDEO"
-                    onUploadComplete={() => {
+                    onSuccess={() => {
                       handleSubmitFinal()
+                      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
                     }}
                   />
                 </div>
@@ -351,14 +379,26 @@ export default function EditorJobDetailPage() {
               {order.status === 'COMPLETED' && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <h3 className="font-semibold text-green-900 mb-2">Job Completed</h3>
-                  <p className="text-sm text-green-800">
+                  <p className="text-sm text-green-800 mb-3">
                     Final video has been delivered. Great work!
                   </p>
+                  <button
+                    onClick={() => setShowReviewModal(true)}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                  >
+                    Rate Creator
+                  </button>
                 </div>
               )}
             </div>
           </div>
         </div>
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          orderId={orderId}
+          revieweeName={order.creator?.name}
+        />
       </div>
     </div>
   )

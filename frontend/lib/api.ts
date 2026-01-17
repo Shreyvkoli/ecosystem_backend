@@ -54,7 +54,7 @@ export interface Order {
   editor?: User;
   files?: File[];
   messages?: Message[];
-  applications?: any[];
+  applications?: OrderApplication[];
   _count?: {
     messages: number;
     files: number;
@@ -114,7 +114,10 @@ export interface File {
   mimeType?: string;
   duration?: number;
   version: number;
-  uploadStatus: string;
+  uploadStatus: string; // "completed" for linked files
+  provider?: string;
+  externalFileId?: string;
+  publicLink?: string;
   createdAt: string;
 }
 
@@ -224,6 +227,7 @@ export const ordersApi = {
       `/orders/${orderId}/submissions/${fileId}/download-url`
     ),
   getActiveJobCount: () => api.get<{ activeJobs: number; maxActiveJobs: number; canApply: boolean }>('/orders/editor/active-count'),
+  reportDispute: (id: string, reason: string) => api.post(`/orders/${id}/dispute`, { reason }),
 };
 
 export const editorApi = {
@@ -236,15 +240,20 @@ export const editorApi = {
 
 // Files
 export const filesApi = {
-  getUploadUrl: (data: {
+  register: (data: {
     orderId: string;
     fileName: string;
-    fileSize: number;
+    fileSize?: number;
     mimeType?: string;
-    fileType: 'RAW_VIDEO' | 'PREVIEW_VIDEO' | 'FINAL_VIDEO' | 'PORTFOLIO_VIDEO' | 'DOCUMENT' | 'OTHER';
-  }) => api.post<{ fileId: string; uploadUrl: string; s3Key: string; expiresIn: number }>('/files/upload-url', data),
-  completeUpload: (id: string, duration?: number) =>
-    api.post(`/files/${id}/complete`, { duration }),
+    type: 'RAW_VIDEO' | 'PREVIEW_VIDEO' | 'FINAL_VIDEO' | 'PORTFOLIO_VIDEO' | 'DOCUMENT' | 'OTHER';
+    provider: 'GOOGLE_DRIVE' | 'DROPBOX' | 'YOUTUBE';
+    externalFileId?: string;
+    publicLink?: string;
+  }) => api.post<File>('/files/register', { ...data, fileType: data.type }),
+
+  // Proxy Stream URL (pointing to backend /api/videos/:id/stream)
+  getStreamUrl: (id: string) => `${API_URL}/videos/${id}/stream`,
+
   getDownloadUrl: (id: string) =>
     api.get<{ downloadUrl: string; expiresIn: number; fileName: string; contentType?: string }>(`/files/${id}/download-url`),
 };
@@ -306,5 +315,59 @@ export const youtubeApi = {
   uploadToYouTube: (orderId: string, data: YouTubeUploadData) =>
     api.post<{ videoId: string; videoUrl: string }>(`/orders/${orderId}/youtube/upload`, data),
 };
+
+export const usersApi = {
+  loadProfile: (userId: string) => api.get(`/users/${userId}/profile`),
+  listEditors: () => api.get('/users/editors/profiles'),
+  saveEditor: (editorId: string) => api.post<{ saved: boolean }>(`/users/editors/${editorId}/save`),
+  listSavedEditors: () => api.get<any[]>('/users/creators/saved-editors'),
+};
+
+export const notificationsApi = {
+  list: () => api.get<{ notifications: NotificationItem[], unreadCount: number }>('/notifications'),
+  markRead: (id: string) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
+};
+
+export const withdrawalApi = {
+  request: (data: { amount: number; paymentMethod: string; paymentDetails: string }) =>
+    api.post('/withdrawals/request', data),
+  getMyRequests: () => api.get('/withdrawals/my'),
+  getPending: () => api.get('/withdrawals/pending'),
+  process: (id: string, data: { status: 'PROCESSED' | 'REJECTED'; adminNote?: string }) =>
+    api.post(`/withdrawals/${id}/process`, data),
+};
+
+export const reviewsApi = {
+  create: (data: { orderId: string; rating: number; comment?: string }) =>
+    api.post('/reviews', data),
+  listByUser: (userId: string) =>
+    api.get<{ reviews: Review[]; aggregate: { count: number; average: number } }>(`/reviews/user/${userId}`),
+  listByOrder: (orderId: string) =>
+    api.get<Review[]>(`/reviews/order/${orderId}`),
+};
+
+export interface Review {
+  id: string;
+  orderId: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  reviewer?: User;
+  order?: { id: string; title: string };
+}
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  link?: string;
+  isRead: boolean;
+  createdAt: string;
+}
 
 export default api;

@@ -25,7 +25,7 @@ Primary supply: Indian editors
 ### Creator Flow
 1. Creator records video (example: 30–60 min raw footage).
 2. Creator creates an order:
-   - Uploads raw video directly (S3 multipart upload)
+   - Uploads raw video directly (Drive/Dropbox Link)
    - OR pastes Drive/Dropbox link
    - Adds brief + reference video link
    - Sets deadline (e.g. 4 days)
@@ -72,7 +72,7 @@ Fallback:
 - Creator dashboard
 - Editor dashboard
 - Order workflow
-- File upload (S3 signed URLs)
+- File upload (Drive/Dropbox Links)
 - Drive/Dropbox link support
 - In-order chat
 - Admin panel
@@ -96,14 +96,14 @@ Frontend:
 
 Backend:
 - Node.js
-- NestJS
+- Express
 - Prisma ORM
 
 Database:
 - PostgreSQL
 
 Storage:
-- AWS S3 or S3-compatible (signed URLs)
+- Zero Storage (Google Drive / Dropbox Links)
 
 Payments:
 - Razorpay

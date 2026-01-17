@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import api from '@/lib/api'
 
 interface EditorProfile {
   id: string
@@ -30,14 +31,10 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
     const fetchProfile = async () => {
       setLoading(true)
       setError(null)
-      
+
       try {
-        const response = await fetch(`/api/users/${editorId}/profile`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile')
-        }
-        const data = await response.json()
-        setProfile(data)
+        const response = await api.get(`/users/${editorId}/profile`)
+        setProfile(response.data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile')
       } finally {
@@ -99,11 +96,10 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                   <h3 className="text-xl font-semibold text-gray-900">{profile.name}</h3>
                   <p className="text-gray-600">{profile.email}</p>
                   <div className="flex items-center mt-2 space-x-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      profile.available 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${profile.available
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {profile.available ? 'Available' : 'Unavailable'}
                     </span>
                     {profile.rate && (

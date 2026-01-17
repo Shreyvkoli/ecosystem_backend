@@ -1,10 +1,9 @@
 import express from 'express';
 import type { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest, requireCreator, requireRole } from '../middleware/auth.js';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import {
   createOrder,
   getUserOrders,
@@ -14,10 +13,9 @@ import {
   getRawVideoFiles,
   getSubmissionFiles
 } from '../services/orderService.js';
-import { generateDownloadUrl, PRESIGNED_URL_EXPIRY_SECONDS } from '../utils/s3.js';
-import { s3Client } from '../utils/s3.js';
 import { sendEmail } from '../utils/email.js';
 import { uploadVideoToYouTube } from '../utils/youtube.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -56,55 +54,26 @@ function computeDepositAmount(orderAmount?: number | null): number {
  * GET /api/orders
  * Get all orders for the authenticated user (filtered by role)
  */
-// GET /api/orders - rewritten with raw query to bypass Prisma P2032 error
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId || !req.userRole) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const role = req.userRole;
-    const userId = req.userId;
-    const statusParam = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const orders = await getUserOrders(
+      req.userId,
+      req.userRole as 'CREATOR' | 'EDITOR' | 'ADMIN'
+    );
 
-    let orders: any[] = [];
+    // Apply status filter if present
+    const statusParam = req.query.status as string;
+    let filteredOrders = orders;
 
-    if (role === 'CREATOR') {
-      let query = `SELECT * FROM "Order" WHERE "creatorId" = '${userId}'`;
-      if (statusParam) {
-        query += ` AND "status" = '${statusParam}'`;
-      }
-      query += ` ORDER BY "updatedAt" DESC`;
-      orders = await prisma.$queryRawUnsafe(query);
-    } else if (role === 'EDITOR') {
-      if (statusParam && statusParam !== 'OPEN' && statusParam !== 'ASSIGNED') {
-        return res.status(403).json({ error: 'Editors can only filter by OPEN or ASSIGNED status' });
-      }
-
-      if (statusParam) {
-        // Filtered browse (Marketplace)
-        let query = `SELECT * FROM "Order" WHERE "status" = '${statusParam}'`;
-        query += ` ORDER BY "updatedAt" DESC`;
-        orders = await prisma.$queryRawUnsafe(query);
-      } else {
-        // My Jobs
-        let query = `SELECT * FROM "Order" WHERE "editorId" = '${userId}'`;
-        query += ` ORDER BY "updatedAt" DESC`;
-        orders = await prisma.$queryRawUnsafe(query);
-      }
-    } else if (role === 'ADMIN') {
-      let query = `SELECT * FROM "Order"`;
-      if (statusParam) {
-        query += ` WHERE "status" = '${statusParam}'`;
-      }
-      query += ` ORDER BY "updatedAt" DESC`;
-      orders = await prisma.$queryRawUnsafe(query);
+    if (statusParam) {
+      filteredOrders = orders.filter((o: any) => o.status === statusParam);
     }
 
-    // Manually attach Creator info for display (Simple, avoid complex join for now or do second fetch)
-    // For now returning orders is enough to unblock.
-    return res.json(orders);
-
+    return res.json(filteredOrders);
   } catch (error: any) {
     console.error('Get orders error:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -142,44 +111,24 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
  * POST /api/orders
  * Create a new order (CREATOR only)
  */
-// POST /api/orders - Rewritten with raw query to bypass Prisma P2032 error
 router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
     const schema = z.object({
       title: z.string().min(1, 'Title is required'),
       description: z.string().optional(),
       brief: z.string().optional(),
-      amount: z.number().positive().optional()
+      amount: z.number().positive().optional(),
+      editorId: z.string().uuid().optional() // Allow creator to optionally set editorId directly
     });
 
     const data = schema.parse(req.body);
-    const id = crypto.randomUUID();
-    const creatorId = req.userId!;
-    const status = 'OPEN'; // Force string
-    const createdAt = new Date().toISOString();
-    const updatedAt = new Date().toISOString();
-    const amount = data.amount || 0;
-    const desc = data.description || '';
-    const brief = data.brief || '';
 
-    // Using simple INSERT query with explicit casts for Enums
-    // Note: Use parameterized query in production properly to avoid injection. 
-    // Here we use template literals for speed, relying on Zod validation which sanitize input somewhat but unsafe for text.
-    // Better: use $queryRaw with prepared statement.
-    const currency = 'INR';
-    const pendingPayment = 'PENDING';
-    const pendingPayout = 'PENDING';
-    const pendingDeposit = 'PENDING';
+    const order = await createOrder({
+      ...data,
+      creatorId: req.userId!
+    });
 
-    await prisma.$queryRaw`
-      INSERT INTO "Order" ("id", "title", "description", "brief", "amount", "creatorId", "status", "createdAt", "updatedAt", "currency", "paymentStatus", "payoutStatus", "editorDepositRequired", "editorDepositStatus", "revisionCount")
-      VALUES (${id}, ${data.title}, ${desc}, ${brief}, ${amount}, ${creatorId}, ${status}::"OrderStatus", ${new Date()}, ${new Date()}, ${currency}, ${pendingPayment}::"OrderPaymentStatus", ${pendingPayout}::"PayoutStatus", false, ${pendingDeposit}::"EditorDepositStatus", 0)
-    `;
-
-    // Fetch back
-    const orders: any[] = await prisma.$queryRaw`SELECT * FROM "Order" WHERE id = ${id}`;
-    return res.status(201).json(orders[0]);
-
+    return res.status(201).json(order);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -270,15 +219,25 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
       return res.status(400).json({ error: 'Final video file not found' });
     }
 
+    // Verify if file has S3 keys (Legacy) or is External
+    if (finalFile.provider !== 'S3' && finalFile.provider !== 'AWS') { // Assuming default was S3, new is GOOGLE_DRIVE
+      // If external, we can't stream easily without custom logic
+      return res.status(400).json({ error: 'Automatic YouTube upload is only supported for internal storage. Please download and upload manually.' });
+    }
+
+    /* S3 Logic disabled for Zero Storage Compliance - would require fetching publicLink stream */
+    return res.status(400).json({ error: 'Direct YouTube upload temporarily unavailable for external links.' });
+    /*
     const obj = await s3Client.send(new GetObjectCommand({
       Bucket: finalFile.s3Bucket,
       Key: finalFile.s3Key
     }));
-
     if (!obj.Body) {
       return res.status(500).json({ error: 'Failed to read final video stream' });
     }
+    */
 
+    /*
     const { videoId, videoUrl } = await uploadVideoToYouTube({
       userId: req.userId!,
       videoStream: obj.Body as any,
@@ -307,6 +266,8 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
         videoUrl
       }
     });
+    */
+    return res.status(400).json({ error: 'Direct YouTube upload disabled.' });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
@@ -368,6 +329,19 @@ router.post('/:id/approve', requireCreator, async (req: AuthRequest, res: Respon
       userRole: 'CREATOR'
     });
 
+    // Auto-send chat message to prompt Editor for Final Link
+    await prisma.message.create({
+      data: {
+        orderId: req.params.id,
+        userId: req.userId!, // From Creator
+        type: 'SYSTEM', // System or User? Use SYSTEM or act as Creator. User requested "direct editor ko chat par messgae jaye". Best to be from Creator context but maybe marked as SYSTEM for style? User implies "automatic message".
+        // If type SYSTEM, it renders differently. If I use type COMMENT with Creator ID, it looks like Creator sent it.
+        // Let's use standard message type but from Creator. Or SYSTEM type if available. Line 381 revisions use SYSTEM.
+        // I'll use SYSTEM for clear distinction.
+        content: `Preview Approved! Please confirm the version and upload the Final Video (Clean Link).`
+      }
+    });
+
     return res.json(order);
   } catch (error: any) {
     const message = error instanceof Error ? error.message : 'Failed to approve order';
@@ -385,7 +359,7 @@ router.post('/:id/approve', requireCreator, async (req: AuthRequest, res: Respon
 router.post('/:id/request-revision', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
     // Check revision limit first
-    const order = await (prisma as any).order.findUnique({
+    const order = await prisma.order.findUnique({
       where: { id: req.params.id, creatorId: req.userId! }
     });
 
@@ -401,17 +375,17 @@ router.post('/:id/request-revision', requireCreator, async (req: AuthRequest, re
     }
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
-      const result = await (tx as any).order.update({
+      const result = await tx.order.update({
         where: { id: req.params.id },
         data: {
-          status: ORDER_STATUS.REVISION_REQUESTED,
+          status: ORDER_STATUS.REVISION_REQUESTED as any,
           revisionCount: { increment: 1 },
           lastActivityAt: new Date()
         }
       });
 
       // Create system message for revision request
-      await (tx as any).message.create({
+      await tx.message.create({
         data: {
           orderId: req.params.id,
           userId: req.userId!,
@@ -429,6 +403,40 @@ router.post('/:id/request-revision', requireCreator, async (req: AuthRequest, re
     const statusCode = message.includes('not found') || message.includes('denied') ? 404 : 400;
 
     return res.status(statusCode).json({ error: message });
+  }
+});
+
+/**
+ * POST /api/orders/:id/dispute
+ * Raise a dispute (CREATOR or EDITOR)
+ */
+router.post('/:id/dispute', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || !req.userRole) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const schema = z.object({
+      reason: z.string().min(10, 'Please provide a detailed reason (min 10 chars)')
+    });
+
+    const { reason } = schema.parse(req.body);
+
+    const { raiseDispute } = await import('../services/orderService.js');
+    const order = await raiseDispute(
+      req.params.id,
+      req.userId,
+      req.userRole as 'CREATOR' | 'EDITOR',
+      reason
+    );
+
+    return res.json(order);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+    const message = error instanceof Error ? error.message : 'Failed to raise dispute';
+    return res.status(400).json({ error: message });
   }
 });
 
@@ -480,11 +488,12 @@ router.get('/:id/raw-files/:fileId/download-url', requireRole(['CREATOR', 'EDITO
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const downloadUrl = await generateDownloadUrl(file.s3Key);
+    // Return public link directly
+    const downloadUrl = file.publicLink || '';
 
     return res.json({
       downloadUrl,
-      expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
+      expiresIn: 0, // Direct link
       fileName: file.fileName,
       contentType: file.mimeType,
       fileSize: file.fileSize
@@ -544,11 +553,11 @@ router.get('/:id/submissions/:fileId/download-url', requireCreator, async (req: 
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const downloadUrl = await generateDownloadUrl(file.s3Key);
+    const downloadUrl = file.publicLink || '';
 
     return res.json({
       downloadUrl,
-      expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
+      expiresIn: 0,
       fileName: file.fileName,
       contentType: file.mimeType,
       fileSize: file.fileSize,
@@ -569,39 +578,40 @@ router.get('/:id/submissions/:fileId/download-url', requireCreator, async (req: 
  */
 router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res: Response) => {
   try {
-    const order = await (prisma as any).order.findUnique({
-      where: { id: req.params.id },
-      include: {
-        applications: true,
-        creator: { select: { id: true, name: true, email: true } }
-      }
+    const orderId = req.params.id;
+    const userId = req.userId!;
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { creator: { select: { email: true, name: true } } }
     });
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    if (order.status !== ORDER_STATUS.OPEN) {
+    if (order.status !== OrderStatus.OPEN) {
       return res.status(400).json({ error: 'Order is not open for applications' });
     }
 
-    const alreadyApplied = (order.applications || []).some((a: any) => a.editorId === req.userId!);
-    if (alreadyApplied) {
+    const existingApp = await prisma.orderApplication.findUnique({
+      where: {
+        orderId_editorId: {
+          orderId,
+          editorId: userId
+        }
+      }
+    });
+
+    if (existingApp) {
       return res.status(400).json({ error: 'Already applied to this order' });
     }
 
-    // Check editor's active job count
-    const activeJobCount = await (prisma as any).order.count({
+    // Check active jobs
+    const activeJobCount = await prisma.order.count({
       where: {
-        editorId: req.userId!,
-        status: {
-          in: [
-            ORDER_STATUS.ASSIGNED,
-            ORDER_STATUS.IN_PROGRESS,
-            ORDER_STATUS.PREVIEW_SUBMITTED,
-            ORDER_STATUS.REVISION_REQUESTED
-          ]
-        }
+        editorId: userId,
+        status: { in: [OrderStatus.ASSIGNED, OrderStatus.IN_PROGRESS, OrderStatus.PREVIEW_SUBMITTED, OrderStatus.REVISION_REQUESTED] }
       }
     });
 
@@ -612,54 +622,42 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
       });
     }
 
-    const depositAmount = computeDepositAmount(order.amount);
-
-    const result = await prisma.$transaction(async (tx) => {
-      // Create application
-      const application = await (tx as any).orderApplication.create({
-        data: {
-          orderId: req.params.id,
-          editorId: req.userId!,
-          status: APPLICATION_STATUS.APPLIED,
-          depositAmount,
-          depositDeadline: null
-        },
-        include: {
-          editor: { select: { id: true, name: true, email: true } }
+    const application = await prisma.orderApplication.create({
+      data: {
+        orderId,
+        editorId: userId,
+        status: 'APPLIED',
+        depositAmount: computeDepositAmount(order.amount)
+      },
+      include: {
+        editor: {
+          select: { id: true, name: true, email: true }
         }
-      });
-
-      // Keep order status as OPEN until creator approves someone
-      // This allows other editors to continue seeing and applying to the order
-      await (tx as any).order.update({
-        where: { id: req.params.id },
-        data: { status: ORDER_STATUS.OPEN } // Keep as OPEN
-      });
-
-      return { application, order };
+      }
     });
 
-    // Send email notification to creator about new application
+    // Send Email
     try {
-      await sendEmail({
-        to: result.order.creator.email,
-        subject: `New Application Received: ${result.order.title}`,
-        template: 'new-application',
-        data: {
-          orderTitle: result.order.title,
-          editorName: result.application.editor.name,
-          editorEmail: result.application.editor.email,
-          depositAmount: result.application.depositAmount,
-          appliedAt: new Date().toLocaleString(),
-          dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/orders/${req.params.id}`
-        }
-      });
+      if (order.creator?.email) {
+        await sendEmail({
+          to: order.creator.email,
+          subject: `New Application Received: ${order.title}`,
+          template: 'new-application',
+          data: {
+            orderTitle: order.title,
+            editorName: application.editor.name,
+            editorEmail: application.editor.email,
+            depositAmount: application.depositAmount,
+            appliedAt: new Date().toLocaleString(),
+            dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/orders/${orderId}`
+          }
+        });
+      }
     } catch (emailError) {
       console.error('Failed to send application email:', emailError);
-      // Continue without failing the request
     }
 
-    return res.status(201).json(result.application);
+    return res.status(201).json(application);
   } catch (error: any) {
     console.error('Apply error:', error);
     return res.status(500).json({ error: 'Failed to apply to order' });
@@ -672,7 +670,7 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
  */
 router.get('/:id/applications', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
-    const order = await (prisma as any).order.findUnique({
+    const order = await prisma.order.findUnique({
       where: { id: req.params.id, creatorId: req.userId! },
       include: {
         applications: {
@@ -715,7 +713,7 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
 
     const { applicationId } = schema.parse(req.body);
 
-    const order = await (prisma as any).order.findUnique({
+    const order = await prisma.order.findUnique({
       where: { id: req.params.id, creatorId: req.userId! },
       include: {
         applications: {
@@ -744,7 +742,7 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
     }
 
     // Re-check editor's active job count before approval
-    const activeJobCount = await (prisma as any).order.count({
+    const activeJobCount = await prisma.order.count({
       where: {
         editorId: targetApplication.editorId,
         status: {
@@ -761,15 +759,15 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
     const MAX_ACTIVE_JOBS = 2;
     if (activeJobCount >= MAX_ACTIVE_JOBS) {
       return res.status(400).json({
-        error: `Editor already has ${MAX_ACTIVE_JOBS} active jobs. Cannot approve this application.`
+        error: `Editor already has ${MAX_ACTIVE_JOBS} active jobs.Cannot approve this application.`
       });
     }
 
     const result = await prisma.$transaction(async (tx) => {
       // Approve the selected application
-      const approved = await (tx as any).orderApplication.update({
+      const approved = await tx.orderApplication.update({
         where: { id: applicationId },
-        data: { status: APPLICATION_STATUS.APPROVED },
+        data: { status: APPLICATION_STATUS.APPROVED as any },
         include: {
           editor: { select: { id: true, name: true, email: true } }
         }
@@ -778,18 +776,18 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
       // Reject all other pending applications
       const otherApplied = (order.applications || []).filter((a: any) => a.id !== applicationId && a.status === APPLICATION_STATUS.APPLIED);
       for (const app of otherApplied) {
-        await (tx as any).orderApplication.update({
+        await tx.orderApplication.update({
           where: { id: app.id },
-          data: { status: APPLICATION_STATUS.REJECTED }
+          data: { status: APPLICATION_STATUS.REJECTED as any }
         });
       }
 
       // Assign editor and update order status
-      await (tx as any).order.update({
+      await tx.order.update({
         where: { id: req.params.id },
         data: {
           editorId: approved.editorId,
-          status: ORDER_STATUS.ASSIGNED,
+          status: ORDER_STATUS.ASSIGNED as any,
           assignedAt: new Date(),
           lastActivityAt: new Date(),
           editorDepositRequired: true,
@@ -816,7 +814,7 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
  */
 router.get('/editor/active-count', requireRole(['EDITOR']), async (req: AuthRequest, res: Response) => {
   try {
-    const activeJobCount = await (prisma as any).order.count({
+    const activeJobCount = await prisma.order.count({
       where: {
         editorId: req.userId!,
         status: {
@@ -843,5 +841,47 @@ router.get('/editor/active-count', requireRole(['EDITOR']), async (req: AuthRequ
   }
 });
 
-export default router;
 
+/**
+ * POST /api/orders/:id/dispute
+ * Report a dispute on an order
+ */
+router.post('/:id/dispute', async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!reason) return res.status(400).json({ error: 'Dispute reason is required' });
+
+    const order = await prisma.order.findFirst({
+      where: {
+        id,
+        OR: [
+          { creatorId: req.userId },
+          { editorId: req.userId }
+        ]
+      }
+    });
+
+    if (!order) return res.status(404).json({ error: 'Order not found or access denied' });
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: {
+        isDisputed: true,
+        disputeReason: reason,
+        disputeCreatedAt: new Date()
+      }
+    });
+
+    console.log(`[DISPUTE] Order ${id} disputed by ${req.userId}. Reason: ${reason}`);
+
+    return res.json(updated);
+  } catch (error: any) {
+    console.error('Dispute error', error);
+    return res.status(500).json({ error: 'Failed to report dispute' });
+  }
+});
+
+export default router;

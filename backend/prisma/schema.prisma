@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model OrderApplication {
@@ -64,9 +63,29 @@ model User {
   payments           Payment[]
   editorDeposits     EditorDeposit[]
   walletTransactions WalletTransaction[]
+  notifications      Notification[]
+  reviewsGiven       Review[]            @relation("Reviewer")
+  reviewsReceived    Review[]            @relation("Reviewee")
+  withdrawalRequests WithdrawalRequest[]
+  savedEditors       SavedEditor[]       @relation("SavedByCreator")
+  savedBy            SavedEditor[]       @relation("SavedEditor")
 
   @@index([email])
   @@index([role])
+}
+
+model SavedEditor {
+  id        String   @id @default(uuid())
+  creatorId String
+  editorId  String
+  createdAt DateTime @default(now())
+
+  creator   User     @relation("SavedByCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  editor    User     @relation("SavedEditor", fields: [editorId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, editorId])
+  @@index([creatorId])
+  @@index([editorId])
 }
 
 model CreatorProfile {
@@ -132,6 +151,12 @@ model Order {
   payments           Payment[]
   editorDeposits     EditorDeposit[]
   walletTransactions WalletTransaction[] @relation("OrderWalletTransactions")
+  reviews            Review[]
+  
+  // Dispute fields
+  isDisputed         Boolean             @default(false)
+  disputeReason      String?
+  disputeCreatedAt   DateTime? 
 
   @@index([creatorId])
   @@index([editorId])
@@ -158,27 +183,30 @@ model YouTubeAccount {
 }
 
 model File {
-  id           String    @id @default(uuid())
-  orderId      String
-  type         String
-  fileName     String
-  fileSize     Float
-  mimeType     String?
-  s3Key        String
-  s3Bucket     String
-  s3Region     String?
-  duration     Int?
-  version      Int       @default(1)
-  uploadStatus String    @default("pending")
-  metadata     String?   // SQLite does not support Json
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  messages     Message[]
+  id             String    @id @default(uuid())
+  orderId        String
+  type           String
+  fileName       String
+  fileSize       Float?
+  mimeType       String?
+  
+  // Storage fields (Zero Storage Architecture)
+  provider       String    @default("GOOGLE_DRIVE") // GOOGLE_DRIVE, DROPBOX, YOUTUBE
+  externalFileId String    // Google Drive File ID or similar
+  publicLink     String?   // The shareable link
+  
+  duration       Int?
+  version        Int       @default(1)
+  uploadStatus   String    @default("completed")
+  metadata       String?   // SQLite does not support Json
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  messages       Message[]
 
   @@index([orderId])
   @@index([type])
-  @@index([s3Key])
+  @@index([externalFileId])
   @@index([uploadStatus])
 }
 
@@ -260,4 +288,56 @@ model EditorDeposit {
   @@index([editorId])
   @@index([status])
   @@index([createdAt])
+}
+
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  orderId     String
+  reviewerId  String
+  revieweeId  String
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+  
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewee    User     @relation("Reviewee", fields: [revieweeId], references: [id])
+
+  @@index([orderId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+}
+
+model WithdrawalRequest {
+  id              String    @id @default(uuid())
+  userId          String
+  amount          Float
+  currency        String    @default("INR")
+  status          String    @default("PENDING") // PENDING, PROCESSED, REJECTED
+  paymentMethod   String    // UPI, BANK, PAYPAL
+  paymentDetails  String
+  adminNote       String?
+  processedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }

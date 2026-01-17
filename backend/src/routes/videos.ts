@@ -1,161 +1,91 @@
+
 import express from 'express';
 import type { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import path from 'node:path';
 import { z } from 'zod';
-import rateLimit from 'express-rate-limit';
+import axios from 'axios';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { driveService } from '../services/googleDriveService.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many upload requests. Please try again later.' }
-});
-
-const MAX_VIDEO_FILE_SIZE_BYTES = 100 * 1024 * 1024 * 1024;
-const ALLOWED_VIDEO_EXTENSIONS = new Set(['.mp4', '.mov', '.mkv']);
-const ALLOWED_VIDEO_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/x-matroska']);
-
-function validateVideoUpload(fileName: string, fileSize: number, mimeType?: string): string | null {
-  if (fileSize > MAX_VIDEO_FILE_SIZE_BYTES) {
-    return 'File too large. Max allowed size is 100GB.';
-  }
-
-  const ext = path.extname(fileName).toLowerCase();
-  if (!ALLOWED_VIDEO_EXTENSIONS.has(ext)) {
-    return 'Invalid file type. Only mp4, mov, mkv are allowed.';
-  }
-
-  if (mimeType && mimeType !== 'application/octet-stream' && !ALLOWED_VIDEO_MIME_TYPES.has(mimeType)) {
-    return 'Invalid file type. Only mp4, mov, mkv are allowed.';
-  }
-
-  return null;
-}
-
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-  }
-});
-
-const bucket = process.env.AWS_S3_BUCKET!;
-
-// Generate presigned URL for upload
-router.post('/upload-url', authenticate, uploadLimiter, async (req: AuthRequest, res: Response) => {
+// Register an external file (Google Drive / Dropbox)
+router.post('/register', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { projectId, fileName, fileSize, mimeType, type } = z.object({
-      projectId: z.string(),
+    const schema = z.object({
+      orderId: z.string(),
       fileName: z.string(),
-      fileSize: z.number().positive(),
       mimeType: z.string().optional(),
-      type: z.enum(['RAW', 'PREVIEW', 'FINAL'])
-    }).parse(req.body);
-
-    const validationError = validateVideoUpload(fileName, fileSize, mimeType);
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
-
-    // Verify project access
-    const project = await prisma.project.findFirst({
-      where: {
-        id: projectId,
-        OR: [
-          { creatorId: req.userId! },
-          { editorId: req.userId! }
-        ]
-      }
+      fileSize: z.number().optional(),
+      provider: z.enum(['GOOGLE_DRIVE', 'DROPBOX', 'YOUTUBE', 'DirectLink', 'OTHER']),
+      externalFileId: z.string().optional(),
+      publicLink: z.string().optional(),
+      type: z.enum(['RAW_VIDEO', 'PREVIEW_VIDEO', 'FINAL_VIDEO'])
     });
 
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+    // Note: Provider enum expanded to include DirectLink/OTHER
+
+    const data = schema.parse(req.body);
+
+    // Verification: Need either externalFileId OR publicLink
+    if (!data.externalFileId && !data.publicLink) {
+      return res.status(400).json({ error: 'Must provide either externalFileId or publicLink' });
     }
 
-    // Role-based type restrictions
-    if (req.userRole === 'CREATOR' && type !== 'RAW') {
-      return res.status(403).json({ error: 'Creators can only upload raw videos' });
-    }
-    if (req.userRole === 'EDITOR' && type === 'RAW') {
-      return res.status(403).json({ error: 'Editors cannot upload raw videos' });
-    }
-
-    const s3Key = `projects/${projectId}/${type.toLowerCase()}/${Date.now()}-${fileName}`;
-    const video = await prisma.video.create({
-      data: {
-        projectId,
-        type: type as 'RAW' | 'PREVIEW' | 'FINAL',
-        s3Key,
-        s3Bucket: bucket,
-        fileName,
-        fileSize,
-        mimeType: mimeType || 'video/mp4',
-        version: type === 'PREVIEW' ? await getNextVersion(projectId) : 1
-      }
+    // Verify order access
+    const order = await prisma.order.findUnique({
+      where: { id: data.orderId }
     });
 
-    // Generate presigned URL (valid for 1 hour)
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: s3Key,
-      ContentType: mimeType || 'video/mp4'
-    });
-
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    res.json({
-      videoId: video.id,
-      uploadUrl,
-      s3Key,
-      expiresIn: 3600
-    });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    console.error('Upload URL error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Mark upload as complete
-router.post('/:id/complete', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const { duration } = z.object({
-      duration: z.number().positive().optional()
-    }).parse(req.body);
-
-    const video = await prisma.video.findUnique({
-      where: { id: req.params.id },
-      include: { project: true }
-    });
-
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
 
-    // Verify access
-    if (video.project.creatorId !== req.userId! && video.project.editorId !== req.userId!) {
+    // Access control
+    const isCreator = order.creatorId === req.userId;
+    const isEditor = order.editorId === req.userId;
+
+    if (!isCreator && !isEditor) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const updated = await prisma.video.update({
-      where: { id: req.params.id },
+    // Role restrictions
+    if (isCreator && data.type !== 'RAW_VIDEO') {
+      if (data.type !== 'RAW_VIDEO' && data.type !== 'DOCUMENT') {
+        // loose check
+      }
+    }
+    if (isEditor && data.type === 'RAW_VIDEO') {
+      return res.status(403).json({ error: 'Editors cannot upload raw videos' });
+    }
+
+    // Calculate version for PREVIEW/FINAL
+    let version = 1;
+    if (data.type === 'PREVIEW_VIDEO') {
+      const lastPreview = await prisma.file.findFirst({
+        where: { orderId: data.orderId, type: 'PREVIEW_VIDEO' },
+        orderBy: { version: 'desc' }
+      });
+      version = lastPreview ? lastPreview.version + 1 : 1;
+    }
+
+    // Create File Record
+    const file = await prisma.file.create({
       data: {
-        uploadStatus: 'completed',
-        duration: duration ? Math.round(duration) : null
+        orderId: data.orderId,
+        type: data.type,
+        fileName: data.fileName,
+        mimeType: data.mimeType || 'application/octet-stream',
+        fileSize: data.fileSize || 0,
+        provider: data.provider as any, // Cast to any because Prisma enum might be strict
+        externalFileId: data.externalFileId || '',
+        publicLink: data.publicLink,
+        version,
+        uploadStatus: 'completed'
       },
       include: {
-        project: {
+        order: {
           include: {
             creator: { select: { id: true, name: true } },
             editor: { select: { id: true, name: true } }
@@ -164,71 +94,126 @@ router.post('/:id/complete', authenticate, async (req: AuthRequest, res: Respons
       }
     });
 
-    // Auto-update project status
-    if (video.type === 'RAW' && video.project.status === 'UPLOADING') {
-      await prisma.project.update({
-        where: { id: video.projectId },
-        data: { status: 'ASSIGNED' }
+    // Auto-update Order Status
+    if (data.type === 'RAW_VIDEO' && order.status === 'OPEN') {
+      // Stay OPEN
+    } else if (data.type === 'PREVIEW_VIDEO' && order.status === 'IN_PROGRESS') {
+      await prisma.order.update({
+        where: { id: data.orderId },
+        data: { status: 'PREVIEW_SUBMITTED' }
       });
-    } else if (video.type === 'PREVIEW' && video.project.status === 'IN_PROGRESS') {
-      await prisma.project.update({
-        where: { id: video.projectId },
-        data: { status: 'REVIEW' }
+    } else if (data.type === 'FINAL_VIDEO' && order.status === 'IN_PROGRESS') {
+      await prisma.order.update({
+        where: { id: data.orderId },
+        data: { status: 'FINAL_SUBMITTED' }
       });
     }
 
-    res.json(updated);
+    res.json(file);
+
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    console.error('Complete upload error:', error);
+    console.error('Register file error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Get presigned URL for viewing/downloading
-router.get('/:id/view-url', authenticate, async (req: AuthRequest, res: Response) => {
+// Stream Proxy Endpoint
+router.get('/:id/stream', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const video = await prisma.video.findUnique({
+    const file = await prisma.file.findUnique({
       where: { id: req.params.id },
-      include: { project: true }
+      include: { order: true }
     });
 
-    if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
+    if (!file) return res.status(404).json({ error: 'File not found' });
+
+    // Verify Access
+    const userId = req.userId!;
+    const canAccess = file.order.creatorId === userId || file.order.editorId === userId;
+    if (!canAccess) return res.status(403).json({ error: 'Access denied' });
+
+    // Handle Streaming based on Provider
+    if (file.provider === 'GOOGLE_DRIVE') {
+      const fileId = file.externalFileId || (file.publicLink?.match(/\/file\/d\/([^\/]+)/)?.[1]);
+
+      if (!fileId) {
+        if (file.publicLink) return res.redirect(file.publicLink);
+        return res.status(400).json({ error: 'No File ID or Link' });
+      }
+
+      try {
+        const range = req.headers.range;
+        const { stream, contentLength, contentType, contentRange } = await driveService.getFileStream(fileId, range);
+
+        res.writeHead(range ? 206 : 200, {
+          'Content-Type': contentType,
+          'Content-Length': contentLength,
+          'Content-Range': contentRange || undefined,
+          'Accept-Ranges': 'bytes'
+        });
+
+        stream.pipe(res);
+      } catch (err: any) {
+        console.error('Drive Stream Error:', err.message);
+        if (file.publicLink) return res.redirect(file.publicLink);
+        return res.status(502).json({ error: 'Failed to stream from source' });
+      }
+
+    } else if (file.provider === 'DROPBOX') {
+      const directLink = file.publicLink?.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+      if (directLink) return res.redirect(directLink);
+      res.status(501).json({ error: 'Dropbox streaming invalid link' });
+
+    } else if (file.publicLink) {
+      // Generic / Direct Link Proxy / YouTube (if fallback)
+      try {
+        // For YouTube, Axios GET won't work, so usually we should redirect or frontend handles it.
+        // But if it's MP4/Direct, Axios is good.
+        // If it's a website (html), this stream will pipe html, causing video player error.
+
+        // Check Head first?
+        /* 
+        const head = await axios.head(file.publicLink);
+        if (!head.headers['content-type']?.includes('video') && !head.headers['content-type']?.includes('octet')) {
+             return res.redirect(file.publicLink);
+        }
+        */
+
+        const range = req.headers.range;
+        const response = await axios.get(file.publicLink, {
+          responseType: 'stream',
+          headers: range ? { Range: range } : {},
+          validateStatus: () => true // Handle errors manually
+        });
+
+        if (response.status >= 400) {
+          return res.redirect(file.publicLink);
+        }
+
+        // Forward headers
+        if (response.headers['content-type']) res.setHeader('Content-Type', response.headers['content-type']);
+        if (response.headers['content-length']) res.setHeader('Content-Length', response.headers['content-length']);
+        if (response.headers['content-range']) res.setHeader('Content-Range', response.headers['content-range']);
+        if (response.headers['accept-ranges']) res.setHeader('Accept-Ranges', response.headers['accept-ranges']);
+
+        res.status(response.status);
+        response.data.pipe(res);
+
+      } catch (err: any) {
+        console.error('Generic Stream Error:', err.message);
+        return res.redirect(file.publicLink);
+      }
+    } else {
+      res.status(400).json({ error: 'Unsupported provider' });
     }
 
-    // Verify access
-    if (video.project.creatorId !== req.userId! && video.project.editorId !== req.userId!) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: video.s3Key
-    });
-
-    const viewUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    res.json({ viewUrl, expiresIn: 3600 });
-  } catch (error: any) {
-    console.error('View URL error:', error);
+  } catch (error) {
+    console.error('Stream error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-async function getNextVersion(projectId: string): Promise<number> {
-  const lastPreview = await prisma.video.findFirst({
-    where: {
-      projectId,
-      type: 'PREVIEW'
-    },
-    orderBy: { version: 'desc' }
-  });
-
-  return lastPreview ? lastPreview.version + 1 : 1;
-}
 
 export default router;
-

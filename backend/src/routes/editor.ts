@@ -10,41 +10,13 @@ const prisma = new PrismaClient();
 router.use(authenticate);
 router.use(requireRole(['EDITOR']));
 
-/**
- * GET /api/editor/profile
- * Get current editor's profile (including wallet info)
- */
-
+// GET /api/editor/profile
 router.get('/profile', async (req: AuthRequest, res: Response) => {
   try {
-    const user = await (prisma as any).user.findUnique({
-      where: { id: req.userId! },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        walletBalance: true,
-        walletLocked: true,
-        editorProfile: true,
-        editorApplications: {
-          select: {
-            id: true,
-            status: true,
-            depositAmount: true,
-            createdAt: true,
-            order: {
-              select: {
-                id: true,
-                title: true,
-                status: true,
-                amount: true,
-                createdAt: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        }
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        editorProfile: true
       }
     });
 
@@ -52,7 +24,47 @@ router.get('/profile', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.json(user);
+    // Fetch EditorApplications with Order details
+    const applications = await prisma.orderApplication.findMany({
+      where: { editorId: req.userId!, status: { in: ['APPLIED', 'APPROVED', 'REJECTED'] } },
+      include: {
+        order: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            amount: true,
+            createdAt: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const result = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      walletBalance: user.walletBalance || 0,
+      walletLocked: user.walletLocked || 0,
+      editorProfile: user.editorProfile,
+      editorApplications: applications.map(app => ({
+        id: app.id,
+        status: app.status,
+        depositAmount: app.depositAmount,
+        createdAt: app.createdAt,
+        order: {
+          id: app.order.id,
+          title: app.order.title,
+          status: app.order.status,
+          amount: app.order.amount,
+          createdAt: app.order.createdAt
+        }
+      }))
+    };
+
+    return res.json(result);
   } catch (error: any) {
     console.error('Get editor profile error:', error);
     return res.status(500).json({ error: 'Failed to fetch profile' });

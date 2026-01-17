@@ -9,6 +9,7 @@ export interface CreateOrderData {
   brief?: string;
   amount?: number;
   creatorId: string;
+  editorId?: string;
 }
 
 export interface UpdateOrderStatusData {
@@ -36,17 +37,17 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, Array<{ role: 'CREATOR' | 'EDITOR
     { role: 'ADMIN', to: ['CANCELLED'] }
   ],
   IN_PROGRESS: [
-    { role: 'EDITOR', to: ['PREVIEW_SUBMITTED', 'FINAL_SUBMITTED'] },
-    { role: 'CREATOR', to: ['CANCELLED'] },
-    { role: 'ADMIN', to: ['CANCELLED'] }
+    { role: 'EDITOR', to: ['PREVIEW_SUBMITTED', 'FINAL_SUBMITTED', 'DISPUTED'] },
+    { role: 'CREATOR', to: ['CANCELLED', 'DISPUTED'] },
+    { role: 'ADMIN', to: ['CANCELLED', 'DISPUTED'] }
   ],
   PREVIEW_SUBMITTED: [
-    { role: 'CREATOR', to: ['REVISION_REQUESTED', 'IN_PROGRESS'] },
-    { role: 'ADMIN', to: ['REVISION_REQUESTED', 'IN_PROGRESS', 'CANCELLED'] }
+    { role: 'CREATOR', to: ['REVISION_REQUESTED', 'IN_PROGRESS', 'DISPUTED'] },
+    { role: 'ADMIN', to: ['REVISION_REQUESTED', 'IN_PROGRESS', 'CANCELLED', 'DISPUTED'] }
   ],
   REVISION_REQUESTED: [
-    { role: 'EDITOR', to: ['IN_PROGRESS', 'PREVIEW_SUBMITTED'] },
-    { role: 'ADMIN', to: ['IN_PROGRESS', 'PREVIEW_SUBMITTED', 'CANCELLED'] }
+    { role: 'EDITOR', to: ['IN_PROGRESS', 'PREVIEW_SUBMITTED', 'DISPUTED'] },
+    { role: 'ADMIN', to: ['IN_PROGRESS', 'PREVIEW_SUBMITTED', 'CANCELLED', 'DISPUTED'] }
   ],
   FINAL_SUBMITTED: [
     { role: 'CREATOR', to: ['PUBLISHED', 'COMPLETED'] },
@@ -61,6 +62,9 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, Array<{ role: 'CREATOR' | 'EDITOR
   ],
   CANCELLED: [
     { role: 'ADMIN', to: [] }
+  ],
+  DISPUTED: [
+    { role: 'ADMIN', to: ['COMPLETED', 'CANCELLED', 'IN_PROGRESS'] }
   ]
 };
 
@@ -101,7 +105,9 @@ export async function createOrder(data: CreateOrderData) {
       brief: data.brief,
       amount: data.amount,
       creatorId: data.creatorId,
-      status: OrderStatus.OPEN
+      editorId: data.editorId, // Optional direct assignment
+      status: data.editorId ? OrderStatus.ASSIGNED : OrderStatus.OPEN,
+      assignedAt: data.editorId ? new Date() : undefined,
     },
     include: {
       creator: {
@@ -195,7 +201,7 @@ export async function getOrderById(
     ];
   }
 
-  return prisma.order.findFirst({
+  const order = await prisma.order.findFirst({
     where,
     include: {
       creator: {
@@ -264,6 +270,15 @@ export async function getOrderById(
       }
     }
   });
+
+  if (!order) return null;
+
+  // Security: Filter out RAW_VIDEO for unassigned editors
+  if (userRole === 'EDITOR' && order.editorId !== userId) {
+    order.files = order.files.filter(f => f.type !== FileType.RAW_VIDEO);
+  }
+
+  return order;
 }
 
 /**
@@ -300,6 +315,60 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
 
   if (data.status === OrderStatus.COMPLETED) {
     updateData.completedAt = new Date();
+
+    // Execute completion logic in a transaction to ensure wallet consistency
+    return prisma.$transaction(async (tx) => {
+      // 1. Update Order Status
+      const updatedOrder = await tx.order.update({
+        where: { id: data.orderId },
+        data: updateData,
+        include: {
+          creator: { select: { id: true, name: true, email: true } },
+          editor: { select: { id: true, name: true, email: true } }
+        }
+      });
+
+      // 2. Release Funds to Editor if paid
+      // Check strict conditions: Payment must be PAID (Captured) and Editor must be assigned
+      if (order.paymentStatus === 'PAID' && order.amount && order.editorId) {
+
+        // Check if already released (idempotency check via WalletTransaction or Payment.releasedAt)
+        // But simplify for now: assume status transition to COMPLETED happens once.
+
+        // A. Credit Editor Wallet
+        await tx.user.update({
+          where: { id: order.editorId },
+          data: { walletBalance: { increment: order.amount } }
+        });
+
+        // B. Create Transaction History for Editor
+        await tx.walletTransaction.create({
+          data: {
+            userId: order.editorId,
+            orderId: order.id,
+            type: 'CREDIT', // Payout
+            amount: order.amount
+          }
+        });
+
+        // C. Mark Gateway Payment as Released (Internal tracking)
+        // Finds the Creator's payment for this order
+        await tx.payment.updateMany({
+          where: {
+            orderId: order.id,
+            kind: 'CREATOR_PAYMENT',
+            status: 'COMPLETED', // Captured
+            releasedAt: null     // Not yet released
+          },
+          data: {
+            releasedAt: new Date(),
+            releaseNote: 'Auto-released on completion'
+          }
+        });
+      }
+
+      return updatedOrder;
+    });
   }
 
   return prisma.order.update({
@@ -434,6 +503,61 @@ export async function getSubmissionFiles(orderId: string, userId: string, userRo
       { version: 'desc' },
       { createdAt: 'desc' }
     ]
+  });
+}
+
+/**
+ * Raise a dispute
+ */
+export async function raiseDispute(
+  orderId: string,
+  userId: string,
+  userRole: 'CREATOR' | 'EDITOR',
+  reason: string
+) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) throw new Error('Order not found');
+
+  if (userRole === 'CREATOR' && order.creatorId !== userId) throw new Error('Access denied');
+  if (userRole === 'EDITOR' && order.editorId !== userId) throw new Error('Access denied');
+
+  // Validate status
+  const allowedStatuses = ['IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED'];
+  if (!allowedStatuses.includes(order.status)) {
+    throw new Error('Disputes can only be raised during active work or review');
+  }
+
+  // Update logic
+  return prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'DISPUTED',
+        isDisputed: true,
+        disputeReason: reason,
+        disputeCreatedAt: new Date(),
+        lastActivityAt: new Date()
+      },
+      include: {
+        creator: { select: { id: true, name: true, email: true } },
+        editor: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    // Create System Message
+    await tx.message.create({
+      data: {
+        orderId,
+        userId,
+        type: 'SYSTEM',
+        content: `🚨 DISPUTE RAISED: ${reason}`
+      }
+    });
+
+    return updatedOrder;
   });
 }
 

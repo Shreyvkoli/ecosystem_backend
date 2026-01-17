@@ -26,28 +26,28 @@ export default function HowItWorksPage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Post → review → approve → done</h2>
             <div className="mt-6 space-y-4">
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">1) Apply as Creator</div>
-                <div className="text-gray-600 mt-1">Create an order with title, brief, and budget.</div>
+                <div className="text-gray-900 font-semibold">1) Post an Order</div>
+                <div className="text-gray-600 mt-1">Provide details, budget, and raw files (via Google Drive/Dropbox links).</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">2) Upload raw video</div>
-                <div className="text-gray-600 mt-1">Raw files are stored privately. Only you (and admin) can access until an editor is assigned.</div>
+                <div className="text-gray-900 font-semibold">2) Hire an Editor</div>
+                <div className="text-gray-600 mt-1">Review applications from detailed profiles or directly hire a saved editor from your favorites.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">3) Review applications</div>
-                <div className="text-gray-600 mt-1">See editor profiles, wallet-backed applications, and choose the best fit.</div>
+                <div className="text-gray-900 font-semibold">3) Secure Payment</div>
+                <div className="text-gray-600 mt-1">Pay the order amount upfront. It's held safely in Escrow until you are satisfied.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">4) Approve editor</div>
-                <div className="text-gray-600 mt-1">Once approved, the editor is assigned and can access raw download links.</div>
+                <div className="text-gray-900 font-semibold">4) Review & Feedback</div>
+                <div className="text-gray-600 mt-1">Watch streaming previews and leave frame-accurate comments for revisions.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">5) Review preview + request revisions</div>
-                <div className="text-gray-600 mt-1">Preview submitted → request revision → final submission.</div>
+                <div className="text-gray-900 font-semibold">5) Approve or Dispute</div>
+                <div className="text-gray-600 mt-1">Happy? Approve for final regular file. Unhappy? Raise a dispute for admin intervention.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">6) Mark completed</div>
-                <div className="text-gray-600 mt-1">Close the order once final deliverables are submitted.</div>
+                <div className="text-gray-900 font-semibold">6) Final Delivery</div>
+                <div className="text-gray-600 mt-1">Get the watermark-free final video. Payment is released to the editor automatically.</div>
               </div>
             </div>
             <div className="mt-8">
@@ -63,24 +63,24 @@ export default function HowItWorksPage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Deposit → apply → deliver → get refunded</h2>
             <div className="mt-6 space-y-4">
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">1) Top up wallet</div>
-                <div className="text-gray-600 mt-1">Maintain enough balance for the refundable security deposit.</div>
+                <div className="text-gray-900 font-semibold">1) Apply or Get Hired</div>
+                <div className="text-gray-600 mt-1">Apply to open orders (security deposit may be required) or get directly hired by creators.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">2) Apply to jobs (deposit locked)</div>
-                <div className="text-gray-600 mt-1">Deposit locks at apply-time. If rejected, it’s released back to your wallet.</div>
+                <div className="text-gray-900 font-semibold">2) Secure Work Start</div>
+                <div className="text-gray-600 mt-1">Start working only after the Creator has funded the Escrow. Your payment is guaranteed.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">3) Get assigned</div>
-                <div className="text-gray-600 mt-1">Only assigned editors can download raw files.</div>
+                <div className="text-gray-900 font-semibold">3) Submit Previews</div>
+                <div className="text-gray-600 mt-1">Upload low-res watermarked previews for review. Receive precise timestamped feedback.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">4) Start work + submit preview</div>
-                <div className="text-gray-600 mt-1">Work in stages for clarity: preview → revision → final.</div>
+                <div className="text-gray-900 font-semibold">4) Final Submission</div>
+                <div className="text-gray-600 mt-1">After approval, upload the high-quality final video without watermarks.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">5) Submit final + close</div>
-                <div className="text-gray-600 mt-1">When job is completed properly, deposit is released/refunded.</div>
+                <div className="text-gray-900 font-semibold">5) Get Paid</div>
+                <div className="text-gray-600 mt-1">Payment (90% of order value) is instantly released to your wallet upon completion.</div>
               </div>
             </div>
             <div className="mt-8 flex gap-3">

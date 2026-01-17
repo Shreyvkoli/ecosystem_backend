@@ -14,7 +14,7 @@ export default function EditorJobsPage() {
   const user = getUser()
   const queryClient = useQueryClient()
 
-  const [tab, setTab] = useState<'available' | 'my' | 'profile'>('available')
+  const [tab, setTab] = useState<'available' | 'active' | 'history' | 'profile'>('available')
   const [topupAmount, setTopupAmount] = useState<number>(5000)
   const [profileForm, setProfileForm] = useState({
     bio: '',
@@ -71,8 +71,8 @@ export default function EditorJobsPage() {
     setProfileForm({
       bio: ep?.bio || '',
       rate: ep?.rate != null ? String(ep.rate) : '',
-      skills: (ep?.skills as any) || '',
-      portfolio: (ep?.portfolio as any) || '',
+      skills: Array.isArray(ep?.skills) ? ep.skills.join(', ') : (ep?.skills || ''),
+      portfolio: Array.isArray(ep?.portfolio) ? ep.portfolio.join(', ') : (ep?.portfolio || ''),
       available: ep?.available ?? true,
       avatarUrl: ep?.avatarUrl || '',
     })
@@ -192,7 +192,7 @@ export default function EditorJobsPage() {
   const appliedJobs = useMemo(
     () => myOrders?.filter((o) =>
       o.applications && o.applications.length > 0 &&
-      o.applications.some((app: any) => app.editorId === user?.id && app.status === 'APPLIED')
+      o.applications.some((app) => app.editorId === user?.id && app.status === 'APPLIED')
     ) || [],
     [myOrders, user?.id]
   )
@@ -200,7 +200,7 @@ export default function EditorJobsPage() {
   const rejectedJobs = useMemo(
     () => myOrders?.filter((o) =>
       o.applications && o.applications.length > 0 &&
-      o.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED')
+      o.applications.some((app) => app.editorId === user?.id && app.status === 'REJECTED')
     ) || [],
     [myOrders, user?.id]
   )
@@ -243,13 +243,22 @@ export default function EditorJobsPage() {
                 Available Jobs
               </button>
               <button
-                onClick={() => setTab('my')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'my'
+                onClick={() => setTab('active')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'active'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
               >
-                My Jobs
+                Active Jobs
+              </button>
+              <button
+                onClick={() => setTab('history')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
+                  ? 'premium-button'
+                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                History
               </button>
               <button
                 onClick={() => setTab('profile')}
@@ -299,34 +308,22 @@ export default function EditorJobsPage() {
                           <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
                         )}
                       </div>
+                      {/* Application Logic */}
                       {order.status === 'OPEN' &&
-                        !(order.applications && order.applications.some((app: any) =>
+                        !(order.applications && order.applications.some((app) =>
                           app.editorId === user?.id && app.status === 'APPLIED'
                         )) &&
                         order.editorId !== user?.id ? (
-                        <button
-                          onClick={() => applyMutation.mutate(order.id)}
-                          disabled={applyMutation.isPending}
-                          className="premium-button w-full neon-glow"
-                        >
+                        <button onClick={() => applyMutation.mutate(order.id)} disabled={applyMutation.isPending} className="premium-button w-full neon-glow">
                           {applyMutation.isPending ? 'Applying...' : 'Apply to Job'}
                         </button>
                       ) : (
                         <div className="text-center">
-                          {order.applications && order.applications.some((app: any) =>
-                            app.editorId === user?.id && app.status === 'REJECTED'
-                          )
+                          {order.applications?.some((app) => app.editorId === user?.id && app.status === 'REJECTED')
                             ? 'Not Approved'
-                            : order.applications && order.applications.some((app: any) =>
-                              app.editorId === user?.id && app.status === 'APPLIED'
-                            )
+                            : order.applications?.some((app) => app.editorId === user?.id && app.status === 'APPLIED')
                               ? 'Applied'
-                              : order.status === 'ASSIGNED' && order.editorId === user?.id
-                                ? 'Assigned'
-                                : order.status === 'ASSIGNED' && order.editorId !== user?.id
-                                  ? 'Not Approved'
-                                  : order.status.replace('_', ' ')
-                          }
+                              : order.status.replace('_', ' ')}
                         </div>
                       )}
                     </div>
@@ -336,7 +333,8 @@ export default function EditorJobsPage() {
             </div>
           )}
 
-          {tab === 'my' && (
+          {/* ACTIVE TAB: Applied & Ongoing */}
+          {tab === 'active' && (
             <div className="space-y-8">
               {myLoading ? (
                 <div className="glass-morphism p-12 text-center">
@@ -351,36 +349,11 @@ export default function EditorJobsPage() {
                         <span className="text-gray-500 text-sm font-normal">{appliedJobs.length} jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {/* Applied Jobs Map */}
                         {appliedJobs.map((order) => (
-                          <Link
-                            key={order.id}
-                            href={`/editor/jobs/${order.id}`}
-                            className="premium-card group hover:scale-105 transition-all duration-300"
-                          >
-                            <div className="flex justify-between items-start mb-4">
-                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                                {order.title}
-                              </h3>
-                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
-                                {order.applications && order.applications.some((app: any) =>
-                                  app.editorId === user?.id && app.status === 'REJECTED'
-                                )
-                                  ? 'Not Approved'
-                                  : order.applications && order.applications.some((app: any) =>
-                                    app.editorId === user?.id && app.status === 'APPLIED'
-                                  )
-                                    ? 'Applied'
-                                    : order.status.replace('_', ' ')
-                                }
-                              </span>
-                            </div>
-                            <p className="text-gray-600 mb-4 group-hover:text-gray-200 transition-colors">Waiting for creator approval</p>
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
-                              {order.amount && (
-                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
-                              )}
-                            </div>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Applied</span>
                           </Link>
                         ))}
                       </div>
@@ -395,40 +368,30 @@ export default function EditorJobsPage() {
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {activeJobs.map((order) => (
-                          <Link
-                            key={order.id}
-                            href={`/editor/jobs/${order.id}`}
-                            className="premium-card group hover:scale-105 transition-all duration-300"
-                          >
-                            <div className="flex justify-between items-start mb-4">
-                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                                {order.title}
-                              </h3>
-                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
-                                {order.applications && order.applications.some((app: any) =>
-                                  app.editorId === user?.id && app.status === 'REJECTED'
-                                )
-                                  ? 'Not Approved'
-                                  : order.applications && order.applications.some((app: any) =>
-                                    app.editorId === user?.id && app.status === 'APPLIED'
-                                  )
-                                    ? 'Applied'
-                                    : order.status.replace('_', ' ')
-                                }
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
-                              {order.amount && (
-                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
-                              )}
-                            </div>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">{order.status}</span>
+                            <div className="mt-2 text-sm text-gray-500">Creator: {order.creator?.name}</div>
                           </Link>
                         ))}
                       </div>
                     </div>
                   )}
+                  {activeJobs.length === 0 && appliedJobs.length === 0 && (
+                    <div className="glass-morphism p-12 text-center text-gray-600">No active jobs found. Check Available Jobs!</div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
+          {/* HISTORY TAB: Completed & Rejected */}
+          {tab === 'history' && (
+            <div className="space-y-8">
+              {myLoading ? (
+                <div className="glass-morphism p-12 text-center"><p className="text-gray-600">Loading history...</p></div>
+              ) : (
+                <>
                   {completedJobs.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -437,38 +400,17 @@ export default function EditorJobsPage() {
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {completedJobs.map((order) => (
-                          <Link
-                            key={order.id}
-                            href={`/editor/jobs/${order.id}`}
-                            className="premium-card group hover:scale-105 transition-all duration-300"
-                          >
-                            <div className="flex justify-between items-start mb-4">
-                              <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                                {order.title}
-                              </h3>
-                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(order.status, order.applications && order.applications.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED'))} transition-all duration-300`}>
-                                {order.applications && order.applications.some((app: any) =>
-                                  app.editorId === user?.id && app.status === 'REJECTED'
-                                )
-                                  ? 'Not Approved'
-                                  : order.applications && order.applications.some((app: any) =>
-                                    app.editorId === user?.id && app.status === 'APPLIED'
-                                  )
-                                    ? 'Applied'
-                                    : order.status.replace('_', ' ')
-                                }
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-gray-500">Creator: {order.creator?.name}</span>
-                              {order.amount && (
-                                <span className="font-bold text-indigo-400">₹{order.amount.toLocaleString()}</span>
-                              )}
-                            </div>
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 truncate mb-2">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded">Completed</span>
+                            <div className="mt-2 font-bold text-indigo-400">₹{order.amount?.toLocaleString()}</div>
                           </Link>
                         ))}
                       </div>
                     </div>
+                  )}
+                  {completedJobs.length === 0 && (
+                    <div className="glass-morphism p-12 text-center text-gray-600">No completed jobs yet. Work hard!</div>
                   )}
                 </>
               )}

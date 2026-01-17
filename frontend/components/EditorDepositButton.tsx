@@ -32,6 +32,28 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
     })
   }
 
+  const handleTestDeposit = async () => {
+    setLoading(true);
+    try {
+      // Create order first
+      const resp = await paymentsApi.createEditorDeposit(orderId);
+
+      // Simulate successful verification with dummy data
+      await paymentsApi.verifyEditorDeposit(
+        (resp.data as any).razorpayOrderId || 'test_order_id',
+        'pay_test_' + Date.now(),
+        'dummy_signature_dev_mode'
+      );
+
+      if (onSuccess) onSuccess();
+      router.refresh();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Test deposit failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeposit = async () => {
     setLoading(true)
     setError('')
@@ -101,13 +123,23 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
         />
       )}
 
-      <button
-        onClick={handleDeposit}
-        disabled={loading}
-        className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-      >
-        {loading ? 'Processing...' : 'Pay Deposit'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={handleDeposit}
+          disabled={loading}
+          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {loading ? 'Processing...' : 'Pay Deposit'}
+        </button>
+        <button
+          onClick={handleTestDeposit}
+          disabled={loading}
+          className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 text-sm whitespace-nowrap"
+          title="Simulate successful payment"
+        >
+          Dev Pay (Dummy)
+        </button>
+      </div>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

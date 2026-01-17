@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
-import { ordersApi } from '@/lib/api'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { ordersApi, usersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 
@@ -15,21 +15,22 @@ export default function NewOrderPage() {
     title: '',
     description: '',
     brief: '',
-    amount: ''
+    amount: '',
+    editorId: ''
   })
 
   useEffect(() => {
     const currentUser = getUser()
     setUser(currentUser)
     setIsLoading(false)
-    
+
     if (!currentUser || currentUser.role !== 'CREATOR') {
       router.push('/dashboard')
     }
   }, [router])
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; description?: string; brief?: string; amount?: number }) =>
+    mutationFn: (data: { title: string; description?: string; brief?: string; amount?: number; editorId?: string }) =>
       ordersApi.create(data),
     onSuccess: (response) => {
       router.push(`/orders/${response.data.id}`)
@@ -43,8 +44,23 @@ export default function NewOrderPage() {
       description: formData.description || undefined,
       brief: formData.brief || undefined,
       amount: formData.amount ? parseFloat(formData.amount) : undefined,
+      editorId: formData.editorId || undefined,
     })
   }
+
+  // Fetch Saved Editors
+  const { data: savedEditors } = useQuery({
+    queryKey: ['saved-editors'],
+    queryFn: async () => {
+      try {
+        const response = await usersApi.listSavedEditors()
+        return response.data
+      } catch (e) {
+        return []
+      }
+    },
+    enabled: !!user && user.role === 'CREATOR',
+  })
 
   if (isLoading) {
     return (
@@ -71,12 +87,38 @@ export default function NewOrderPage() {
       <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Order</h1>
-          
+
           <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
             {createMutation.error && (
               <div className="rounded-md bg-red-50 p-4">
                 <p className="text-sm text-red-800">
                   {(createMutation.error as any)?.response?.data?.error || 'Failed to create order'}
+                </p>
+              </div>
+            )}
+
+
+            {/* Preferred Editor Selection */}
+            {savedEditors && savedEditors.length > 0 && (
+              <div className="bg-indigo-50 p-4 rounded-md border border-indigo-100">
+                <label htmlFor="editorId" className="block text-sm font-medium text-indigo-900 mb-2">
+                  Directly Hire a Saved Editor (Optional)
+                </label>
+                <select
+                  id="editorId"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  value={formData.editorId}
+                  onChange={(e) => setFormData({ ...formData, editorId: e.target.value })}
+                >
+                  <option value="">-- Open for all editors --</option>
+                  {savedEditors.map((editor: any) => (
+                    <option key={editor.id} value={editor.id}>
+                      {editor.name} ({editor.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-indigo-700">
+                  Selecting an editor will assign this order directly to them.
                 </p>
               </div>
             )}

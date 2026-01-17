@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getUser, removeUser, removeAuthToken } from '@/lib/auth'
 import Magnetic from './Magnetic'
 import Logo from '@/components/Logo'
+import NotificationBell from './NotificationBell'
 
 interface NavbarProps {
   lightTheme?: boolean
@@ -51,18 +52,29 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   </Magnetic>
                 </>
               ) : user.role === 'EDITOR' ? (
-                <Magnetic strength={0.2}>
-                  <Link
-                    href="/editor/jobs"
-                    className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
-                  >
-                    Dashboard
-                  </Link>
-                </Magnetic>
+                <>
+                  <Magnetic strength={0.2}>
+                    <Link
+                      href="/editor/jobs"
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                    >
+                      Dashboard
+                    </Link>
+                  </Magnetic>
+                  <Magnetic strength={0.2}>
+                    <Link
+                      href="/editor/wallet"
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                    >
+                      Wallet
+                    </Link>
+                  </Magnetic>
+                </>
               ) : null}
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <NotificationBell user={user} />
             <div className={`text-sm ${lightTheme ? 'text-gray-600' : 'text-gray-700'}`}>
               <span className={`font-medium ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
               <span className={`ml-2 px-2 py-1 ${lightTheme ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-200 text-gray-700'} rounded-full text-xs`}>

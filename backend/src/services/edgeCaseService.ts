@@ -222,8 +222,8 @@ export class EdgeCaseService {
     const filesToDelete = [...cancelledOrderFiles, ...oldPreviewFiles];
 
     for (const file of filesToDelete) {
-      // TODO: Delete from S3/R2
-      // await deleteFromS3(file.s3Key);
+      // Note: In Zero Storage architecture, we only delete the database record. 
+      // The actual file remains on the user's provider (Drive/Dropbox).
 
       await prisma.file.delete({
         where: { id: file.id }

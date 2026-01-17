@@ -16,6 +16,7 @@ export const OrderStatus = {
     PUBLISHED: 'PUBLISHED',
     COMPLETED: 'COMPLETED',
     CANCELLED: 'CANCELLED',
+    DISPUTED: 'DISPUTED',
 } as const;
 export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 

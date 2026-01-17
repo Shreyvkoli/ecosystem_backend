@@ -15,22 +15,45 @@ const timelineStages = [
 ]
 
 export default function Timeline({ order }: TimelineProps) {
-  const currentStageIndex = timelineStages.findIndex(stage => stage.key === order.status)
+  // Determine effective stage based on file history + status
+  const hasPreview = order.files?.some((f: any) => f.type === 'PREVIEW_VIDEO');
+
+  // Clone stages to modify labels dynamically
+  const stages = [...timelineStages];
+
+  let overrideIndex = -1;
+
+  if (order.status === 'IN_PROGRESS' && hasPreview) {
+    // If we are In Progress BUT have a preview, we are likely working on Final
+    overrideIndex = 3; // Use 'FINAL_SUBMITTED' slot
+    stages[3] = {
+      ...stages[3],
+      label: 'Final Delivery',
+      description: 'Editor is working on the final video' // Override description
+    };
+    // Note: 'isCurrent' logic below will make this Blue (In Progress) which is correct.
+    // And stages 0,1,2 will be completed.
+  }
+
+  const currentStageIndex = overrideIndex !== -1
+    ? overrideIndex
+    : stages.findIndex(stage => stage.key === order.status)
+
   const isCompleted = order.status === 'COMPLETED'
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="font-semibold text-lg mb-6">Project Timeline</h3>
-      
+
       <div className="relative">
         {/* Timeline line */}
         <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200"></div>
-        
-        {timelineStages.map((stage, index) => {
+
+        {stages.map((stage, index) => {
           const isActive = index <= currentStageIndex
           const isCurrent = index === currentStageIndex
           const isCompletedStage = index < currentStageIndex || (isCompleted && index <= currentStageIndex)
-          
+
           return (
             <div key={stage.key} className="relative flex items-start mb-8 last:mb-0">
               {/* Timeline dot */}
@@ -46,7 +69,7 @@ export default function Timeline({ order }: TimelineProps) {
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 )}
               </div>
-              
+
               {/* Timeline content */}
               <div className="ml-6 flex-1">
                 <div className="flex items-center justify-between">
@@ -67,7 +90,7 @@ export default function Timeline({ order }: TimelineProps) {
                 <p className={`text-sm mt-1 ${isActive ? 'text-gray-600' : 'text-gray-400'}`}>
                   {stage.description}
                 </p>
-                
+
                 {/* Additional info for specific stages */}
                 {stage.key === 'ASSIGNED' && order.editor && (
                   <div className="mt-2 flex items-center space-x-2">
@@ -79,7 +102,7 @@ export default function Timeline({ order }: TimelineProps) {
                     <span className="text-xs text-gray-600">{order.editor.name}</span>
                   </div>
                 )}
-                
+
                 {stage.key === 'PREVIEW_SUBMITTED' && (
                   <div className="mt-2">
                     <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
@@ -87,7 +110,7 @@ export default function Timeline({ order }: TimelineProps) {
                     </button>
                   </div>
                 )}
-                
+
                 {stage.key === 'FINAL_SUBMITTED' && (
                   <div className="mt-2">
                     <button className="text-xs text-green-600 hover:text-green-800 font-medium">
@@ -100,20 +123,20 @@ export default function Timeline({ order }: TimelineProps) {
           )
         })}
       </div>
-      
+
       {/* Progress bar */}
       <div className="mt-8 pt-6 border-t border-gray-200">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-700">Overall Progress</span>
           <span className="text-sm font-medium text-gray-700">
-            {currentStageIndex >= 0 ? Math.round(((currentStageIndex + 1) / timelineStages.length) * 100) : 0}%
+            {currentStageIndex >= 0 ? Math.round(((currentStageIndex + 1) / stages.length) * 100) : 0}%
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
+          <div
             className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-            style={{ 
-              width: `${currentStageIndex >= 0 ? ((currentStageIndex + 1) / timelineStages.length) * 100 : 0}%` 
+            style={{
+              width: `${currentStageIndex >= 0 ? ((currentStageIndex + 1) / stages.length) * 100 : 0}%`
             }}
           ></div>
         </div>

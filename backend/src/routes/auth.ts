@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: 200, // Increased for dev
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again later.' }
@@ -40,16 +40,20 @@ const loginSchema = z.object({
  * Register a new user (CREATOR or EDITOR only)
  * ADMIN users cannot be created through registration
  */
+/**
+ * POST /api/auth/register
+ * Register a new user (CREATOR or EDITOR only)
+ * ADMIN users cannot be created through registration
+ */
 router.post('/register', authLimiter, async (req: Request, res: Response) => {
   try {
     // Validate input
     const { email, password, name, role, countryCode } = registerSchema.parse(req.body);
 
     // Check if user already exists
-    // Check if user already exists
-    // Use raw query to bypass Prisma type checks for role/enum
-    const existingUsers: any[] = await prisma.$queryRaw`SELECT id FROM "User" WHERE email = ${email.toLowerCase()} LIMIT 1`;
-    const existingUser = existingUsers[0];
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
 
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
@@ -64,27 +68,27 @@ router.post('/register', authLimiter, async (req: Request, res: Response) => {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        role: role as any,
-        ...({ countryCode: (countryCode || 'IN').toUpperCase() } as any)
+        role: role as UserRole,
+        countryCode: (countryCode || 'IN').toUpperCase()
       },
       select: {
         id: true,
         email: true,
         name: true,
-        // role: true, // Removed to bypass P2032 error
-        ...({ countryCode: true } as any),
+        role: true,
+        countryCode: true,
         createdAt: true
       }
     });
 
     // Generate JWT token
     const token = generateToken({
-      userId: String(user.id),
-      role: String(role)
+      userId: user.id,
+      role: user.role
     });
 
     return res.status(201).json({
-      user: { ...user, role: String(role) },
+      user,
       token
     });
   } catch (error: any) {
@@ -110,14 +114,9 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
     const { email, password } = loginSchema.parse(req.body);
 
     // Find user by email (case-insensitive)
-    // Find user by email (case-insensitive) using raw query to bypass Prisma type checks
-    // Using explicit column selection to ensure keys match
-    const users: any[] = await prisma.$queryRaw`SELECT "id", "email", "password", "name", "role", "countryCode" FROM "User" WHERE email = ${email.toLowerCase()}`;
-    const user = users[0];
-
-    if (user) {
-      console.log('[LoginDebug] Raw User:', JSON.stringify(user));
-    }
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -131,8 +130,8 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
 
     // Generate JWT token
     const token = generateToken({
-      userId: String(user.id),
-      role: String(user.role)
+      userId: user.id,
+      role: user.role
     });
 
     return res.json({
@@ -141,7 +140,7 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        countryCode: (user as any).countryCode
+        countryCode: user.countryCode
       },
       token
     });
@@ -169,42 +168,33 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    // Use raw query to fetch user to bypass Prisma type checks
-    const users: any[] = await prisma.$queryRaw`SELECT "id", "email", "name", "role", "countryCode", "createdAt", "updatedAt" FROM "User" WHERE id = ${req.userId}`;
-    const rawUser = users[0];
-
-    if (!rawUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Fetch profiles manually
-    const creatorProfile = await prisma.creatorProfile.findUnique({
-      where: { userId: rawUser.id },
-      select: { id: true, bio: true, avatarUrl: true }
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        creatorProfile: {
+          select: { id: true, bio: true, avatarUrl: true }
+        },
+        editorProfile: {
+          select: { id: true, bio: true, avatarUrl: true, rate: true, skills: true }
+        }
+      }
     });
-
-    const editorProfile = await prisma.editorProfile.findUnique({
-      where: { userId: rawUser.id },
-      select: { id: true, bio: true, avatarUrl: true, rate: true, skills: true }
-    });
-
-    const user = {
-      id: rawUser.id,
-      email: rawUser.email,
-      name: rawUser.name,
-      role: rawUser.role,
-      countryCode: rawUser.countryCode,
-      createdAt: rawUser.createdAt,
-      updatedAt: rawUser.updatedAt,
-      creatorProfile,
-      editorProfile
-    };
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.json(user);
+    return res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      countryCode: user.countryCode,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      creatorProfile: user.creatorProfile,
+      editorProfile: user.editorProfile
+    });
   } catch (error: any) {
     console.error('Get user error:', error);
     return res.status(500).json({ error: 'Internal server error' });

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { MessageType } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { NotificationService } from '../services/notificationService.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -91,8 +92,7 @@ router.get('/order/:orderId', async (req: AuthRequest, res) => {
         }
       },
       orderBy: [
-        { timestamp: 'asc' }, // Sort by timestamp first (nulls last)
-        { createdAt: 'asc' }  // Then by creation time
+        { createdAt: 'asc' }
       ]
     });
 
@@ -259,6 +259,26 @@ router.post('/', async (req: AuthRequest, res) => {
       where: { id: data.orderId },
       data: { lastActivityAt: new Date() }
     });
+
+    // Real-time update
+    await NotificationService.getInstance().sendOrderEvent(data.orderId, 'chat_message', message);
+
+    // Notify the other party
+    if (order) {
+      let recipientId = null;
+      if (req.userId === order.creatorId) recipientId = order.editorId;
+      else if (req.userId === order.editorId) recipientId = order.creatorId;
+
+      if (recipientId) {
+        await NotificationService.getInstance().createAndSend({
+          userId: recipientId,
+          type: 'CHAT',
+          title: 'New Message',
+          message: data.content.substring(0, 50) + (data.content.length > 50 ? '...' : ''),
+          link: `/orders/${data.orderId}`
+        });
+      }
+    }
 
     return res.status(201).json(message);
   } catch (error: any) {

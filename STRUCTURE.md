@@ -23,7 +23,7 @@ ecosystem/
 │       └── routes/
 │           ├── auth.ts            # POST /register, /login, GET /me
 │           ├── projects.ts        # Project CRUD, assignment, status updates
-│           ├── videos.ts          # S3 presigned URLs, upload completion
+│           ├── videos.ts          # Stream Proxy & Link Registration
 │           ├── comments.ts        # Comment CRUD with timestamps
 │           └── payments.ts        # Razorpay order creation, verification, release
 │
@@ -58,7 +58,7 @@ ecosystem/
     │
     ├── components/                 # React components
     │   ├── Navbar.tsx             # Navigation bar
-    │   ├── VideoUploader.tsx      # S3 direct upload component
+    │   ├── LinkSubmission.tsx     # Drive/Dropbox Link Submission
     │   ├── VideoPlayer.tsx        # Video player with timestamp comments
     │   └── PaymentButton.tsx      # Razorpay payment button
     │
@@ -127,8 +127,8 @@ cd frontend && npm run dev
 - `frontend/app/projects/[id]/page.tsx` - Project detail
 
 ### Video Upload & Review
-- `backend/src/routes/videos.ts` - S3 presigned URLs
-- `frontend/components/VideoUploader.tsx` - Upload UI
+- `backend/src/routes/videos.ts` - Stream Proxy & Link Registration
+- `frontend/components/LinkSubmission.tsx` - Link Submission UI
 - `frontend/components/VideoPlayer.tsx` - Playback + comments
 
 ### Comments
