@@ -209,10 +209,23 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
                         {new Date(message.createdAt).toLocaleString()}
                       </p>
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded ${message.resolved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                      {message.resolved ? 'Resolved' : 'Open'}
-                    </span>
+                    {message.timestamp !== null && message.timestamp !== undefined ? (
+                      <button
+                        onClick={() => handleSeek(message.timestamp!)}
+                        className={`px-2 py-1 text-xs rounded transition-all hover:scale-105 ${message.resolved
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 cursor-pointer'
+                          }`}
+                        title={message.resolved ? 'Resolved' : `Jump to ${formatTime(message.timestamp)}`}
+                      >
+                        {message.resolved ? 'Resolved' : 'Open'}
+                      </button>
+                    ) : (
+                      <span className={`px-2 py-1 text-xs rounded ${message.resolved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                        {message.resolved ? 'Resolved' : 'Open'}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))
