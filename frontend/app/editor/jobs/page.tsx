@@ -365,7 +365,7 @@ export default function EditorJobsPage() {
                   {appliedJobs.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        <span className="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-lg mr-3">Applied</span>
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg mr-3">Applied</span>
                         <span className="text-gray-500 text-sm font-normal">{appliedJobs.length} jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -383,7 +383,7 @@ export default function EditorJobsPage() {
                   {activeJobs.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        <span className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg mr-3">Active</span>
+                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Active</span>
                         <span className="text-gray-500 text-sm font-normal">{activeJobs.length} jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -424,7 +424,7 @@ export default function EditorJobsPage() {
                   {completedJobs.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        <span className="bg-green-500/20 text-green-300 px-3 py-1 rounded-lg mr-3">Completed</span>
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-lg mr-3">Completed</span>
                         <span className="text-gray-500 text-sm font-normal">{completedJobs.length} jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -456,7 +456,7 @@ export default function EditorJobsPage() {
                 <>
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-lg mr-3">Wallet</span>
+                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Wallet</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="glass-morphism p-6 border border-green-500/30">
@@ -492,7 +492,7 @@ export default function EditorJobsPage() {
 
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
+                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
                     </h2>
                     <div className="glass-morphism p-6 border border-indigo-500/30">
                       <div className="text-sm text-gray-500 mb-2">Active jobs count</div>
@@ -511,7 +511,7 @@ export default function EditorJobsPage() {
 
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
+                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
                     </h2>
                     <div className="space-y-6">
                       {/* Profile Photo */}
