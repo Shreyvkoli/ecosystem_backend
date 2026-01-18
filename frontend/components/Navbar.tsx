@@ -1,5 +1,7 @@
 'use client'
 
+import { LogOut } from 'lucide-react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getUser, removeUser, removeAuthToken } from '@/lib/auth'
@@ -139,9 +141,10 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
             <Magnetic strength={0.3}>
               <button
                 onClick={handleLogout}
-                className="premium-button text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 hover-lift"
+                className="premium-button text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 hover-lift flex items-center justify-center gap-2"
               >
-                Logout
+                <LogOut className="w-4 h-4 md:hidden" />
+                <span className="hidden md:inline">Logout</span>
               </button>
             </Magnetic>
           </div>
