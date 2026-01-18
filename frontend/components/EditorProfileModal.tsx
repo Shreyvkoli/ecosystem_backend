@@ -13,6 +13,7 @@ interface EditorProfile {
   skills: string[]
   portfolio: string[]
   available: boolean
+  reviews?: any[]
 }
 
 interface EditorProfileModalProps {
@@ -169,6 +170,43 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                         >
                           {item}
                         </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {profile.reviews && profile.reviews.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-4">Reviews & Ratings</h4>
+                  <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                    {profile.reviews.map((review: any) => (
+                      <div key={review.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+                              {review.reviewer.creatorProfile?.avatarUrl ? (
+                                <img src={review.reviewer.creatorProfile.avatarUrl} alt={review.reviewer.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-indigo-700 font-bold text-xs">
+                                  {review.reviewer.name.charAt(0)}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900">{review.reviewer.name}</span>
+                          </div>
+                          <div className="flex text-yellow-400 text-sm">
+                            {'★'.repeat(review.rating)}
+                            <span className="text-gray-300">{'★'.repeat(5 - review.rating)}</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-gray-700 text-sm italic pl-11 mb-2">"{review.comment}"</p>
+                        )}
+                        <p className="text-xs text-gray-400 text-right">
+                          {new Date(review.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </p>
                       </div>
                     ))}
                   </div>

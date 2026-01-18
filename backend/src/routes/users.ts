@@ -26,7 +26,18 @@ router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       include: {
         editorProfile: true,
-        creatorProfile: true
+        creatorProfile: true,
+        reviewsReceived: {
+          include: {
+            reviewer: {
+              select: {
+                name: true,
+                creatorProfile: { select: { avatarUrl: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }
       }
     });
 
@@ -52,6 +63,7 @@ router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
         bio: user.creatorProfile.bio,
         avatarUrl: user.creatorProfile.avatarUrl,
       }),
+      reviews: user.reviewsReceived || []
     };
 
     return res.json(profile);
@@ -78,7 +90,18 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
         role: 'EDITOR'
       },
       include: {
-        editorProfile: true
+        editorProfile: true,
+        reviewsReceived: {
+          include: {
+            reviewer: {
+              select: {
+                name: true,
+                creatorProfile: { select: { avatarUrl: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -97,6 +120,7 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
         portfolio: editor.editorProfile.portfolio ? editor.editorProfile.portfolio.split(',').map(s => s.trim()).filter(Boolean) : [],
         available: editor.editorProfile.available,
       }),
+      reviews: editor.reviewsReceived || []
     }));
 
     return res.json(profiles);
@@ -172,7 +196,18 @@ router.get('/creators/saved-editors', async (req: AuthRequest, res: Response) =>
       include: {
         editor: {
           include: {
-            editorProfile: true
+            editorProfile: true,
+            reviewsReceived: {
+              include: {
+                reviewer: {
+                  select: {
+                    name: true,
+                    creatorProfile: { select: { avatarUrl: true } }
+                  }
+                }
+              },
+              orderBy: { createdAt: 'desc' }
+            }
           }
         }
       },
@@ -194,6 +229,7 @@ router.get('/creators/saved-editors', async (req: AuthRequest, res: Response) =>
         portfolio: item.editor.editorProfile.portfolio ? item.editor.editorProfile.portfolio.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
         available: item.editor.editorProfile.available,
       }),
+      reviews: item.editor.reviewsReceived || []
     }));
 
     return res.json(profiles);
