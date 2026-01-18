@@ -333,8 +333,8 @@ export default function EditorJobDetailPage() {
                 </div>
               )}
 
-              {/* Upload preview */}
-              {order.status === 'IN_PROGRESS' && (
+              {/* Upload preview - Only if no preview exists yet (First draft) */}
+              {order.status === 'IN_PROGRESS' && (!previewVideos || previewVideos.length === 0) && (
                 <div className="bg-white rounded-lg shadow p-4">
                   <h3 className="font-semibold mb-3">Submit Preview Link</h3>
                   <p className="text-sm text-gray-600 mb-3">Upload your video to your Cloud Storage and paste the shareable link here.</p>
@@ -365,8 +365,8 @@ export default function EditorJobDetailPage() {
                 </div>
               )}
 
-              {/* Upload final video */}
-              {order.status === 'IN_PROGRESS' && rawVideo && (
+              {/* Upload final video - Only if preview exists (Approved flow) */}
+              {order.status === 'IN_PROGRESS' && previewVideos && previewVideos.length > 0 && rawVideo && (
                 <div className="bg-white rounded-lg shadow p-4">
                   <h3 className="font-semibold mb-3">Submit Final Video Link</h3>
                   <p className="text-sm text-gray-600 mb-3">Paste the final delivery link.</p>
