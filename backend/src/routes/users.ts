@@ -2,6 +2,7 @@ import express from 'express';
 import type { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { z } from 'zod';
 
 const router = express.Router();
 // @ts-ignore
@@ -235,6 +236,46 @@ router.get('/creators/saved-editors', async (req: AuthRequest, res: Response) =>
     return res.json(profiles);
   } catch (error: any) {
     console.error('Get saved editors error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * PUT /api/users/creator/profile
+ * Update creator profile (Avatar, Bio)
+ */
+router.put('/creator/profile', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || req.userRole !== 'CREATOR') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const schema = z.object({
+      avatarUrl: z.string().url().optional(),
+      bio: z.string().optional()
+    });
+
+    const { avatarUrl, bio } = schema.parse(req.body);
+
+    const profile = await prisma.creatorProfile.upsert({
+      where: { userId: req.userId },
+      update: {
+        ...(avatarUrl !== undefined && { avatarUrl }),
+        ...(bio !== undefined && { bio })
+      },
+      create: {
+        userId: req.userId,
+        avatarUrl: avatarUrl || '',
+        bio: bio || ''
+      }
+    });
+
+    return res.json(profile);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+    console.error('Update creator profile error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

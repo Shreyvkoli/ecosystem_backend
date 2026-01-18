@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getUser, removeUser, removeAuthToken } from '@/lib/auth'
+import { usersApi } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Magnetic from './Magnetic'
 import Logo from '@/components/Logo'
 import NotificationBell from './NotificationBell'
@@ -14,6 +16,43 @@ interface NavbarProps {
 export default function Navbar({ lightTheme = false }: NavbarProps) {
   const router = useRouter()
   const user = getUser()
+  const queryClient = useQueryClient()
+
+  // Fetch verified profile data (including avatar)
+  const { data: fullProfile } = useQuery({
+    queryKey: ['user-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null
+      const res = await usersApi.loadProfile(user.id)
+      return res.data
+    },
+    enabled: !!user?.id
+  })
+
+  // Update Avatar Mutation
+  const updateAvatarMutation = useMutation({
+    mutationFn: (url: string) => usersApi.updateCreatorProfile({ avatarUrl: url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      alert('Profile photo updated!')
+    }
+  })
+
+  const getAvatarUrl = () => {
+    if (!user) return null
+    if (!fullProfile) return null
+    if (user.role === 'CREATOR') return fullProfile.creatorProfile?.avatarUrl
+    if (user.role === 'EDITOR') return fullProfile.editorProfile?.avatarUrl
+    return null
+  }
+
+  const handleAvatarClick = () => {
+    if (!user || user.role !== 'CREATOR') return // Only creators for now based on request
+    const url = window.prompt("Enter your Profile Photo URL (e.g. from LinkedIn/Google):")
+    if (url && url.trim()) {
+      updateAvatarMutation.mutate(url.trim())
+    }
+  }
 
   const handleLogout = () => {
     removeAuthToken()
@@ -76,10 +115,26 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <NotificationBell user={user} />
             <div className={`text-sm ${lightTheme ? 'text-gray-600' : 'text-gray-700'}`}>
-              <span className={`font-medium hidden md:inline ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
-              <span className={`hidden md:inline ml-2 px-2 py-1 ${lightTheme ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-200 text-gray-700'} rounded-full text-xs`}>
-                {user.role}
-              </span>
+              <div className="flex items-center gap-3">
+                {/* Avatar */}
+                <div
+                  onClick={handleAvatarClick}
+                  className={`w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border-2 border-indigo-200 cursor-pointer hover:border-indigo-400 transition-all ${user.role === 'CREATOR' ? 'hover:scale-105' : ''}`}
+                  title={user.role === 'CREATOR' ? "Click to update profile photo" : ""}
+                >
+                  {getAvatarUrl() ? (
+                    <img src={getAvatarUrl()} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-indigo-700 font-bold text-lg">{user.name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="hidden md:flex flex-col">
+                  <span className={`font-medium ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
+                  <span className={`self-start px-2 py-0.5 ${lightTheme ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-200 text-gray-700'} rounded-full text-[10px] uppercase tracking-wider font-bold`}>
+                    {user.role}
+                  </span>
+                </div>
+              </div>
             </div>
             <Magnetic strength={0.3}>
               <button

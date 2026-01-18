@@ -158,7 +158,8 @@ export async function getUserOrders(
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          creatorProfile: { select: { avatarUrl: true } }
         }
       },
       editor: {
@@ -219,7 +220,8 @@ export async function getOrderById(
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          creatorProfile: { select: { avatarUrl: true } }
         }
       },
       editor: {

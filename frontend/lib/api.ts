@@ -27,6 +27,9 @@ export interface User {
   editorProfile?: {
     avatarUrl?: string;
   };
+  creatorProfile?: {
+    avatarUrl?: string;
+  };
 }
 
 export interface Order {
@@ -339,6 +342,7 @@ export const usersApi = {
   listEditors: () => api.get('/users/editors/profiles'),
   saveEditor: (editorId: string) => api.post<{ saved: boolean }>(`/users/editors/${editorId}/save`),
   listSavedEditors: () => api.get<any[]>('/users/creators/saved-editors'),
+  updateCreatorProfile: (data: { avatarUrl?: string; bio?: string }) => api.put('/users/creator/profile', data),
 };
 
 export const notificationsApi = {
@@ -355,6 +359,10 @@ export const withdrawalApi = {
   process: (id: string, data: { status: 'PROCESSED' | 'REJECTED'; adminNote?: string }) =>
     api.post(`/withdrawals/${id}/process`, data),
 };
+
+// Add to Users API (Line 336 approx) or update existing block
+// Since multi_replace chunks are line based, I'll update usersApi block directly.
+
 
 export const reviewsApi = {
   create: (data: { orderId: string; rating: number; comment?: string }) =>

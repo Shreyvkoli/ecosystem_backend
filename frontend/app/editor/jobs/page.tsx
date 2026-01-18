@@ -305,7 +305,18 @@ export default function EditorJobsPage() {
                         </p>
                       )}
                       <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
-                        <span className="text-gray-500 truncate max-w-[60%]">Creator: {order.creator?.name}</span>
+                        <div className="flex items-center space-x-2 truncate max-w-[60%]">
+                          <div className="w-6 h-6 rounded-full border border-indigo-200 overflow-hidden flex-shrink-0 bg-indigo-50">
+                            {order.creator?.creatorProfile?.avatarUrl ? (
+                              <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-indigo-700">
+                                {order.creator?.name?.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-gray-500 text-sm truncate">{order.creator?.name}</span>
+                        </div>
                         {order.amount && (
                           <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
                         )}
@@ -382,7 +393,19 @@ export default function EditorJobsPage() {
                           <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
                             <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">{order.status}</span>
-                            <div className="mt-2 text-sm text-gray-500 truncate">Creator: {order.creator?.name}</div>
+                            <div className="mt-2 flex items-center space-x-2 truncate">
+                              <span className="text-sm text-gray-500">Creator:</span>
+                              <div className="w-6 h-6 rounded-full border border-indigo-200 overflow-hidden flex-shrink-0 bg-indigo-50">
+                                {order.creator?.creatorProfile?.avatarUrl ? (
+                                  <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-indigo-700">
+                                    {order.creator?.name?.charAt(0)}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-gray-500 text-sm truncate">{order.creator?.name}</span>
+                            </div>
                           </Link>
                         ))}
                       </div>
