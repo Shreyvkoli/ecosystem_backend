@@ -42,6 +42,7 @@ export interface Order {
   editingLevel?: 'BASIC' | 'PROFESSIONAL' | 'PREMIUM';
   referenceLink?: string;
   deadline?: string;
+  revisionCount?: number;
   paymentGateway?: string | null;
   paymentStatus?: string;
   payoutStatus?: string;

@@ -34,6 +34,7 @@ export default function OrderDetailPage() {
   const [showYouTubeUploadModal, setShowYouTubeUploadModal] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
+  const [showRevisionLimitModal, setShowRevisionLimitModal] = useState(false)
   const [isEditingRaw, setIsEditingRaw] = useState(false)
 
   useEffect(() => {
@@ -528,7 +529,13 @@ export default function OrderDetailPage() {
                     {approveMutation.isPending ? 'Approving...' : 'Approve Preview'}
                   </button>
                   <button
-                    onClick={() => revisionMutation.mutate()}
+                    onClick={() => {
+                      if ((order.revisionCount || 0) >= 2) {
+                        setShowRevisionLimitModal(true)
+                      } else {
+                        revisionMutation.mutate()
+                      }
+                    }}
                     disabled={revisionMutation.isPending}
                     className="w-full px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
                   >
@@ -763,6 +770,49 @@ export default function OrderDetailPage() {
         onClose={() => setShowDisputeModal(false)}
         orderId={orderId}
       />
+
+      {/* Revision Paywall Modal */}
+      {showRevisionLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Free Revisions Exhausted</h3>
+              <button onClick={() => setShowRevisionLimitModal(false)} className="text-gray-400 hover:text-gray-500">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+              <p className="text-gray-800 text-sm leading-relaxed">
+                You have used your <span className="font-bold">2 free revisions</span>.
+              </p>
+            </div>
+
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              To request more changes, a fee of <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                onClick={() => setShowRevisionLimitModal(false)}
+                className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Placeholder for payment logic
+                  alert('Premium Revision Payment Integration Coming Soon!')
+                  setShowRevisionLimitModal(false)
+                }}
+                className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
+              >
+                Pay & Request (₹500)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
