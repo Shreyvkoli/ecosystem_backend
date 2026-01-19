@@ -25,36 +25,38 @@ export default function Logo({
 
   const content = (
     <span className={className ?? 'inline-flex items-center gap-2'}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        className={iconClassName}
-      >
-        <defs>
-          <linearGradient id={gradId} x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#818CF8" />
-            <stop offset="1" stopColor="#C084FC" />
-          </linearGradient>
-        </defs>
-        <circle cx="16" cy="16" r="14" stroke={`url(#${gradId})`} strokeWidth="2" fill="none" />
-        
-        <rect x="8" y="6" width="16" height="2" fill={`url(#${gradId})`} />
-        <rect x="8" y="24" width="16" height="2" fill={`url(#${gradId})`} />
-        
-        <path
-          d="M12 10L12 22L22 16Z"
-          fill={`url(#${gradId})`}
-        />
-        
-        <circle cx="10" cy="10" r="1.5" fill={`url(#${gradId})`} />
-        <circle cx="22" cy="10" r="1.5" fill={`url(#${gradId})`} />
-        <circle cx="10" cy="22" r="1.5" fill={`url(#${gradId})`} />
-        <circle cx="22" cy="22" r="1.5" fill={`url(#${gradId})`} />
-      </svg>
+      <div className="bg-white shadow-md p-1.5 rounded-full flex items-center justify-center">
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          className={iconClassName}
+        >
+          <defs>
+            <linearGradient id={gradId} x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#818CF8" />
+              <stop offset="1" stopColor="#C084FC" />
+            </linearGradient>
+          </defs>
+          <circle cx="16" cy="16" r="14" stroke={`url(#${gradId})`} strokeWidth="2" fill="none" />
+
+          <rect x="8" y="6" width="16" height="2" fill={`url(#${gradId})`} />
+          <rect x="8" y="24" width="16" height="2" fill={`url(#${gradId})`} />
+
+          <path
+            d="M12 10L12 22L22 16Z"
+            fill={`url(#${gradId})`}
+          />
+
+          <circle cx="10" cy="10" r="1.5" fill={`url(#${gradId})`} />
+          <circle cx="22" cy="10" r="1.5" fill={`url(#${gradId})`} />
+          <circle cx="10" cy="22" r="1.5" fill={`url(#${gradId})`} />
+          <circle cx="22" cy="22" r="1.5" fill={`url(#${gradId})`} />
+        </svg>
+      </div>
 
       {showWordmark ? (
         <span
