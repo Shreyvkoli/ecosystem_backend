@@ -41,13 +41,16 @@ const APPLICATION_STATUS = {
 
 router.use(authenticate);
 
-function computeDepositAmount(orderAmount?: number | null): number {
-  if (!orderAmount || orderAmount <= 0) {
-    return 500;
+function computeDepositAmount(editingLevel?: string): number {
+  switch (editingLevel) {
+    case 'PREMIUM':
+      return 1499;
+    case 'PROFESSIONAL':
+      return 499;
+    case 'BASIC':
+    default:
+      return 199;
   }
-
-  const pct = orderAmount * 0.05;
-  return Math.min(2000, Math.max(500, Math.round(pct)));
 }
 
 /**
@@ -672,7 +675,7 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
         orderId,
         editorId: userId,
         status: 'APPLIED',
-        depositAmount: computeDepositAmount(order.amount)
+        depositAmount: computeDepositAmount(order.editingLevel || 'BASIC')
       },
       include: {
         editor: {
