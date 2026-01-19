@@ -285,12 +285,19 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'active'
-                  ? 'premium-button'
-                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                className={`relative px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center gap-2 ${activeJobs.length > 0
+                    ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
+                    : tab === 'active'
+                      ? 'premium-button'
+                      : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
               >
                 Active Jobs
+                {activeJobs.length > 0 && (
+                  <span className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white shadow-sm animate-bounce">
+                    {activeJobs.length}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setTab('history')}
