@@ -27,6 +27,7 @@ export default function EditorJobsPage() {
   })
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [selectedJob, setSelectedJob] = useState<any>(null)
+  const [sortBy, setSortBy] = useState<'default' | 'money' | 'deadline' | 'level'>('default')
 
   useEffect(() => {
     if (!user) {
@@ -220,6 +221,33 @@ export default function EditorJobsPage() {
     [myOrders]
   )
 
+  const sortOrders = (orders: any[]) => {
+    if (!orders) return []
+    const sorted = [...orders]
+
+    switch (sortBy) {
+      case 'money':
+        return sorted.sort((a, b) => (b.amount || 0) - (a.amount || 0))
+      case 'deadline':
+        return sorted.sort((a, b) => {
+          if (!a.deadline) return 1
+          if (!b.deadline) return -1
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+        })
+      case 'level':
+        const levels = { 'TOP_1_PERCENT': 3, 'PRO': 2, 'INTERMEDIATE': 1, 'BEGINNER': 0 }
+        return sorted.sort((a, b) => {
+          const levelA = levels[a.editingLevel as keyof typeof levels] || 0
+          const levelB = levels[b.editingLevel as keyof typeof levels] || 0
+          return levelB - levelA
+        })
+      default:
+        return sorted
+    }
+  }
+
+  const sortedOpenOrders = useMemo(() => sortOrders(openOrders || []), [openOrders, sortBy])
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -276,11 +304,52 @@ export default function EditorJobsPage() {
 
           {tab === 'available' && (
             <div>
+              <div className="flex justify-end mb-6">
+                <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-lg border border-gray-200">
+                  <button
+                    onClick={() => setSortBy('default')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'default'
+                      ? 'bg-white shadow-sm text-indigo-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    Newest
+                  </button>
+                  <button
+                    onClick={() => setSortBy('money')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'money'
+                      ? 'bg-white shadow-sm text-indigo-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    Money
+                  </button>
+                  <button
+                    onClick={() => setSortBy('deadline')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'deadline'
+                      ? 'bg-white shadow-sm text-indigo-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    Deadline
+                  </button>
+                  <button
+                    onClick={() => setSortBy('level')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'level'
+                      ? 'bg-white shadow-sm text-indigo-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    Level
+                  </button>
+                </div>
+              </div>
+
               {openLoading ? (
                 <div className="glass-morphism p-12 text-center">
                   <p className="text-gray-600">Loading jobs...</p>
                 </div>
-              ) : !openOrders || openOrders.length === 0 ? (
+              ) : !sortedOpenOrders || sortedOpenOrders.length === 0 ? (
                 <div className="glass-morphism p-12 text-center">
                   <div className="mb-6">
                     <svg className="w-16 h-16 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,8 +361,8 @@ export default function EditorJobsPage() {
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {openOrders.map((order) => (
-                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative">
+                  {sortedOpenOrders.map((order) => (
+                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative bg-gradient-to-br from-white to-orange-50/50 border-orange-100/50 hover:shadow-orange-100">
                       <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-10 bg-indigo-50">
                         {order.creator?.creatorProfile?.avatarUrl ? (
                           <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -330,7 +399,7 @@ export default function EditorJobsPage() {
 
                       {/* Application Logic */}
                       {order.status === 'OPEN' &&
-                        !(order.applications && order.applications.some((app) =>
+                        !(order.applications && order.applications.some((app: any) =>
                           app.editorId === user?.id && app.status === 'APPLIED'
                         )) &&
                         order.editorId !== user?.id ? (
@@ -339,9 +408,9 @@ export default function EditorJobsPage() {
                         </button>
                       ) : (
                         <div className="text-center font-medium text-gray-700 py-2 bg-gray-50 rounded-lg">
-                          {order.applications?.some((app) => app.editorId === user?.id && app.status === 'REJECTED')
+                          {order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED')
                             ? 'Not Approved'
-                            : order.applications?.some((app) => app.editorId === user?.id && app.status === 'APPLIED')
+                            : order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'APPLIED')
                               ? 'Applied'
                               : order.status.replace('_', ' ')}
                         </div>
