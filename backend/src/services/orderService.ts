@@ -485,6 +485,17 @@ export async function assignEditor(
       }
     });
 
+    // Create Notification for Editor
+    await tx.notification.create({
+      data: {
+        userId: editorId,
+        title: 'New Project Assigned',
+        message: `You have been assigned to order "${updated.title}". Please start working.`,
+        type: 'SYSTEM',
+        data: { orderId: updated.id, url: `/orders/${updated.id}` }
+      }
+    });
+
     return updated;
   });
 
