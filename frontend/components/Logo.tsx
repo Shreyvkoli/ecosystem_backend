@@ -31,7 +31,7 @@ export default function Logo({
           alt="Cutflow Logo"
           width={size}
           height={size}
-          className={`object-contain ${iconClassName || ''}`}
+          className={`object-contain scale-125 mix-blend-multiply ${iconClassName || ''}`}
         />
       </div>
 
