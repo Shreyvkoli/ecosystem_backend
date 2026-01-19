@@ -170,10 +170,9 @@ httpServer.listen(PORT, () => {
   console.log('Backend restarted with FULL order schema (Deadline + Durations + Ref).');
   console.log('Razorpay Config:', process.env.RAZORPAY_KEY_ID ? 'Loaded (' + process.env.RAZORPAY_KEY_ID.substring(0, 8) + '...)' : 'MISSING');
   // Debug: Check if .env file exists
-  import('fs').then(fs => {
-    const envPath = require('path').join(process.cwd(), '.env');
-    console.log('.env file path:', envPath, 'Exists:', fs.existsSync(envPath));
-  });
+  // Debug: Check if .env file exists
+  const envPath = path.join(process.cwd(), '.env');
+  console.log('.env file path:', envPath, 'Exists:', fs.existsSync(envPath));
 
   if (process.env.ENABLE_SCHEDULER === 'true') {
     SchedulerService.getInstance().startAll();
