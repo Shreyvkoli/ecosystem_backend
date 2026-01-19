@@ -285,11 +285,11 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`relative px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center gap-2 ${activeJobs.length > 0
-                    ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
-                    : tab === 'active'
-                      ? 'premium-button'
-                      : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                className={`relative px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center ${activeJobs.length > 0
+                  ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
+                  : tab === 'active'
+                    ? 'premium-button'
+                    : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
               >
                 Active Jobs
