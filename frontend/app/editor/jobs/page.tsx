@@ -448,412 +448,414 @@ export default function EditorJobsPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* ACTIVE TAB: Applied & Ongoing */}
-              {tab === 'active' && (
-                <div className="space-y-8">
-                  {myLoading ? (
-                    <div className="glass-morphism p-12 text-center">
-                      <p className="text-gray-600">Loading your jobs...</p>
-                    </div>
-                  ) : (
-                    <>
-                      {appliedJobs.length > 0 && (
-                        <div>
-                          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg mr-3">Applied</span>
-                            <span className="text-gray-500 text-sm font-normal">{appliedJobs.length} jobs</span>
-                          </h2>
-                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {/* Applied Jobs Map */}
-                            {appliedJobs.map((order) => (
-                              <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
-                                <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
-                                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Applied</span>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeJobs.length > 0 && (
-                        <div>
-                          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Active</span>
-                            <span className="text-gray-500 text-sm font-normal">{activeJobs.length} jobs</span>
-                          </h2>
-                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {activeJobs.map((order) => (
-                              <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300 relative">
-                                <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-20 bg-indigo-50">
-                                  {order.creator?.creatorProfile?.avatarUrl ? (
-                                    <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700">
-                                      {order.creator?.name?.charAt(0)}
-                                    </div>
-                                  )}
-                                </div>
-                                <h3 className="font-bold text-gray-900 break-words mb-2 pr-12">{order.title}</h3>
-                                <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">{order.status}</span>
-                                <div className="mt-2 text-sm text-gray-500 truncate">Creator: {order.creator?.name}</div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {activeJobs.length === 0 && appliedJobs.length === 0 && (
-                        <div className="glass-morphism p-12 text-center text-gray-600">No active jobs found. Check Available Jobs!</div>
-                      )}
-                    </>
-                  )}
+          {/* ACTIVE TAB: Applied & Ongoing */}
+          {tab === 'active' && (
+            <div className="space-y-8">
+              {myLoading ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading your jobs...</p>
                 </div>
-              )}
-
-              {/* HISTORY TAB: Completed & Rejected */}
-              {tab === 'history' && (
-                <div className="space-y-8">
-                  {myLoading ? (
-                    <div className="glass-morphism p-12 text-center"><p className="text-gray-600">Loading history...</p></div>
-                  ) : (
-                    <>
-                      {completedJobs.length > 0 && (
-                        <div>
-                          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-lg mr-3">Completed</span>
-                            <span className="text-gray-500 text-sm font-normal">{completedJobs.length} jobs</span>
-                          </h2>
-                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {completedJobs.map((order) => (
-                              <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
-                                <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
-                                <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded">Completed</span>
-                                <div className="mt-2 font-bold text-indigo-400">₹{order.amount?.toLocaleString()}</div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {completedJobs.length === 0 && (
-                        <div className="glass-morphism p-12 text-center text-gray-600">No completed jobs yet. Work hard!</div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {tab === 'profile' && (
-                <div className="space-y-8">
-                  {profileLoading || !profile ? (
-                    <div className="glass-morphism p-12 text-center">
-                      <p className="text-gray-600">Loading profile...</p>
+              ) : (
+                <>
+                  {appliedJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg mr-3">Applied</span>
+                        <span className="text-gray-500 text-sm font-normal">{appliedJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {/* Applied Jobs Map */}
+                        {appliedJobs.map((order) => (
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Applied</span>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="premium-card">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                          <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Wallet</span>
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="glass-morphism p-6 border border-green-500/30">
-                            <div className="text-sm text-gray-500 mb-2">Available Balance</div>
-                            <div className="text-3xl font-bold text-green-400">₹{Number(profile.walletBalance || 0).toLocaleString()}</div>
-                          </div>
-                          <div className="glass-morphism p-6 border border-yellow-500/30">
-                            <div className="text-sm text-gray-500 mb-2">Locked (Deposits)</div>
-                            <div className="text-3xl font-bold text-yellow-400">₹{Number(profile.walletLocked || 0).toLocaleString()}</div>
-                          </div>
-                        </div>
-                        <div className="mt-6 flex gap-4 items-end">
-                          <div className="flex-1 max-w-xs">
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Test Top-up Amount</label>
-                            <input
-                              type="number"
-                              value={topupAmount}
-                              onChange={(e) => setTopupAmount(Number(e.target.value))}
-                              className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
-                              min="100"
-                              step="100"
-                            />
-                          </div>
-                          <button
-                            onClick={() => topupMutation.mutate()}
-                            disabled={topupMutation.isPending}
-                            className="premium-button neon-glow"
-                          >
-                            {topupMutation.isPending ? 'Adding...' : 'Add Test Money'}
-                          </button>
-                        </div>
-                      </div>
+                  )}
 
-                      <div className="premium-card">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                          <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
-                        </h2>
-                        <div className="glass-morphism p-6 border border-indigo-500/30">
-                          <div className="text-sm text-gray-500 mb-2">Active jobs count</div>
-                          <div className="text-3xl font-bold text-indigo-400">
-                            {activeJobLoading ? '...' : `${activeJobData?.activeJobs || 0} / ${activeJobData?.maxActiveJobs || 2}`}
-                          </div>
-                          <div className="mt-2 text-sm text-gray-500">
-                            {activeJobLoading ? 'Loading...' :
-                              activeJobData?.canApply ?
-                                'You can apply for new jobs' :
-                                'Complete an active job to apply for new ones'
-                            }
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="premium-card">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                          <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
-                        </h2>
-                        <div className="space-y-6">
-                          {/* Profile Photo */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Profile Photo *</label>
-                            <div className="flex items-center space-x-4">
-                              <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
-                                {profileForm.avatarUrl ? (
-                                  <img
-                                    src={profileForm.avatarUrl}
-                                    alt="Profile"
-                                    className="w-20 h-20 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <span className="text-indigo-600 font-bold text-2xl">
-                                    {user?.name?.charAt(0).toUpperCase() || 'E'}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <div className="space-y-2">
-                                  <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Upload Photo (Recommended)</label>
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handlePhotoUpload}
-                                      disabled={uploadingPhoto}
-                                      className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
-                                    />
-                                    {uploadingPhoto && (
-                                      <p className="text-xs text-indigo-600">Uploading...</p>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Or enter image URL</label>
-                                    <input
-                                      type="url"
-                                      value={profileForm.avatarUrl}
-                                      onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
-                                      className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 text-sm"
-                                      placeholder="https://example.com/your-photo.jpg"
-                                      required
-                                    />
-                                  </div>
+                  {activeJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Active</span>
+                        <span className="text-gray-500 text-sm font-normal">{activeJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {activeJobs.map((order) => (
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300 relative">
+                            <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-20 bg-indigo-50">
+                              {order.creator?.creatorProfile?.avatarUrl ? (
+                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700">
+                                  {order.creator?.name?.charAt(0)}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">Profile photo is mandatory. Upload an image or enter a valid URL.</p>
-                              </div>
+                              )}
                             </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Bio</label>
-                            <textarea
-                              value={profileForm.bio}
-                              onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
-                              rows={4}
-                              placeholder="Tell creators about your editing style and expertise..."
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Rate (₹ per project)</label>
-                            <input
-                              value={profileForm.rate}
-                              onChange={(e) => setProfileForm((p) => ({ ...p, rate: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
-                              placeholder="Your typical rate per project"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Skills (comma separated)</label>
-                            <input
-                              value={profileForm.skills}
-                              onChange={(e) => setProfileForm((p) => ({ ...p, skills: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
-                              placeholder="e.g., color grading, motion graphics, sound design"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-2">Portfolio URLs (comma separated)</label>
-                            <input
-                              value={profileForm.portfolio}
-                              onChange={(e) => setProfileForm((p) => ({ ...p, portfolio: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
-                              placeholder="e.g., https://vimeo.com/yourwork, https://youtube.com/yourchannel"
-                            />
-                          </div>
-                          <label className="flex items-center gap-3 text-gray-600 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={profileForm.available}
-                              onChange={(e) => setProfileForm((p) => ({ ...p, available: e.target.checked }))}
-                              className="w-5 h-5 rounded border-gray-300 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
-                            />
-                            <span className="font-medium">Available for new projects</span>
-                          </label>
-                          <button
-                            onClick={() => updateProfileMutation.mutate()}
-                            disabled={updateProfileMutation.isPending}
-                            className="premium-button neon-glow"
-                          >
-                            {updateProfileMutation.isPending ? 'Saving Profile...' : 'Save Profile'}
-                          </button>
-                        </div>
+                            <h3 className="font-bold text-gray-900 break-words mb-2 pr-12">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">{order.status}</span>
+                            <div className="mt-2 text-sm text-gray-500 truncate">Creator: {order.creator?.name}</div>
+                          </Link>
+                        ))}
                       </div>
-                    </>
+                    </div>
                   )}
-                </div>
+                  {activeJobs.length === 0 && appliedJobs.length === 0 && (
+                    <div className="glass-morphism p-12 text-center text-gray-600">No active jobs found. Check Available Jobs!</div>
+                  )}
+                </>
               )}
             </div>
+          )}
 
-        {/* Job Details Modal */}
-          {selectedJob && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-start gap-3 z-10">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 break-words pr-2">{selectedJob.title}</h2>
-                  <button
-                    onClick={() => setSelectedJob(null)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                  {/* Header Info */}
-                  <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+          {/* HISTORY TAB: Completed & Rejected */}
+          {tab === 'history' && (
+            <div className="space-y-8">
+              {myLoading ? (
+                <div className="glass-morphism p-12 text-center"><p className="text-gray-600">Loading history...</p></div>
+              ) : (
+                <>
+                  {completedJobs.length > 0 && (
                     <div>
-                      <span className="text-xs font-semibold text-gray-500 uppercase">Deadline</span>
-                      <div className={`flex items-center font-bold mt-1 ${selectedJob.deadline ? 'text-red-600' : 'text-gray-700'}`}>
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Not Specified'}
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-lg mr-3">Completed</span>
+                        <span className="text-gray-500 text-sm font-normal">{completedJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {completedJobs.map((order) => (
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
+                            <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
+                            <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded">Completed</span>
+                            <div className="mt-2 font-bold text-indigo-400">₹{order.amount?.toLocaleString()}</div>
+                          </Link>
+                        ))}
                       </div>
-                    </div>
-                    <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
-                    <div>
-                      <span className="text-xs font-semibold text-gray-500 uppercase">Budget</span>
-                      <div className="text-gray-900 font-bold mt-1">
-                        ₹{selectedJob.amount?.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
-                    <div>
-                      <span className="text-xs font-semibold text-gray-500 uppercase">Level</span>
-                      <div className="text-indigo-600 font-bold mt-1">
-                        {selectedJob.editingLevel || 'Not Specified'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Description</h3>
-                    <div className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm leading-relaxed">
-                      {selectedJob.description || 'No description provided.'}
-                    </div>
-                  </div>
-
-                  {/* Brief */}
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 uppercase mb-2 flex items-center">
-                      <FileText className="w-4 h-4 mr-2" />
-                      Editing Brief
-                    </h3>
-                    <div className="text-gray-700 bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
-                      {selectedJob.brief || 'No specific brief provided.'}
-                    </div>
-                  </div>
-
-                  {/* Durations */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <span className="text-xs text-gray-500 block mb-1">Raw Footage</span>
-                      <div className="flex items-center text-gray-900 font-medium">
-                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        {selectedJob.rawFootageDuration ? `${selectedJob.rawFootageDuration} mins` : 'Not Specified'}
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <span className="text-xs text-gray-500 block mb-1">Expected Duration</span>
-                      <div className="flex items-center text-gray-900 font-medium">
-                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        {selectedJob.expectedDuration ? `${selectedJob.expectedDuration} mins` : 'Not Specified'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Reference Link */}
-                  {selectedJob.referenceLink && (
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Reference</h3>
-                      <a
-                        href={selectedJob.referenceLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        <span className="truncate">{selectedJob.referenceLink}</span>
-                      </a>
                     </div>
                   )}
+                  {completedJobs.length === 0 && (
+                    <div className="glass-morphism p-12 text-center text-gray-600">No completed jobs yet. Work hard!</div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
-                  {/* Creator Info */}
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Creator</h3>
-                    <div className="text-gray-700 p-3 rounded-lg bg-gray-50 border border-gray-100">
-                      {selectedJob.creator?.name} ({selectedJob.creator?.email})
+          {tab === 'profile' && (
+            <div className="space-y-8">
+              {profileLoading || !profile ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading profile...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Wallet</span>
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="glass-morphism p-6 border border-green-500/30">
+                        <div className="text-sm text-gray-500 mb-2">Available Balance</div>
+                        <div className="text-3xl font-bold text-green-400">₹{Number(profile.walletBalance || 0).toLocaleString()}</div>
+                      </div>
+                      <div className="glass-morphism p-6 border border-yellow-500/30">
+                        <div className="text-sm text-gray-500 mb-2">Locked (Deposits)</div>
+                        <div className="text-3xl font-bold text-yellow-400">₹{Number(profile.walletLocked || 0).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex gap-4 items-end">
+                      <div className="flex-1 max-w-xs">
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Test Top-up Amount</label>
+                        <input
+                          type="number"
+                          value={topupAmount}
+                          onChange={(e) => setTopupAmount(Number(e.target.value))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          min="100"
+                          step="100"
+                        />
+                      </div>
+                      <button
+                        onClick={() => topupMutation.mutate()}
+                        disabled={topupMutation.isPending}
+                        className="premium-button neon-glow"
+                      >
+                        {topupMutation.isPending ? 'Adding...' : 'Add Test Money'}
+                      </button>
                     </div>
                   </div>
-                </div>
 
-                <div className="bg-gray-50 px-6 py-4 border-t flex justify-end gap-3">
-                  <button
-                    onClick={() => setSelectedJob(null)}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-                  >
-                    Close
-                  </button>
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
+                    </h2>
+                    <div className="glass-morphism p-6 border border-indigo-500/30">
+                      <div className="text-sm text-gray-500 mb-2">Active jobs count</div>
+                      <div className="text-3xl font-bold text-indigo-400">
+                        {activeJobLoading ? '...' : `${activeJobData?.activeJobs || 0} / ${activeJobData?.maxActiveJobs || 2}`}
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500">
+                        {activeJobLoading ? 'Loading...' :
+                          activeJobData?.canApply ?
+                            'You can apply for new jobs' :
+                            'Complete an active job to apply for new ones'
+                        }
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Show Apply button in modal too */}
-                  {!user?.role || user.role === 'EDITOR' ? (
-                    selectedJob.applications?.some((app: any) => app.editorId === user?.id) ? (
-                      <button disabled className="px-4 py-2 bg-gray-300 text-white rounded-lg font-medium cursor-not-allowed">
-                        Already Applied
-                      </button>
-                    ) : (
+                  <div className="premium-card">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
+                    </h2>
+                    <div className="space-y-6">
+                      {/* Profile Photo */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Profile Photo *</label>
+                        <div className="flex items-center space-x-4">
+                          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                            {profileForm.avatarUrl ? (
+                              <img
+                                src={profileForm.avatarUrl}
+                                alt="Profile"
+                                className="w-20 h-20 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-indigo-600 font-bold text-2xl">
+                                {user?.name?.charAt(0).toUpperCase() || 'E'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="space-y-2">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Upload Photo (Recommended)</label>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handlePhotoUpload}
+                                  disabled={uploadingPhoto}
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
+                                />
+                                {uploadingPhoto && (
+                                  <p className="text-xs text-indigo-600">Uploading...</p>
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Or enter image URL</label>
+                                <input
+                                  type="url"
+                                  value={profileForm.avatarUrl}
+                                  onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 text-sm"
+                                  placeholder="https://example.com/your-photo.jpg"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Profile photo is mandatory. Upload an image or enter a valid URL.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Bio</label>
+                        <textarea
+                          value={profileForm.bio}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          rows={4}
+                          placeholder="Tell creators about your editing style and expertise..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Rate (₹ per project)</label>
+                        <input
+                          value={profileForm.rate}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, rate: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="Your typical rate per project"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Skills (comma separated)</label>
+                        <input
+                          value={profileForm.skills}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, skills: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="e.g., color grading, motion graphics, sound design"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Portfolio URLs (comma separated)</label>
+                        <input
+                          value={profileForm.portfolio}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, portfolio: e.target.value }))}
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          placeholder="e.g., https://vimeo.com/yourwork, https://youtube.com/yourchannel"
+                        />
+                      </div>
+                      <label className="flex items-center gap-3 text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={profileForm.available}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, available: e.target.checked }))}
+                          className="w-5 h-5 rounded border-gray-300 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
+                        />
+                        <span className="font-medium">Available for new projects</span>
+                      </label>
                       <button
-                        onClick={() => {
-                          applyMutation.mutate(selectedJob.id);
-                          setSelectedJob(null);
-                        }}
-                        disabled={applyMutation.isPending}
-                        className="premium-button px-6 py-2"
+                        onClick={() => updateProfileMutation.mutate()}
+                        disabled={updateProfileMutation.isPending}
+                        className="premium-button neon-glow"
                       >
-                        Apply Now
+                        {updateProfileMutation.isPending ? 'Saving Profile...' : 'Save Profile'}
                       </button>
-                    )
-                  ) : null}
-                </div>
-              </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
+
+        {/* Job Details Modal */}
+        {selectedJob && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-start gap-3 z-10">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 break-words pr-2">{selectedJob.title}</h2>
+                <button
+                  onClick={() => setSelectedJob(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                {/* Header Info */}
+                <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <div>
+                    <span className="text-xs font-semibold text-gray-500 uppercase">Deadline</span>
+                    <div className={`flex items-center font-bold mt-1 ${selectedJob.deadline ? 'text-red-600' : 'text-gray-700'}`}>
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Not Specified'}
+                    </div>
+                  </div>
+                  <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
+                  <div>
+                    <span className="text-xs font-semibold text-gray-500 uppercase">Budget</span>
+                    <div className="text-gray-900 font-bold mt-1">
+                      ₹{selectedJob.amount?.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
+                  <div>
+                    <span className="text-xs font-semibold text-gray-500 uppercase">Level</span>
+                    <div className="text-indigo-600 font-bold mt-1">
+                      {selectedJob.editingLevel || 'Not Specified'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Description</h3>
+                  <div className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm leading-relaxed">
+                    {selectedJob.description || 'No description provided.'}
+                  </div>
+                </div>
+
+                {/* Brief */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase mb-2 flex items-center">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Editing Brief
+                  </h3>
+                  <div className="text-gray-700 bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
+                    {selectedJob.brief || 'No specific brief provided.'}
+                  </div>
+                </div>
+
+                {/* Durations */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <span className="text-xs text-gray-500 block mb-1">Raw Footage</span>
+                    <div className="flex items-center text-gray-900 font-medium">
+                      <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                      {selectedJob.rawFootageDuration ? `${selectedJob.rawFootageDuration} mins` : 'Not Specified'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <span className="text-xs text-gray-500 block mb-1">Expected Duration</span>
+                    <div className="flex items-center text-gray-900 font-medium">
+                      <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                      {selectedJob.expectedDuration ? `${selectedJob.expectedDuration} mins` : 'Not Specified'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reference Link */}
+                {selectedJob.referenceLink && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Reference</h3>
+                    <a
+                      href={selectedJob.referenceLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      <span className="truncate">{selectedJob.referenceLink}</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* Creator Info */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase mb-2">Creator</h3>
+                  <div className="text-gray-700 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                    {selectedJob.creator?.name} ({selectedJob.creator?.email})
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 px-6 py-4 border-t flex justify-end gap-3">
+                <button
+                  onClick={() => setSelectedJob(null)}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+                >
+                  Close
+                </button>
+
+                {/* Show Apply button in modal too */}
+                {!user?.role || user.role === 'EDITOR' ? (
+                  selectedJob.applications?.some((app: any) => app.editorId === user?.id) ? (
+                    <button disabled className="px-4 py-2 bg-gray-300 text-white rounded-lg font-medium cursor-not-allowed">
+                      Already Applied
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        applyMutation.mutate(selectedJob.id);
+                        setSelectedJob(null);
+                      }}
+                      disabled={applyMutation.isPending}
+                      className="premium-button px-6 py-2"
+                    >
+                      Apply Now
+                    </button>
+                  )
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      )
+    </div>
+  )
 }
 
