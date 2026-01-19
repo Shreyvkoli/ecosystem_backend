@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
           <div className="premium-card group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative text-sm text-purple-300 font-bold">Editor</div>
-            <h2 className="text-2xl font-bold text-gray-900 mt-2">Deposit → apply → deliver → get refunded</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-2">Apply → Selected → Deposit → Escrow Funded → Deliver → Refunded + Paid</h2>
             <div className="mt-6 space-y-4">
               <div className="glass-morphism p-5">
                 <div className="text-gray-900 font-semibold">1) Apply & Get Shortlisted</div>
