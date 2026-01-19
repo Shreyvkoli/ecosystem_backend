@@ -140,6 +140,7 @@ io.on('connection', (socket) => {
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Backend restarted with FULL order schema (Deadline + Durations + Ref).');
+  console.log('Razorpay Config:', process.env.RAZORPAY_KEY_ID ? 'Loaded (' + process.env.RAZORPAY_KEY_ID.substring(0, 8) + '...)' : 'MISSING');
 
   if (process.env.ENABLE_SCHEDULER === 'true') {
     SchedulerService.getInstance().startAll();
