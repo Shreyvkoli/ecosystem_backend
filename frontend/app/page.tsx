@@ -37,7 +37,7 @@ export default function Home() {
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/10 text-sm text-gray-700">
             India's Most Reliable Video Editing Marketplace
           </div>
-          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight">
             Hire vetted Indian editors.
             <span className="block bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
               Review with Timestamp Feedback. Zero payment risk with Razorpay Escrow.
