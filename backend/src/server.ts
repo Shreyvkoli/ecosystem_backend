@@ -1,7 +1,7 @@
+import 'dotenv/config'; // Must be first
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import { apiLimiter } from './middleware/rateLimit.js';
 import authRoutes from './routes/auth.js';
 import orderRoutes from './routes/orders.js';
@@ -18,7 +18,6 @@ import withdrawalRoutes from './routes/withdrawals.js';
 import invoiceRoutes from './routes/invoices.js';
 import { SchedulerService } from './services/schedulerService.js';
 
-dotenv.config();
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
