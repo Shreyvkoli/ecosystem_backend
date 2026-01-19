@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar'
 import YouTubeConnectModal from '@/components/YouTubeConnectModal'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Link from 'next/link'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Briefcase } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -233,10 +233,10 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 gap-2">
                       <Link
                         href={`/orders/new?editorId=${editor.id}`}
-                        className="flex-1 flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-700 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
                       >
-                        <MessageCircle size={16} />
-                        Chat
+                        <Briefcase size={16} />
+                        Direct Hire
                       </Link>
                       <button
                         onClick={() => setShowProfileModal(editor.id)}
