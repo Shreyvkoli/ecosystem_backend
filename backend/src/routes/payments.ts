@@ -230,6 +230,11 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
       select: { countryCode: true }
     } as any);
 
+    // Force Razorpay for now since we are focusing on India
+    let gateway: 'RAZORPAY' | 'STRIPE' = 'RAZORPAY';
+
+    // Commented out Stripe logic for now as per user request
+    /*
     let gateway = getGatewayFromCountryCode((editor as any)?.countryCode);
 
     // Fallback to Razorpay (Dummy) if Stripe keys are missing, to allow Dev Pay to work
@@ -237,6 +242,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
       console.log('Stripe keys missing. Falling back to Razorpay Dummy flow for Dev/Test.');
       gateway = 'RAZORPAY';
     }
+    */
 
     const depositAmount = gateway === 'RAZORPAY' ? 500 : 10;
     const depositCurrency = gateway === 'RAZORPAY' ? 'INR' : 'USD';
