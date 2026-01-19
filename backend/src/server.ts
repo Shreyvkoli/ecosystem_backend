@@ -5,13 +5,18 @@ import { apiLimiter } from './middleware/rateLimit.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // robustness: try to find .env file
 const possiblePaths = [
   path.join(process.cwd(), '.env'),
   path.join(process.cwd(), 'backend', '.env'),
-  path.join(__dirname, '..', '.env'), // if running from dist
-  path.join(__dirname, '..', '..', '.env') // if running from src
+  path.join(__dirname, '..', '.env'), // if running from dist (dist/server.js -> backend/.env)
+  path.join(__dirname, '..', '..', '.env') // if running from src (src/server.ts -> backend/.env)
 ];
 
 let loaded = false;
@@ -23,9 +28,9 @@ for (const p of possiblePaths) {
     break;
   }
 }
+// On Render, we expect env vars to be pre-loaded, so failing to find .env is OK.
 if (!loaded) {
-  console.error('CRITICAL: .env file NOT FOUND in any common location!');
-  console.error('Searched:', possiblePaths);
+  console.log('NOTE: .env file not found. Assuming environment variables are injected (e.g. Docker/Render/Vercel).');
 }
 import authRoutes from './routes/auth.js';
 import orderRoutes from './routes/orders.js';
