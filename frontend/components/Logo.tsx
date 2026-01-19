@@ -40,21 +40,23 @@ export default function Logo({
               <stop stopColor="#818CF8" />
               <stop offset="1" stopColor="#C084FC" />
             </linearGradient>
+            <filter id="glow" x="-4" y="-4" width="40" height="40" filterUnits="userSpaceOnUse">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
           </defs>
-          <circle cx="16" cy="16" r="14" stroke={`url(#${gradId})`} strokeWidth="2" fill="none" />
-
-          <rect x="8" y="6" width="16" height="2" fill={`url(#${gradId})`} />
-          <rect x="8" y="24" width="16" height="2" fill={`url(#${gradId})`} />
-
+          {/* Fluid Wave Play Button */}
           <path
-            d="M12 10L12 22L22 16Z"
+            d="M8.5 15.5C8.5 11 12 9.5 15 11L23.5 14.5C25.5 15.3 25.5 17.7 23.5 18.5L15 22C12 23.5 8.5 22 8.5 17.5V15.5Z"
             fill={`url(#${gradId})`}
           />
-
-          <circle cx="10" cy="10" r="1.5" fill={`url(#${gradId})`} />
-          <circle cx="22" cy="10" r="1.5" fill={`url(#${gradId})`} />
-          <circle cx="10" cy="22" r="1.5" fill={`url(#${gradId})`} />
-          <circle cx="22" cy="22" r="1.5" fill={`url(#${gradId})`} />
+          <path
+            d="M6 16.5C6 24 15 24 15 22M6 16.5C6 9 15 9 15 11"
+            stroke={`url(#${gradId})`}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
         </svg>
       </div>
 
