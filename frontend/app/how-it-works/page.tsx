@@ -63,24 +63,24 @@ export default function HowItWorksPage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Deposit → apply → deliver → get refunded</h2>
             <div className="mt-6 space-y-4">
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">1) Apply or Get Hired</div>
-                <div className="text-gray-600 mt-1">Apply to open orders (security deposit may be required) or get directly hired by creators.</div>
+                <div className="text-gray-900 font-semibold">1) Apply & Get Shortlisted</div>
+                <div className="text-gray-600 mt-1">Apply to open orders for free. Browse projects that match your skills and get shortlisted by top global creators.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">2) Secure Work Start</div>
-                <div className="text-gray-600 mt-1">Start working only after the Creator has funded the Escrow. Your payment is guaranteed.</div>
+                <div className="text-gray-900 font-semibold">2) Confirm with Deposit</div>
+                <div className="text-gray-600 mt-1">Once selected, pay a small Commitment Deposit (₹200 - ₹1500) to lock the project. This ensures you are serious and protects the creator's timeline.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">3) Submit Previews</div>
-                <div className="text-gray-600 mt-1">Upload low-res watermarked previews for review. Receive precise timestamped feedback.</div>
+                <div className="text-gray-900 font-semibold">3) Secure Work Start</div>
+                <div className="text-gray-600 mt-1">Start working with peace of mind. Your payment is guaranteed as the Creator funds the Escrow before you even start the first cut.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">4) Final Submission</div>
-                <div className="text-gray-600 mt-1">After approval, upload the high-quality final video without watermarks.</div>
+                <div className="text-gray-900 font-semibold">4) Submit Previews & Iterate</div>
+                <div className="text-gray-600 mt-1">Upload watermarked previews and get frame-accurate feedback. Use our timestamp tool to handle revisions without any confusion.</div>
               </div>
               <div className="glass-morphism p-5">
-                <div className="text-gray-900 font-semibold">5) Get Paid</div>
-                <div className="text-gray-600 mt-1">Payment (90% of order value) is instantly released to your wallet upon completion.</div>
+                <div className="text-gray-900 font-semibold">5) Instant Payout & Refund</div>
+                <div className="text-gray-600 mt-1">Upon final approval, your Security Deposit is 100% refunded to your wallet, and your Project Payment (90%) is released instantly.</div>
               </div>
             </div>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
