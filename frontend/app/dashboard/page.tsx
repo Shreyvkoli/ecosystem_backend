@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar'
 import YouTubeConnectModal from '@/components/YouTubeConnectModal'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Link from 'next/link'
+import { MessageCircle } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -229,12 +230,19 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 gap-2">
+                      <Link
+                        href={`/orders/new?editorId=${editor.id}`}
+                        className="flex-1 flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <MessageCircle size={16} />
+                        Chat
+                      </Link>
                       <button
                         onClick={() => setShowProfileModal(editor.id)}
-                        className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                        className="px-3 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                       >
-                        View Profile
+                        Profile
                       </button>
                       <button
                         onClick={() => {
@@ -243,7 +251,8 @@ export default function DashboardPage() {
                           }
                         }}
                         disabled={unsaveMutation.isPending}
-                        className="text-red-500 hover:text-red-700 text-sm"
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove Editor"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />

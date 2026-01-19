@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ordersApi, usersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
@@ -27,6 +27,8 @@ export default function NewOrderPage() {
   const [recommendedBudget, setRecommendedBudget] = useState<number | null>(null)
   const [budgetError, setBudgetError] = useState<string | null>(null)
 
+  const searchParams = useSearchParams()
+
   useEffect(() => {
     const currentUser = getUser()
     setUser(currentUser)
@@ -36,6 +38,14 @@ export default function NewOrderPage() {
       router.push('/dashboard')
     }
   }, [router])
+
+  // Pre-select editor if query param exists
+  useEffect(() => {
+    const editorIdParam = searchParams.get('editorId')
+    if (editorIdParam) {
+      setFormData(prev => ({ ...prev, editorId: editorIdParam }))
+    }
+  }, [searchParams])
 
   // Calculate Recommended Budget logic
   useEffect(() => {
