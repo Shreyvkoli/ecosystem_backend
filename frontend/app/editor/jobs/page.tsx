@@ -8,7 +8,7 @@ import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import EditorTimeline from '@/components/EditorTimeline'
 import Link from 'next/link'
-import { Eye, FileText, Calendar, Clock, ExternalLink, X } from 'lucide-react'
+import { Eye, FileText, Calendar, Clock, ExternalLink, X, Users } from 'lucide-react'
 
 export default function EditorJobsPage() {
   const router = useRouter()
@@ -378,8 +378,8 @@ export default function EditorJobsPage() {
                         )}
                         {order.editingLevel && (
                           <div className={`px-2 py-1 rounded-md border ${order.editingLevel === 'PREMIUM' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                              order.editingLevel === 'PROFESSIONAL' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                'bg-green-100 text-green-700 border-green-200'
+                            order.editingLevel === 'PROFESSIONAL' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                              'bg-green-100 text-green-700 border-green-200'
                             }`}>
                             {order.editingLevel.replace(/_/g, ' ').replace('TOP 1 PERCENT', 'PREMIUM')}
                           </div>

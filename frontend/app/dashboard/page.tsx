@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar'
 import YouTubeConnectModal from '@/components/YouTubeConnectModal'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Link from 'next/link'
-import { MessageCircle, Briefcase } from 'lucide-react'
+import { MessageCircle, Briefcase, Users } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -313,8 +313,17 @@ export default function DashboardPage() {
                       </p>
                     )}
                     <div className="flex flex-wrap justify-between items-center gap-2 text-sm">
-                      <span className="text-gray-600 truncate max-w-[60%]">
-                        {user.role === 'CREATOR' ? order.editor?.name || 'Unassigned' : order.creator?.name}
+                      <span className="text-gray-600 truncate max-w-[60%] border-r pr-2 mr-2 border-gray-300">
+                        {user.role === 'CREATOR' ? (
+                          order.status === 'OPEN' ? (
+                            <span className="flex items-center text-blue-600 font-medium">
+                              <Users className="w-3 h-3 mr-1" />
+                              {order.applications?.length || 0} Applicants
+                            </span>
+                          ) : (
+                            order.editor?.name || 'Unassigned'
+                          )
+                        ) : order.creator?.name}
                       </span>
                       {order.amount && (
                         <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
