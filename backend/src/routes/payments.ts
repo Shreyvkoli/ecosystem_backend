@@ -272,19 +272,32 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
       }
 
       const razorpay = getRazorpay();
-      const razorpayOrder = await razorpay.orders.create({
-        amount: toMinorAmount(depositAmount, 'INR'),
-        currency: 'INR',
-        // Receipt max length is 40. UUID is 36. So we must shorten it.
-        // Using 'dep_' + first 10 of order + last 10 of timestamp
-        receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
-        notes: {
-          orderId,
-          userId: req.userId!,
-          kind: 'EDITOR_DEPOSIT'
-        }
-      });
-      razorpayOrderId = razorpayOrder.id;
+      try {
+        console.log('Attempting to create Razorpay Order with:', {
+          amount: toMinorAmount(depositAmount, 'INR'),
+          currency: 'INR',
+          receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
+          keyIdPrefix: process.env.RAZORPAY_KEY_ID?.substring(0, 5)
+        });
+
+        const razorpayOrder = await razorpay.orders.create({
+          amount: toMinorAmount(depositAmount, 'INR'),
+          currency: 'INR',
+          // Receipt max length is 40. UUID is 36. So we must shorten it.
+          // Using 'dep_' + first 10 of order + last 10 of timestamp
+          receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
+          notes: {
+            orderId,
+            userId: req.userId!,
+            kind: 'EDITOR_DEPOSIT'
+          }
+        });
+        razorpayOrderId = razorpayOrder.id;
+        console.log('Razorpay Order Created Success:', razorpayOrderId);
+      } catch (rzpError: any) {
+        console.error('Razorpay Order Creation FAILED FULL:', JSON.stringify(rzpError, null, 2));
+        throw new Error('Failed to communicate with Razorpay: ' + (rzpError.error?.description || rzpError.message));
+      }
 
       /*
       if (hasKeys) {
