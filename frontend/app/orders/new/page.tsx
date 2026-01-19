@@ -7,7 +7,9 @@ import { ordersApi, usersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 
-export default function NewOrderPage() {
+import { Suspense } from 'react'
+
+function NewOrderContent() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -410,6 +412,25 @@ export default function NewOrderPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewOrderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <Navbar lightTheme={true} />
+        <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            <div className="bg-white shadow rounded-lg p-6 text-center">
+              <p className="text-gray-500">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <NewOrderContent />
+    </Suspense>
   )
 }
 
