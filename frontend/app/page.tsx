@@ -168,7 +168,7 @@ export default function Home() {
               <div className="flex items-start gap-3 group/item">
                 <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
                 <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Payments processed via trusted providers (Razorpay)</div>
+                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Secure Payments via Razorpay. Support for UPI, Netbanking, and Cards. Instant withdrawals for editors.</div>
                 </div>
               </div>
             </div>
@@ -197,7 +197,10 @@ export default function Home() {
               </Link>
             </Magnetic>
             <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
-              For editors: Your wallet balance is never platform profit. It is refundable or adjusted in your first payout.
+              Aapka deposit 100% safe hai. Kaam approve hote hi deposit refund aur payment seedha aapke wallet mein aa jayegi.
+            </div>
+            <div className="text-xs text-indigo-400 font-medium mt-2 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
+              Join 100+ Indian Editors today. Free to join.
             </div>
           </div>
         </div>
