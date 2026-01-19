@@ -55,7 +55,7 @@ export default function Home() {
             </Magnetic>
             <div className="flex flex-col w-full sm:w-auto">
               <Magnetic strength={0.35} className="w-full sm:w-auto">
-                <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all w-full sm:w-auto text-center block border-transparent">
+                <Link href="/register?role=EDITOR" className="px-6 py-3 rounded-xl bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all font-semibold w-full sm:w-auto text-center block shadow-sm">
                   Apply as Editor
                 </Link>
               </Magnetic>
@@ -192,7 +192,7 @@ export default function Home() {
           </Magnetic>
           <div className="flex flex-col w-full sm:w-auto">
             <Magnetic strength={0.35} className="w-full sm:w-auto">
-              <Link href="/register?role=EDITOR" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all w-full sm:w-auto text-center block border-transparent">
+              <Link href="/register?role=EDITOR" className="px-6 py-3 rounded-xl bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all font-semibold w-full sm:w-auto text-center block shadow-sm">
                 Apply as Editor
               </Link>
             </Magnetic>
