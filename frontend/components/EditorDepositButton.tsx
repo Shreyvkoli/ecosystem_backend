@@ -115,7 +115,7 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
 
   return (
     <div>
-      {stripeClientSecret && (
+      {/* {stripeClientSecret && (
         <StripePaymentModal
           clientSecret={stripeClientSecret}
           title="Pay Deposit"
@@ -126,23 +126,15 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
             router.refresh()
           }}
         />
-      )}
+      )} */}
 
       <div className="flex gap-2">
         <button
           onClick={handleDeposit}
           disabled={loading}
-          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 font-medium"
         >
-          {loading ? 'Processing...' : 'Pay Deposit'}
-        </button>
-        <button
-          onClick={handleTestDeposit}
-          disabled={loading}
-          className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 text-sm whitespace-nowrap"
-          title="Simulate successful payment"
-        >
-          Dev Pay (Dummy)
+          {loading ? 'Processing...' : 'Pay Security Deposit'}
         </button>
       </div>
 
