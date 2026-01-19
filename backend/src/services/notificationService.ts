@@ -59,4 +59,14 @@ export class NotificationService {
             this.io.to(`order:${orderId}`).emit(event, payload);
         }
     }
+    /**
+     * Emit a notification via Socket.IO without creating a DB record
+     * (Useful when the record is created inside a transaction)
+     */
+    public notifyUser(userId: string, notification: Notification) {
+        if (this.io) {
+            this.io.to(userId).emit('notification', notification);
+        }
+    }
 }
+

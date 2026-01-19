@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
 import { sendEmail } from '../utils/email.js';
+import { NotificationService } from './notificationService.js';
 
 const prisma = new PrismaClient();
 console.log('OrderService: Prisma Client Initialized (Check for new fields support)');
@@ -457,7 +458,7 @@ export async function assignEditor(
   }
 
   // Perform assignment and notifications in a transaction
-  const updatedOrder = await prisma.$transaction(async (tx) => {
+  const { updatedOrder, notification } = await prisma.$transaction(async (tx) => {
     const updated = await tx.order.update({
       where: { id: orderId },
       data: {
@@ -486,18 +487,21 @@ export async function assignEditor(
     });
 
     // Create Notification for Editor
-    await tx.notification.create({
+    const notif = await tx.notification.create({
       data: {
         userId: editorId,
         title: 'New Project Assigned',
         message: `You have been assigned to order "${updated.title}". Please start working.`,
         type: 'SYSTEM',
-        data: { orderId: updated.id, url: `/orders/${updated.id}` }
+        link: `/orders/${updated.id}`
       }
     });
 
-    return updated;
+    return { updatedOrder: updated, notification: notif };
   });
+
+  // Emit Socket Notification to Editor
+  NotificationService.getInstance().notifyUser(editorId, notification);
 
   // Send Email Notification (Non-blocking)
   if (updatedOrder.editor?.email) {
