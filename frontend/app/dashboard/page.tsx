@@ -318,7 +318,7 @@ export default function DashboardPage() {
                           order.status === 'OPEN' ? (
                             <span className="flex items-center text-blue-600 font-medium">
                               <Users className="w-3 h-3 mr-1" />
-                              {order.applications?.length || 0} Applicants
+                              {order._count?.applications || 0} Applicants
                             </span>
                           ) : (
                             order.editor?.name || 'Unassigned'
