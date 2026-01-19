@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { paymentsApi } from '@/lib/api'
+import { getUser } from '@/lib/auth'
 import StripePaymentModal from '@/components/StripePaymentModal'
 
 declare global {
@@ -77,13 +78,22 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
         return
       }
 
+      const user = getUser()
       const options = {
         key: resp.data.keyId,
         amount: resp.data.amount * 100,
         currency: resp.data.currency,
-        name: 'Video Editing Marketplace',
+        name: 'Cutflow',
         description: 'Editor Security Deposit',
         order_id: resp.data.razorpayOrderId,
+        prefill: {
+          name: user?.name,
+          email: user?.email,
+          contact: '' // Can be added if we store phone numbers
+        },
+        theme: {
+          color: '#4f46e5' // Indigo-600 to match app theme
+        },
         handler: async function (response: any) {
           try {
             await paymentsApi.verifyEditorDeposit(
