@@ -39,7 +39,7 @@ export default function Logo({
         <span
           className={
             wordmarkClassName ??
-            'text-xl font-bold text-gray-900'
+            'text-2xl font-extrabold text-gray-900 tracking-tight'
           }
         >
           Cutflow
