@@ -16,8 +16,13 @@ export default function EditorDepositPolicyPage() {
             Editors lock a refundable security deposit when applying to a job. This ensures serious participation and reduces ghosting.
           </p>
           <p>
-            Deposit amount typically ranges from ₹500 to ₹2,000 depending on order value and risk.
+            Deposit amount is fixed based on job tier:
           </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong>Basic Jobs:</strong> ₹199</li>
+            <li><strong>Professional Jobs:</strong> ₹499</li>
+            <li><strong>Premium Jobs:</strong> ₹1499</li>
+          </ul>
           <p>
             Deposit is released when:
             (a) the creator rejects your application,
