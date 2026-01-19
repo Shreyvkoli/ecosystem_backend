@@ -536,6 +536,11 @@ router.get('/:id/raw-files/:fileId/download-url', requireRole(['CREATOR', 'EDITO
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Security: Editors must pay deposit
+    if (req.userRole === 'EDITOR' && ((file.order as any).editorDepositRequired ?? true) && (file.order as any).editorDepositStatus !== 'PAID') {
+      return res.status(403).json({ error: 'Security Deposit Required to access raw files.' });
+    }
+
     // Return public link directly
     const downloadUrl = file.publicLink || '';
 

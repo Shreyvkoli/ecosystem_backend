@@ -301,7 +301,7 @@ export async function getOrderById(
     // Cast to any because editorDepositStatus might not be in the default inferred type from findFirst, 
     // though it is in the schema.
     const isDepositPaid = (order as any).editorDepositStatus === 'PAID';
-    const isDepositRequired = (order as any).editorDepositRequired;
+    const isDepositRequired = (order as any).editorDepositRequired ?? true;
 
     if (!isAssigned || (isDepositRequired && !isDepositPaid)) {
       order.files = order.files.filter(f => f.type !== FileType.RAW_VIDEO);
@@ -527,6 +527,14 @@ export async function getRawVideoFiles(orderId: string, userId: string, userRole
 
   if (!order) {
     throw new Error('Order not found or access denied');
+  }
+
+  if (userRole === 'EDITOR') {
+    const isDepositPaid = (order as any).editorDepositStatus === 'PAID';
+    const isDepositRequired = (order as any).editorDepositRequired ?? true;
+    if (isDepositRequired && !isDepositPaid) {
+      return [];
+    }
   }
 
   return prisma.file.findMany({
