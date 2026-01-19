@@ -304,44 +304,19 @@ export default function EditorJobsPage() {
 
           {tab === 'available' && (
             <div>
-              <div className="flex justify-end mb-6">
-                <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-lg border border-gray-200">
-                  <button
-                    onClick={() => setSortBy('default')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'default'
-                      ? 'bg-white shadow-sm text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+              <div className="flex justify-center mb-6">
+                <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm">
+                  <span className="text-sm font-medium text-gray-600">Sort by:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-transparent text-sm font-semibold text-gray-800 focus:outline-none cursor-pointer"
                   >
-                    Newest
-                  </button>
-                  <button
-                    onClick={() => setSortBy('money')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'money'
-                      ? 'bg-white shadow-sm text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    Money
-                  </button>
-                  <button
-                    onClick={() => setSortBy('deadline')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'deadline'
-                      ? 'bg-white shadow-sm text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    Deadline
-                  </button>
-                  <button
-                    onClick={() => setSortBy('level')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sortBy === 'level'
-                      ? 'bg-white shadow-sm text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    Level
-                  </button>
+                    <option value="default">Newest</option>
+                    <option value="money">Money (High to Low)</option>
+                    <option value="deadline">Deadline (Urgent First)</option>
+                    <option value="level">Level (Expertise)</option>
+                  </select>
                 </div>
               </div>
 
@@ -362,7 +337,7 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {sortedOpenOrders.map((order) => (
-                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative bg-gradient-to-br from-white to-orange-50/50 border-orange-100/50 hover:shadow-orange-100">
+                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative bg-gradient-to-br from-orange-50 via-orange-100/40 to-white order-card-orange border-orange-200 hover:shadow-orange-200/50">
                       <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-10 bg-indigo-50">
                         {order.creator?.creatorProfile?.avatarUrl ? (
                           <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
