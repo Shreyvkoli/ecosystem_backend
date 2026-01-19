@@ -368,6 +368,24 @@ export default function EditorJobsPage() {
                           {order.description}
                         </p>
                       )}
+                      {/* Key Details: Deadline & Level */}
+                      <div className="flex items-center gap-4 mb-4 text-xs font-medium text-gray-600">
+                        {order.deadline && (
+                          <div className="flex items-center text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-100">
+                            <Calendar className="w-3 h-3 mr-1.5" />
+                            {new Date(order.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </div>
+                        )}
+                        {order.editingLevel && (
+                          <div className={`px-2 py-1 rounded-md border ${order.editingLevel === 'PREMIUM' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                              order.editingLevel === 'PROFESSIONAL' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                'bg-green-100 text-green-700 border-green-200'
+                            }`}>
+                            {order.editingLevel.replace(/_/g, ' ').replace('TOP 1 PERCENT', 'PREMIUM')}
+                          </div>
+                        )}
+                      </div>
+
                       <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
                         <span className="text-gray-500 truncate max-w-[60%]">Creator: {order.creator?.name}</span>
                         {order.amount && (
