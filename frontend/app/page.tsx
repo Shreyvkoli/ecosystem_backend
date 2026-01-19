@@ -35,12 +35,12 @@ export default function Home() {
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
         <div className="space-y-6">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/10 text-sm text-gray-700">
-            A professional video-editing marketplace that actually finishes projects
+            India's Most Reliable Video Editing Marketplace
           </div>
           <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
-            Hire vetted editors.
+            Hire vetted Indian editors.
             <span className="block bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Review in-browser. Zero ghosting.
+              Review with Timestamp Feedback. Zero payment risk with Razorpay Escrow.
             </span>
           </h1>
           <p className="text-lg text-gray-600 max-w-xl">
@@ -60,7 +60,7 @@ export default function Home() {
                 </Link>
               </Magnetic>
               <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
-                For editors: Your wallet balance is never platform profit. It is refundable or adjusted in your first payout.
+                Aapka deposit 100% safe hai. Kaam approve hote hi deposit refund aur payment seedha aapke wallet mein aa jayegi.
               </div>
             </div>
           </div>
