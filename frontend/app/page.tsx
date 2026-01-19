@@ -162,7 +162,7 @@ export default function Home() {
               <div className="flex items-start gap-3 group/item">
                 <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
                 <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Files are stored privately with access control</div>
+                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Zero-storage streaming tech (Google Drive / Dropbox) - no uploads needed</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 group/item">
