@@ -35,12 +35,17 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
   const handleTestDeposit = async () => {
     setLoading(true);
     try {
-      // Create order first
       const resp = await paymentsApi.createEditorDeposit(orderId);
+
+      if (resp.data.gateway === 'stripe') {
+        alert('Dev Pay (Dummy) is currently only supported for Razorpay (India). Please switch country or use real payment.');
+        setLoading(false);
+        return;
+      }
 
       // Simulate successful verification with dummy data
       await paymentsApi.verifyEditorDeposit(
-        (resp.data as any).razorpayOrderId || 'test_order_id',
+        resp.data.razorpayOrderId,
         'pay_test_' + Date.now(),
         'dummy_signature_dev_mode'
       );
