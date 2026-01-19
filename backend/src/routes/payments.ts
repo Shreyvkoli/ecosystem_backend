@@ -97,7 +97,7 @@ router.post('/create-order', authenticate, requireCreator, async (req: AuthReque
       const razorpayOrder = await razorpay.orders.create({
         amount: toMinorAmount(order.amount, 'INR'),
         currency: 'INR',
-        receipt: `order_${orderId}_${Date.now()}`,
+        receipt: `ord_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
         notes: {
           orderId,
           userId: req.userId!,
@@ -267,22 +267,30 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
       // We generate a dummy order ID so the "Dev Pay" button still works.
       const hasKeys = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET;
 
-      if (hasKeys) {
-        const razorpay = getRazorpay();
-        const razorpayOrder = await razorpay.orders.create({
-          amount: toMinorAmount(depositAmount, 'INR'),
-          currency: 'INR',
-          // Receipt max length is 40. UUID is 36. So we must shorten it.
-          // Using 'dep_' + first 10 of order + last 10 of timestamp
-          receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
-          notes: {
-            orderId,
-            userId: req.userId!,
-            kind: 'EDITOR_DEPOSIT'
-          }
-        });
-        razorpayOrderId = razorpayOrder.id;
+      if (!hasKeys) {
+        throw new Error('Razorpay keys are missing in backend environment');
       }
+
+      const razorpay = getRazorpay();
+      const razorpayOrder = await razorpay.orders.create({
+        amount: toMinorAmount(depositAmount, 'INR'),
+        currency: 'INR',
+        // Receipt max length is 40. UUID is 36. So we must shorten it.
+        // Using 'dep_' + first 10 of order + last 10 of timestamp
+        receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
+        notes: {
+          orderId,
+          userId: req.userId!,
+          kind: 'EDITOR_DEPOSIT'
+        }
+      });
+      razorpayOrderId = razorpayOrder.id;
+
+      /*
+      if (hasKeys) {
+        ...
+      }
+      */
 
       const deposit = await (prisma as any).editorDeposit.create({
         data: {
