@@ -181,7 +181,8 @@ export async function getUserOrders(
       _count: {
         select: {
           messages: true,
-          files: true
+          files: true,
+          applications: true
         }
       }
     },
@@ -280,6 +281,11 @@ export async function getOrderById(
           }
         },
         orderBy: { createdAt: 'asc' }
+      },
+      _count: {
+        select: {
+          applications: true
+        }
       }
     }
   });

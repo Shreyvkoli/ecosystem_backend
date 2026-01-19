@@ -384,6 +384,10 @@ export default function EditorJobsPage() {
                             {order.editingLevel.replace(/_/g, ' ').replace('TOP 1 PERCENT', 'PREMIUM')}
                           </div>
                         )}
+                        <div className="flex items-center text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100" title="Number of applicants">
+                          <Users className="w-3 h-3 mr-1.5" />
+                          {order._count?.applications || order.applications?.length || 0} Applicants
+                        </div>
                       </div>
 
                       <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
