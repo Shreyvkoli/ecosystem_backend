@@ -1,8 +1,32 @@
-import 'dotenv/config'; // Must be first
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { apiLimiter } from './middleware/rateLimit.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+// robustness: try to find .env file
+const possiblePaths = [
+  path.join(process.cwd(), '.env'),
+  path.join(process.cwd(), 'backend', '.env'),
+  path.join(__dirname, '..', '.env'), // if running from dist
+  path.join(__dirname, '..', '..', '.env') // if running from src
+];
+
+let loaded = false;
+for (const p of possiblePaths) {
+  if (fs.existsSync(p)) {
+    dotenv.config({ path: p });
+    console.log(`Loaded environment from: ${p}`);
+    loaded = true;
+    break;
+  }
+}
+if (!loaded) {
+  console.error('CRITICAL: .env file NOT FOUND in any common location!');
+  console.error('Searched:', possiblePaths);
+}
 import authRoutes from './routes/auth.js';
 import orderRoutes from './routes/orders.js';
 import fileRoutes from './routes/files.js';
