@@ -85,7 +85,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Magnetic strength={0.35}>
-                <Link href="/register?role=EDITOR" className="premium-button">Apply as Editor</Link>
+                <Link href="/register?role=EDITOR" className="premium-button-green">Apply as Editor</Link>
               </Magnetic>
               <Magnetic strength={0.35}>
                 <Link href="/pricing" className="glass-morphism px-6 py-3 text-gray-700 hover:text-gray-900 hover:bg-white/15 transition-all">
