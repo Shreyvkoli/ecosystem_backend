@@ -62,7 +62,7 @@ export default function Logo({
         <span
           className={
             wordmarkClassName ??
-            'text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent'
+            'text-xl font-bold text-gray-900'
           }
         >
           Cutflow
