@@ -190,6 +190,17 @@ export default function EditorJobsPage() {
     return colors[status] || 'bg-gray-100 text-gray-700 border border-gray-300'
   }
 
+  const getJobCardGradient = (level?: string) => {
+    switch (level) {
+      case 'TOP_1_PERCENT':
+        return 'bg-gradient-to-br from-orange-50 via-orange-100/40 to-white border-orange-200 hover:shadow-orange-200/50'
+      case 'PRO':
+        return 'bg-gradient-to-br from-blue-50 via-blue-100/40 to-white border-blue-200 hover:shadow-blue-200/50'
+      default: // INTERMEDIATE, BEGINNER, etc.
+        return 'bg-gradient-to-br from-green-50 via-green-100/40 to-white border-green-200 hover:shadow-green-200/50'
+    }
+  }
+
   if (!user || user.role !== 'EDITOR') return null
 
   const appliedJobs = useMemo(
@@ -337,7 +348,7 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {sortedOpenOrders.map((order) => (
-                    <div key={order.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative bg-gradient-to-br from-orange-50 via-orange-100/40 to-white order-card-orange border-orange-200 hover:shadow-orange-200/50">
+                    <div key={order.id} className={`premium-card group md:hover:scale-105 transition-all duration-300 relative ${getJobCardGradient(order.editingLevel)}`}>
                       <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-10 bg-indigo-50">
                         {order.creator?.creatorProfile?.avatarUrl ? (
                           <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
