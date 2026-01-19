@@ -192,12 +192,12 @@ export default function EditorJobsPage() {
 
   const getJobCardGradient = (level?: string) => {
     switch (level) {
-      case 'TOP_1_PERCENT':
-        return 'bg-gradient-to-br from-orange-50 via-orange-100/40 to-white border-orange-200 hover:shadow-orange-200/50'
-      case 'PRO':
-        return 'bg-gradient-to-br from-blue-50 via-blue-100/40 to-white border-blue-200 hover:shadow-blue-200/50'
-      default: // INTERMEDIATE, BEGINNER, etc.
-        return 'bg-gradient-to-br from-green-50 via-green-100/40 to-white border-green-200 hover:shadow-green-200/50'
+      case 'PREMIUM':
+        return 'bg-gradient-to-br from-orange-50 via-orange-100/40 to-white order-card-orange border-orange-200 hover:shadow-orange-200/50'
+      case 'PROFESSIONAL':
+        return 'bg-gradient-to-br from-blue-50 via-blue-100/40 to-white order-card-blue border-blue-200 hover:shadow-blue-200/50'
+      default: // BASIC
+        return 'bg-gradient-to-br from-green-50 via-green-100/40 to-white order-card-green border-green-200 hover:shadow-green-200/50'
     }
   }
 
