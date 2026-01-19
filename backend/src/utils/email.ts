@@ -10,12 +10,12 @@ interface EmailData {
 
 export const sendEmail = async (emailData: EmailData): Promise<void> => {
   console.log('Email service called:', emailData);
-  
+
   // TODO: Implement actual email service
   // For now, just log the email that would be sent
-  
+
   const emailContent = generateEmailContent(emailData.template, emailData.data);
-  
+
   console.log(`
     ==================== EMAIL ===================
     To: ${Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to}
@@ -40,7 +40,7 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       View all applications in your dashboard: ${data?.dashboardUrl}
     `,
-    
+
     'deposit-timeout': `
       Order: ${data?.orderTitle}
       
@@ -48,7 +48,7 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       Please apply again when you're ready to complete the deposit.
     `,
-    
+
     'order-cancelled-no-apps': `
       Order: ${data?.orderTitle}
       
@@ -56,7 +56,7 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       You can create a new order at any time.
     `,
-    
+
     'editor-cancelled-no-work': `
       Order: ${data?.orderTitle}
       
@@ -64,7 +64,7 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       Your deposit has been forfeited.
     `,
-    
+
     'deadline-passed': `
       Order: ${data?.orderTitle}
       
@@ -72,7 +72,7 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       The creator has been refunded.
     `,
-    
+
     'communication-gap': `
       Order: ${data?.orderTitle}
       
@@ -80,15 +80,33 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       
       Please communicate to move this order forward.
     `,
-    
+
     'revision-limit-exceeded': `
       Order: ${data?.orderTitle}
       
       Maximum revisions (2) have been used.
       
       Additional revisions require a paid upgrade.
+    `,
+
+    'job-assigned': `
+      CONGRATULATIONS! YOU HAVE BEEN HIRED! 
+      
+      Order: ${data?.orderTitle}
+      Creator: ${data?.creatorName}
+      Amount: ₹${data?.amount}
+      Deadline: ${data?.deadline}
+      
+      You operate on strict timelines. 
+      Please go to your dashboard and start the work immediately:
+      ${data?.dashboardUrl}
+      
+      Important:
+      1. Review the brief and raw files.
+      2. Communicate with the creator if you have questions.
+      3. Submit your first draft before the deadline.
     `
   };
-  
+
   return templates[template] || 'Email template not found';
 };

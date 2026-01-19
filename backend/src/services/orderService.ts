@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
+import { sendEmail } from '../utils/email.js';
 
 const prisma = new PrismaClient();
 console.log('OrderService: Prisma Client Initialized (Check for new fields support)');
@@ -445,22 +446,59 @@ export async function assignEditor(
     throw new Error('Invalid editor');
   }
 
-  return prisma.order.update({
-    where: { id: orderId },
-    data: {
-      editorId,
-      status: OrderStatus.ASSIGNED
-    },
-    include: {
-      editor: {
-        select: {
-          id: true,
-          name: true,
-          email: true
+  // Perform assignment and notifications in a transaction
+  const updatedOrder = await prisma.$transaction(async (tx) => {
+    const updated = await tx.order.update({
+      where: { id: orderId },
+      data: {
+        editorId,
+        status: OrderStatus.ASSIGNED,
+        assignedAt: new Date()
+      },
+      include: {
+        creator: {
+          select: { name: true, email: true }
+        },
+        editor: {
+          select: { id: true, name: true, email: true }
         }
       }
-    }
+    });
+
+    // Create System Message
+    await tx.message.create({
+      data: {
+        orderId,
+        userId: creatorId,
+        type: 'SYSTEM',
+        content: `🎉 You have been hired! The project is assigned to @${updated.editor!.name}.`
+      }
+    });
+
+    return updated;
   });
+
+  // Send Email Notification (Non-blocking)
+  if (updatedOrder.editor?.email) {
+    // Generate dashboard Link (using env or default)
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const dashboardUrl = `${baseUrl}/orders/${updatedOrder.id}`;
+
+    sendEmail({
+      to: updatedOrder.editor.email,
+      subject: `You're Hired! New Project: ${updatedOrder.title}`,
+      template: 'job-assigned',
+      data: {
+        orderTitle: updatedOrder.title,
+        creatorName: updatedOrder.creator.name,
+        amount: updatedOrder.amount,
+        deadline: updatedOrder.deadline ? new Date(updatedOrder.deadline).toLocaleDateString() : 'N/A',
+        dashboardUrl
+      }
+    }).catch(console.error); // Log error but don't fail request
+  }
+
+  return updatedOrder;
 }
 
 /**
