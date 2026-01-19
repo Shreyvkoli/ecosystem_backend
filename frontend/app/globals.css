@@ -78,9 +78,11 @@ html.dark {
   0% {
     background-position: 0% 0%;
   }
+
   50% {
     background-position: 100% 60%;
   }
+
   100% {
     background-position: 0% 0%;
   }
@@ -91,55 +93,89 @@ html.dark {
   .glass-morphism {
     @apply bg-white/70 backdrop-blur-lg border border-gray-200 rounded-xl;
   }
-  
+
   .premium-button {
     @apply relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25;
   }
-  
+
   .premium-button::before {
     content: '';
     @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700;
   }
-  
+
   .premium-button:hover::before {
+    @apply translate-x-full;
+  }
+
+  /* New Green Button Style */
+  .premium-button-green {
+    @apply relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-green-500/25;
+  }
+
+  .premium-button-green::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700;
+  }
+
+  .premium-button-green:hover::before {
     @apply translate-x-full;
   }
 
   .premium-button-no-shimmer {
     @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25;
   }
-  
+
+  .premium-button-green-no-shimmer {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-green-500/25;
+  }
+
   .premium-card {
     @apply bg-white/90 backdrop-blur-md border border-gray-200 rounded-2xl p-6 transition-all duration-200 hover:bg-white hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/50;
   }
-  
+
   .neon-glow {
     @apply relative;
   }
-  
+
   .neon-glow::after {
     content: '';
     @apply absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-md -z-10;
   }
-  
+
+  .neon-glow-green {
+    @apply relative;
+  }
+
+  .neon-glow-green::after {
+    content: '';
+    @apply absolute inset-0 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 blur-md -z-10;
+  }
+
   .floating-animation {
     animation: float 6s ease-in-out infinite;
   }
-  
+
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
   }
-  
+
   .shimmer {
     @apply relative overflow-hidden;
   }
-  
+
   .shimmer::before {
     content: '';
     @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000;
   }
-  
+
   .shimmer:hover::before {
     @apply translate-x-full;
   }
@@ -185,9 +221,9 @@ html.dark {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 }
-

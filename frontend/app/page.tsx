@@ -192,7 +192,7 @@ export default function Home() {
           </Magnetic>
           <div className="flex flex-col w-full sm:w-auto">
             <Magnetic strength={0.35} className="w-full sm:w-auto">
-              <Link href="/register?role=EDITOR" className="px-6 py-3 rounded-xl bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all font-semibold w-full sm:w-auto text-center block shadow-sm">
+              <Link href="/register?role=EDITOR" className="premium-button-green-no-shimmer neon-glow-green w-full sm:w-auto text-center justify-center flex items-center">
                 Apply as Editor
               </Link>
             </Magnetic>
