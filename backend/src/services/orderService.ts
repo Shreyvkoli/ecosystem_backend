@@ -32,12 +32,17 @@ export interface UpdateOrderStatusData {
  */
 const ALLOWED_TRANSITIONS: Record<OrderStatus, Array<{ role: 'CREATOR' | 'EDITOR' | 'ADMIN'; to: OrderStatus[] }>> = {
   OPEN: [
-    { role: 'CREATOR', to: ['CANCELLED'] },
-    { role: 'ADMIN', to: ['CANCELLED'] }
+    { role: 'CREATOR', to: ['CANCELLED', 'SELECTED'] },
+    { role: 'ADMIN', to: ['CANCELLED', 'SELECTED'] }
   ],
   APPLIED: [
-    { role: 'CREATOR', to: ['ASSIGNED', 'CANCELLED'] },
-    { role: 'ADMIN', to: ['ASSIGNED', 'CANCELLED'] }
+    { role: 'CREATOR', to: ['ASSIGNED', 'CANCELLED', 'SELECTED'] },
+    { role: 'ADMIN', to: ['ASSIGNED', 'CANCELLED', 'SELECTED'] }
+  ],
+  SELECTED: [
+    { role: 'EDITOR', to: ['ASSIGNED'] },
+    { role: 'CREATOR', to: ['CANCELLED'] },
+    { role: 'ADMIN', to: ['CANCELLED', 'ASSIGNED'] }
   ],
   ASSIGNED: [
     { role: 'EDITOR', to: ['IN_PROGRESS'] },
@@ -49,6 +54,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, Array<{ role: 'CREATOR' | 'EDITOR
     { role: 'CREATOR', to: ['CANCELLED', 'DISPUTED'] },
     { role: 'ADMIN', to: ['CANCELLED', 'DISPUTED'] }
   ],
+
   PREVIEW_SUBMITTED: [
     { role: 'CREATOR', to: ['REVISION_REQUESTED', 'IN_PROGRESS', 'DISPUTED'] },
     { role: 'ADMIN', to: ['REVISION_REQUESTED', 'IN_PROGRESS', 'CANCELLED', 'DISPUTED'] }
@@ -339,6 +345,28 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     );
   }
 
+  // Enforce Max Slots for Pipeline activation (SELECTED -> ASSIGNED)
+  if (order.status === 'SELECTED' && data.status === 'ASSIGNED' && order.editorId) {
+    const editorUser = await prisma.user.findUnique({
+      where: { id: order.editorId },
+      include: { editorProfile: true }
+    });
+    const maxSlots = (editorUser?.editorProfile as any)?.maxSlots || 2;
+
+    const activeCount = await prisma.order.count({
+      where: {
+        editorId: order.editorId,
+        status: {
+          in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
+        }
+      }
+    });
+
+    if (activeCount >= maxSlots) {
+      throw new Error(`Cannot start new job. You are at capacity (${activeCount}/${maxSlots}).`);
+    }
+  }
+
   // Update order
   const updateData: any = {
     status: data.status
@@ -358,6 +386,46 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
           editor: { select: { id: true, name: true, email: true } }
         }
       });
+
+      // 1.5. Pipeline Notification Logic (Cutflow Feature)
+      if (updatedOrder.editorId) {
+        const editorUser = await tx.user.findUnique({
+          where: { id: updatedOrder.editorId },
+          include: { editorProfile: true }
+        });
+        const maxSlots = (editorUser?.editorProfile as any)?.maxSlots || 2;
+
+        const activeCount = await tx.order.count({
+          where: {
+            editorId: updatedOrder.editorId,
+            status: {
+              in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
+            }
+          }
+        });
+
+        if (activeCount < maxSlots) {
+          const nextJob = await tx.order.findFirst({
+            where: {
+              editorId: updatedOrder.editorId,
+              status: 'SELECTED'
+            },
+            orderBy: { createdAt: 'asc' }
+          });
+
+          if (nextJob) {
+            await tx.notification.create({
+              data: {
+                userId: updatedOrder.editorId,
+                type: 'SYSTEM',
+                title: 'Slot Opened!',
+                message: `You can now start "${nextJob.title}" from your pipeline.`,
+                link: `/editor/jobs/${nextJob.id}`
+              }
+            });
+          }
+        }
+      }
 
       // 2. Release Funds to Editor if paid
       // Check strict conditions: Payment must be PAID (Captured) and Editor must be assigned

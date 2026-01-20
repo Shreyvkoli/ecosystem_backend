@@ -280,4 +280,65 @@ router.put('/creator/profile', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// GET /api/users/:id/availability
+router.get('/:id/availability', async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const editor = await prisma.user.findUnique({
+      where: { id, role: 'EDITOR' },
+      include: { editorProfile: true }
+    });
+
+    if (!editor) {
+      return res.status(404).json({ error: 'Editor not found' });
+    }
+
+    const maxSlots = (editor?.editorProfile as any)?.maxSlots || 2;
+
+    // Count active jobs (excluding COMPLETED, CANCELLED, OPEN, APPLIED, SELECTED)
+    // Active statuses: ASSIGNED, IN_PROGRESS, PREVIEW_SUBMITTED, REVISION_REQUESTED, FINAL_SUBMITTED
+    const activeJobs = await prisma.order.findMany({
+      where: {
+        editorId: id,
+        status: {
+          in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
+        }
+      },
+      select: { deadline: true },
+      orderBy: { deadline: 'asc' }
+    });
+
+    const activeCount = activeJobs.length;
+    let availabilityStatus = 'AVAILABLE';
+    let nextAvailableAt = null;
+
+    if (activeCount >= maxSlots) {
+      availabilityStatus = 'BUSY';
+      // Find earliest deadline among active jobs
+      // If any job has no deadline, we might assume undefined availability or fallback
+      const earliestJob = activeJobs.find(job => job.deadline);
+      if (earliestJob) {
+        nextAvailableAt = earliestJob.deadline;
+      } else {
+        // Fallback: 2 days from now if no deadline set
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        nextAvailableAt = d;
+      }
+    }
+
+    return res.json({
+      status: availabilityStatus,
+      activeCount,
+      maxSlots,
+      nextAvailableAt
+    });
+
+  } catch (error: any) {
+    console.error('Get availability error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

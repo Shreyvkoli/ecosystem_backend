@@ -111,6 +111,7 @@ model EditorProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   available Boolean  @default(true)
+  maxSlots  Int      @default(2)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

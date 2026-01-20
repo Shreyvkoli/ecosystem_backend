@@ -8,7 +8,7 @@ import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import EditorTimeline from '@/components/EditorTimeline'
 import Link from 'next/link'
-import { Eye, FileText, Calendar, Clock, ExternalLink, X, Users } from 'lucide-react'
+import { Eye, FileText, Calendar, Clock, ExternalLink, X, Users, ArrowRight } from 'lucide-react'
 
 export default function EditorJobsPage() {
   const router = useRouter()
@@ -93,6 +93,18 @@ export default function EditorJobsPage() {
     onError: (err: any) => {
       alert(err?.response?.data?.error || 'Failed to apply')
     },
+  })
+
+  const startJobMutation = useMutation({
+    mutationFn: (orderId: string) => ordersApi.updateStatus(orderId, 'ASSIGNED'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
+      queryClient.invalidateQueries({ queryKey: ['activeJobCount'] })
+      alert('Job started!')
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.error || 'Failed to start job')
+    }
   })
 
   const topupMutation = useMutation({
@@ -227,6 +239,11 @@ export default function EditorJobsPage() {
     [myOrders]
   )
 
+  const pipelineJobs = useMemo(
+    () => myOrders?.filter((o) => o.status === 'SELECTED') || [],
+    [myOrders]
+  )
+
   const completedJobs = useMemo(
     () => myOrders?.filter((o) => o.status === 'COMPLETED') || [],
     [myOrders]
@@ -355,95 +372,81 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {sortedOpenOrders.map((order) => (
-                    <div key={order.id} className={`premium-card group md:hover:scale-105 transition-all duration-300 relative ${getJobCardGradient(order.editingLevel)} !p-0 overflow-hidden flex flex-col`}>
-                      {/* Raw Video Thumbnail Placeholder */}
-                      <div className="h-32 bg-gray-800 relative flex items-center justify-center overflow-hidden group-hover:bg-gray-700 transition-colors">
-                        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
-                        <div className="text-white flex flex-col items-center">
-                          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm mb-2 group-hover:scale-110 transition-transform">
-                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                          </div>
-                          <span className="text-xs font-medium text-white/80 uppercase tracking-wider">Raw Footage</span>
-                        </div>
-                        {/* Creator Avatar - Absoluted to overlap thumbnail bottom-right */}
-                        <div className="absolute -bottom-5 right-4 w-12 h-12 rounded-full border-4 border-white shadow-md overflow-hidden z-10 bg-indigo-50">
-                          {order.creator?.creatorProfile?.avatarUrl ? (
-                            <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700">
-                              {order.creator?.name?.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="p-5 pt-8 flex-1 flex flex-col">
-                        <div className="mb-4">
-                          <h3 className="text-lg md:text-xl font-bold text-gray-900 break-words group-hover:text-indigo-600 transition-colors line-clamp-2">
-                            {order.title}
-                          </h3>
-                        </div>
-                        {order.description && (
-                          <p className="text-gray-600 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors text-sm">
-                            {order.description}
-                          </p>
-                        )}
-                        {/* Key Details: Deadline & Level */}
-                        <div className="flex items-center gap-4 mb-4 text-xs font-medium text-gray-600">
-                          {order.deadline && (
-                            <div className="flex items-center text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-100">
-                              <Calendar className="w-3 h-3 mr-1.5" />
-                              {new Date(order.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                            </div>
-                          )}
-                          {order.editingLevel && (
-                            <div className={`px-2 py-1 rounded-md border ${order.editingLevel === 'PREMIUM' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                              order.editingLevel === 'PROFESSIONAL' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                'bg-green-100 text-green-700 border-green-200'
-                              }`}>
-                              {order.editingLevel.replace(/_/g, ' ').replace('TOP 1 PERCENT', 'PREMIUM')}
-                            </div>
-                          )}
-                          <div className="flex items-center text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100" title="Number of applicants">
-                            <Users className="w-3 h-3 mr-1.5" />
-                            {order._count?.applications || order.applications?.length || 0} Applicants
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
-                          <span className="text-gray-500 truncate max-w-[60%]">Creator: {order.creator?.name}</span>
-                          {order.amount && (
-                            <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => setSelectedJob(order)}
-                          className="w-full mb-3 flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-sm font-medium transition-colors border border-indigo-200"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Full Details
-                        </button>
-
-                        {/* Application Logic */}
-                        {order.status === 'OPEN' &&
-                          !(order.applications && order.applications.some((app: any) =>
-                            app.editorId === user?.id && app.status === 'APPLIED'
-                          )) &&
-                          order.editorId !== user?.id ? (
-                          <button onClick={() => applyMutation.mutate(order.id)} disabled={applyMutation.isPending} className="premium-button w-full neon-glow">
-                            {applyMutation.isPending ? 'Applying...' : 'Apply to Job'}
-                          </button>
+                    <div key={order.id} className={`premium-card group md:hover:scale-105 transition-all duration-300 relative ${getJobCardGradient(order.editingLevel)}`}>
+                      <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-10 bg-indigo-50">
+                        {order.creator?.creatorProfile?.avatarUrl ? (
+                          <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="text-center font-medium text-gray-700 py-2 bg-gray-50 rounded-lg">
-                            {order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED')
-                              ? 'Not Approved'
-                              : order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'APPLIED')
-                                ? 'Applied'
-                                : order.status.replace('_', ' ')}
+                          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700">
+                            {order.creator?.name?.charAt(0)}
                           </div>
                         )}
                       </div>
+                      <div className="mb-4">
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 break-words group-hover:text-indigo-600 transition-colors">
+                          {order.title}
+                        </h3>
+                      </div>
+                      {order.description && (
+                        <p className="text-gray-600 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors text-sm">
+                          {order.description}
+                        </p>
+                      )}
+                      {/* Key Details: Deadline & Level */}
+                      <div className="flex items-center gap-4 mb-4 text-xs font-medium text-gray-600">
+                        {order.deadline && (
+                          <div className="flex items-center text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-100">
+                            <Calendar className="w-3 h-3 mr-1.5" />
+                            {new Date(order.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </div>
+                        )}
+                        {order.editingLevel && (
+                          <div className={`px-2 py-1 rounded-md border ${order.editingLevel === 'PREMIUM' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                            order.editingLevel === 'PROFESSIONAL' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                              'bg-green-100 text-green-700 border-green-200'
+                            }`}>
+                            {order.editingLevel.replace(/_/g, ' ').replace('TOP 1 PERCENT', 'PREMIUM')}
+                          </div>
+                        )}
+                        <div className="flex items-center text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100" title="Number of applicants">
+                          <Users className="w-3 h-3 mr-1.5" />
+                          {order._count?.applications || order.applications?.length || 0} Applicants
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-4">
+                        <span className="text-gray-500 truncate max-w-[60%]">Creator: {order.creator?.name}</span>
+                        {order.amount && (
+                          <span className="font-bold text-indigo-400 whitespace-nowrap">₹{order.amount.toLocaleString()}</span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => setSelectedJob(order)}
+                        className="w-full mb-3 flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-sm font-medium transition-colors border border-indigo-200"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Full Details
+                      </button>
+
+                      {/* Application Logic */}
+                      {order.status === 'OPEN' &&
+                        !(order.applications && order.applications.some((app: any) =>
+                          app.editorId === user?.id && app.status === 'APPLIED'
+                        )) &&
+                        order.editorId !== user?.id ? (
+                        <button onClick={() => applyMutation.mutate(order.id)} disabled={applyMutation.isPending} className="premium-button w-full neon-glow">
+                          {applyMutation.isPending ? 'Applying...' : 'Apply to Job'}
+                        </button>
+                      ) : (
+                        <div className="text-center font-medium text-gray-700 py-2 bg-gray-50 rounded-lg">
+                          {order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'REJECTED')
+                            ? 'Not Approved'
+                            : order.applications?.some((app: any) => app.editorId === user?.id && app.status === 'APPLIED')
+                              ? 'Applied'
+                              : order.status.replace('_', ' ')}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -473,6 +476,47 @@ export default function EditorJobsPage() {
                             <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Applied</span>
                           </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pipelineJobs.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg mr-3">Pipeline</span>
+                        <span className="text-gray-500 text-sm font-normal">{pipelineJobs.length} jobs</span>
+                      </h2>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {pipelineJobs.map((order) => (
+                          <div key={order.id} className="premium-card group relative border-l-4 border-l-blue-500">
+                            <div className="mb-3">
+                              <h3 className="font-bold text-gray-900 break-words mb-1">{order.title}</h3>
+                              <p className="text-xs text-gray-600">Waiting for a slot</p>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-4">
+                              <Link href={`/editor/jobs/${order.id}`} className="text-xs text-blue-600 hover:underline">
+                                View Details
+                              </Link>
+                              <button
+                                onClick={() => startJobMutation.mutate(order.id)}
+                                disabled={!activeJobData?.canApply || startJobMutation.isPending}
+                                className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!activeJobData?.canApply
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                  }`}
+                              >
+                                {startJobMutation.isPending ? 'Starting...' : 'Start Job'}
+                                <ArrowRight className="w-3 h-3 ml-1.5" />
+                              </button>
+                            </div>
+                            {!activeJobData?.canApply && (
+                              <p className="text-[10px] text-red-500 mt-2 text-right">
+                                Finish an active job first
+                              </p>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>

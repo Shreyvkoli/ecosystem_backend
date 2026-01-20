@@ -21,6 +21,7 @@ import DisputeModal from '@/components/DisputeModal'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import SaveEditorButton from '@/components/SaveEditorButton'
+import AvailabilityBadge from '@/components/AvailabilityBadge'
 
 export default function OrderDetailPage() {
   const router = useRouter()
@@ -347,20 +348,48 @@ export default function OrderDetailPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
+                              {/* Availability Badge */}
+                              {app.editor?.availability && (
+                                <AvailabilityBadge
+                                  status={app.editor.availability.status}
+                                  nextAvailableAt={app.editor.availability.nextAvailableAt}
+                                  activeCount={app.editor.availability.activeCount}
+                                  maxSlots={app.editor.availability.maxSlots}
+                                />
+                              )}
+
                               <button
                                 onClick={() => setShowProfileModal(app.editorId)}
                                 className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                               >
                                 View Profile
                               </button>
-                              <span className="text-xs text-gray-600">{app.status}</span>
+
                               {(order.status === 'OPEN' || order.status === 'APPLIED') && app.status === 'APPLIED' && (
                                 <button
-                                  onClick={() => approveEditorMutation.mutate(app.id)}
+                                  onClick={() => {
+                                    // Check availability logic
+                                    const availability = (app.editor as any)?.availability;
+                                    if (availability?.status === 'BUSY') {
+                                      const nextDate = availability.nextAvailableAt ? new Date(availability.nextAvailableAt).toLocaleDateString() : 'soon';
+                                      const confirmMsg = `This editor is at full capacity (${availability.activeCount}/${availability.maxSlots}).\n\nIf you proceed, your project will enter their PIPELINE and start automatically around ${nextDate}.\n\nConfirm hiring for Pipeline?`;
+                                      if (confirm(confirmMsg)) {
+                                        approveEditorMutation.mutate(app.id);
+                                      }
+                                    } else {
+                                      // Available or unknown, proceed normally
+                                      approveEditorMutation.mutate(app.id);
+                                    }
+                                  }}
                                   disabled={approveEditorMutation.isPending}
-                                  className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 text-sm"
+                                  className={`px-3 py-2 rounded text-white text-sm transition-colors ${(app.editor as any)?.availability?.status === 'BUSY'
+                                      ? 'bg-orange-600 hover:bg-orange-700'
+                                      : 'bg-indigo-600 hover:bg-indigo-700'
+                                    } disabled:opacity-50`}
                                 >
-                                  {approveEditorMutation.isPending ? 'Approving...' : 'Approve'}
+                                  {approveEditorMutation.isPending ? 'Approving...' :
+                                    (app.editor as any)?.availability?.status === 'BUSY' ? 'Hire (Pipeline)' : 'Approve'
+                                  }
                                 </button>
                               )}
                             </div>
@@ -746,14 +775,15 @@ export default function OrderDetailPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </div>
+          </div >
+        </div >
+      </div >
 
       {/* Editor Profile Modal */}
-      <EditorProfileModal
+      < EditorProfileModal
         editorId={showProfileModal}
-        onClose={() => setShowProfileModal(null)}
+        onClose={() => setShowProfileModal(null)
+        }
       />
 
       {/* YouTube Connect Modal */}
@@ -786,48 +816,50 @@ export default function OrderDetailPage() {
       />
 
       {/* Revision Paywall Modal */}
-      {showRevisionLimitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Free Revisions Exhausted</h3>
-              <button onClick={() => setShowRevisionLimitModal(false)} className="text-gray-400 hover:text-gray-500">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
+      {
+        showRevisionLimitModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Free Revisions Exhausted</h3>
+                <button onClick={() => setShowRevisionLimitModal(false)} className="text-gray-400 hover:text-gray-500">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
 
-            <div className="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-              <p className="text-gray-800 text-sm leading-relaxed">
-                You have used your <span className="font-bold">2 free revisions</span>.
+              <div className="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                <p className="text-gray-800 text-sm leading-relaxed">
+                  You have used your <span className="font-bold">2 free revisions</span>.
+                </p>
+              </div>
+
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                To request more changes, a fee of <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
               </p>
-            </div>
 
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              To request more changes, a fee of <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
-            </p>
-
-            <div className="flex flex-col sm:flex-row justify-end gap-3">
-              <button
-                onClick={() => setShowRevisionLimitModal(false)}
-                className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Placeholder for payment logic
-                  alert('Premium Revision Payment Integration Coming Soon!')
-                  setShowRevisionLimitModal(false)
-                }}
-                className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
-              >
-                Pay & Request (₹500)
-              </button>
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={() => setShowRevisionLimitModal(false)}
+                  className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Placeholder for payment logic
+                    alert('Premium Revision Payment Integration Coming Soon!')
+                    setShowRevisionLimitModal(false)
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
+                >
+                  Pay & Request (₹500)
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }
 

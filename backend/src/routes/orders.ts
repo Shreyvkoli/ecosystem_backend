@@ -23,6 +23,7 @@ const prisma = new PrismaClient();
 const ORDER_STATUS = {
   OPEN: 'OPEN',
   APPLIED: 'APPLIED',
+  SELECTED: 'SELECTED',
   ASSIGNED: 'ASSIGNED',
   IN_PROGRESS: 'IN_PROGRESS',
   PREVIEW_SUBMITTED: 'PREVIEW_SUBMITTED',
@@ -295,7 +296,7 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
       visibility,
       scheduledPublishAt
     });
-
+ 
     const updated = await prisma.order.update({
       where: { id: order.id },
       data: {
@@ -306,7 +307,7 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
         lastActivityAt: new Date()
       }
     });
-
+ 
     return res.json({
       order: updated,
       youtube: {
@@ -730,9 +731,7 @@ router.get('/:id/applications', requireCreator, async (req: AuthRequest, res: Re
           include: {
             editor: {
               include: {
-                editorProfile: {
-                  select: { avatarUrl: true }
-                }
+                editorProfile: true
               }
             }
           },
@@ -745,7 +744,60 @@ router.get('/:id/applications', requireCreator, async (req: AuthRequest, res: Re
       return res.status(404).json({ error: 'Order not found or access denied' });
     }
 
-    return res.json(order.applications || []);
+    // Enrich with availability info
+    const applicationsWithAvailability = await Promise.all(order.applications.map(async (app) => {
+      const editorId = app.editor.id;
+      const maxSlots = (app.editor.editorProfile as any)?.maxSlots || 2;
+
+      const activeJobs = await prisma.order.findMany({
+        where: {
+          editorId: editorId,
+          status: {
+            in: [
+              ORDER_STATUS.ASSIGNED,
+              ORDER_STATUS.IN_PROGRESS,
+              ORDER_STATUS.PREVIEW_SUBMITTED,
+              ORDER_STATUS.REVISION_REQUESTED,
+              ORDER_STATUS.FINAL_SUBMITTED
+            ]
+          }
+        },
+        select: { deadline: true },
+        orderBy: { deadline: 'asc' }
+      });
+
+      const activeCount = activeJobs.length;
+      let availabilityStatus = 'AVAILABLE';
+      let nextAvailableAt = null;
+
+      if (activeCount >= maxSlots) {
+        availabilityStatus = 'BUSY';
+        // Calculate earliest slot opening
+        const earliestJob = activeJobs.find(job => job.deadline);
+        if (earliestJob && earliestJob.deadline) {
+          nextAvailableAt = earliestJob.deadline;
+        } else {
+          const d = new Date();
+          d.setDate(d.getDate() + 2); // Fallback logic
+          nextAvailableAt = d;
+        }
+      }
+
+      return {
+        ...app,
+        editor: {
+          ...app.editor,
+          availability: {
+            status: availabilityStatus,
+            nextAvailableAt,
+            activeCount,
+            maxSlots
+          }
+        }
+      };
+    }));
+
+    return res.json(applicationsWithAvailability);
   } catch (error: any) {
     console.error('List applications error:', error);
     return res.status(500).json({ error: 'Failed to list applications' });
@@ -809,12 +861,18 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
       }
     });
 
-    const MAX_ACTIVE_JOBS = 2;
-    if (activeJobCount >= MAX_ACTIVE_JOBS) {
-      return res.status(400).json({
-        error: `Editor already has ${MAX_ACTIVE_JOBS} active jobs.Cannot approve this application.`
-      });
-    }
+    // Get Editor Max Slots (Fetch Editor Profile)
+    const editorUser = await prisma.user.findUnique({
+      where: { id: targetApplication.editorId },
+      include: { editorProfile: true }
+    });
+
+    // Default to 2 if not set
+    const MAX_ACTIVE_JOBS = (editorUser?.editorProfile as any)?.maxSlots || 2;
+
+    // Check if busy
+    const isBusy = activeJobCount >= MAX_ACTIVE_JOBS;
+    const newStatus = isBusy ? ORDER_STATUS.SELECTED : ORDER_STATUS.ASSIGNED;
 
     const result = await prisma.$transaction(async (tx) => {
       // Approve the selected application
@@ -835,18 +893,21 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
         });
       }
 
-      // Assign editor and update order status
+      // Assign editor and update order status (PIPELINE Logic)
       await tx.order.update({
         where: { id: req.params.id },
         data: {
           editorId: approved.editorId,
-          status: ORDER_STATUS.ASSIGNED as any,
-          assignedAt: new Date(),
+          status: newStatus as any,
+          assignedAt: newStatus === ORDER_STATUS.ASSIGNED ? new Date() : null, // Only set assignedAt if entering active state
           lastActivityAt: new Date(),
           editorDepositRequired: true,
           editorDepositStatus: 'PENDING'
         }
       });
+
+      // Send appropriate notification
+      // Can add system message here if needed "Added to Pipeline" or "Assigned"
 
       return approved;
     });
@@ -881,7 +942,11 @@ router.get('/editor/active-count', requireRole(['EDITOR']), async (req: AuthRequ
       }
     });
 
-    const MAX_ACTIVE_JOBS = 2;
+    const editorUser = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      include: { editorProfile: true }
+    });
+    const MAX_ACTIVE_JOBS = (editorUser?.editorProfile as any)?.maxSlots || 2;
 
     return res.json({
       activeJobs: activeJobCount,

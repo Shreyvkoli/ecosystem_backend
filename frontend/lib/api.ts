@@ -30,6 +30,12 @@ export interface User {
   creatorProfile?: {
     avatarUrl?: string;
   };
+  availability?: {
+    status: 'AVAILABLE' | 'BUSY';
+    nextAvailableAt?: string | null;
+    activeCount: number;
+    maxSlots: number;
+  };
 }
 
 export interface Order {
@@ -208,6 +214,7 @@ export const ordersApi = {
   listOpen: () => api.get<Order[]>('/orders', { params: { status: 'OPEN' } }),
   listAvailable: () => api.get<Order[]>('/orders', { params: { status: 'OPEN' } }),
   listAssigned: () => api.get<Order[]>('/orders', { params: { status: 'ASSIGNED' } }),
+  listPipeline: () => api.get<Order[]>('/orders', { params: { status: 'SELECTED' } }),
   get: (id: string) => api.get<Order>(`/orders/${id}`),
   create: (data: {
     title: string;
