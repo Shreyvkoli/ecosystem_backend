@@ -134,7 +134,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         console.error("Avatar failed to load:", getAvatarUrl());
-                        e.currentTarget.style.display = 'none';
+                        // e.currentTarget.style.display = 'none'; // Commented out to see if it's broken image or missing
                       }}
                     />
                   ) : (
