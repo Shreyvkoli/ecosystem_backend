@@ -71,8 +71,13 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 flex-nowrap">
           <div className="flex items-center">
-            <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-2 py-2 floating-animation flex-shrink-0">
-              <Logo showWordmark size={40} />
+            <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-1 py-2 floating-animation flex-shrink-0">
+              <div className="md:hidden">
+                <Logo showWordmark={false} size={32} />
+              </div>
+              <div className="hidden md:block">
+                <Logo showWordmark={true} size={40} />
+              </div>
             </Link>
             <div className="flex ml-2 sm:ml-4 space-x-2 sm:space-x-4">
               {user.role === 'CREATOR' ? (
