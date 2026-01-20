@@ -495,6 +495,16 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     });
   }
   // ------------------------------------------------------------
+  const updatedOrder = await prisma.order.update({
+    where: { id: data.orderId },
+    data: updateData,
+    include: {
+      creator: { select: { id: true, name: true, email: true } },
+      editor: { select: { id: true, name: true, email: true } }
+    }
+  });
+
+  return updatedOrder;
 }
 
 /**
