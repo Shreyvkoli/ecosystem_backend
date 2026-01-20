@@ -70,7 +70,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-2 py-2 floating-animation flex-shrink-0">
-              <Logo showWordmark size={40} />
+              <Logo showWordmark size={48} />
             </Link>
             <div className="flex ml-2 sm:ml-4 space-x-2 sm:space-x-4">
               {user.role === 'CREATOR' ? (
