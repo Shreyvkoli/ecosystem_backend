@@ -60,7 +60,7 @@ body {
 /* Premium Utilities */
 @layer components {
   .glass-morphism {
-    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-indigo-500/5 rounded-2xl;
+    @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-xl shadow-indigo-500/5 rounded-2xl;
   }
 
   .glass-card {
@@ -192,7 +192,6 @@ body {
 
   .premium-card:hover {
     @apply -translate-y-2 shadow-2xl shadow-indigo-500/10 border-indigo-200/80 bg-white;
-    transform: perspective(1000px) rotateX(1deg) rotateY(1deg) scale(1.02);
   }
 
   /* Shine effect on hover */
