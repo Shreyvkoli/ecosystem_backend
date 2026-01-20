@@ -20,12 +20,25 @@ export const getSocket = () => {
 
 export const connectSocket = (userId?: string) => {
     const s = getSocket();
+
     if (!s.connected) {
         s.connect();
-        if (userId) {
+    }
+
+    if (userId) {
+        // If already connected, join immediately
+        if (s.connected) {
             s.emit('join_user', userId);
         }
+
+        // Ensure we join on connect (initial or reconnect)
+        // We remove previous listener to avoid duplicates if called multiple times, 
+        // though typically this function is called once per effect.
+        s.off('connect').on('connect', () => {
+            s.emit('join_user', userId);
+        });
     }
+
     return s;
 };
 
