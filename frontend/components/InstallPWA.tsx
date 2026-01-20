@@ -9,9 +9,23 @@ export default function InstallPWA() {
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Check if already in standalone mode
-        if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
-            setIsStandalone(true);
+        // Robust check for standalone mode
+        const checkStandalone = () => {
+            const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
+                (window.navigator as any).standalone === true ||
+                document.referrer.includes('android-app://');
+            setIsStandalone(isStandaloneMode);
+        };
+
+        checkStandalone(); // Initial check
+
+        // Listen for changes
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        try {
+            mediaQuery.addEventListener('change', checkStandalone);
+        } catch (e) {
+            // Fallback for older browsers
+            mediaQuery.addListener(checkStandalone);
         }
 
         // Check for iOS
