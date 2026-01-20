@@ -494,6 +494,28 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
       link: `/editor/jobs/${order.id}`
     });
   }
+
+  // 3. Preview Submitted (Notify Creator)
+  if (data.status === 'PREVIEW_SUBMITTED' && order.creatorId) {
+    await notifService.createAndSend({
+      userId: order.creatorId,
+      type: 'SYSTEM',
+      title: 'Preview Submitted 🎬',
+      message: 'The editor has submitted a preview. Please review it.',
+      link: `/orders/${order.id}`
+    });
+  }
+
+  // 4. Final Video Submitted (Notify Creator)
+  if (data.status === 'FINAL_SUBMITTED' && order.creatorId) {
+    await notifService.createAndSend({
+      userId: order.creatorId,
+      type: 'SYSTEM',
+      title: 'Final Video Ready 🚀',
+      message: 'The editor has submitted the final video.',
+      link: `/orders/${order.id}`
+    });
+  }
   // ------------------------------------------------------------
   const updatedOrder = await prisma.order.update({
     where: { id: data.orderId },
