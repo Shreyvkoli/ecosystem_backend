@@ -6,7 +6,7 @@ import { filesApi, messagesApi, Message } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false })
+const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false })
 
 export interface OrderVideoPlayerRef {
   seekTo: (seconds: number) => void
