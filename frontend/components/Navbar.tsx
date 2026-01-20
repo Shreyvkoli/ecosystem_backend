@@ -73,7 +73,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
           <div className="flex items-center">
             <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-1 py-2 floating-animation flex-shrink-0">
               <div className="md:hidden">
-                <Logo showWordmark={false} size={32} />
+                <Logo showWordmark={true} size={32} />
               </div>
               <div className="hidden md:block">
                 <Logo showWordmark={true} size={40} />
@@ -93,7 +93,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/orders/new"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
                     >
                       New Order
                     </Link>
@@ -112,7 +112,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/editor/wallet"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
                     >
                       Wallet
                     </Link>
@@ -157,7 +157,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
             <Magnetic strength={0.3}>
               <button
                 onClick={handleLogout}
-                className="premium-button text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 hover-lift flex items-center justify-center gap-2"
+                className="premium-button text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 hover-lift flex items-center justify-center gap-2"
               >
                 <LogOut className="w-4 h-4 md:hidden" />
                 <span className="hidden md:inline">Logout</span>
