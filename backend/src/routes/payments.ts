@@ -265,7 +265,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
 
       // Check if keys exist. If not, we are likely in dev/test mode without keys.
       // We generate a dummy order ID so the "Dev Pay" button still works.
-      const hasKeys = (process.env.RAZORPAY_KEY_ID || "rzp_test_S5oluQBX9NzAaf") && (process.env.RAZORPAY_KEY_SECRET || "e06z4YkdIIAmPv5B2w1HpmUT");
+      const hasKeys = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET;
 
       if (!hasKeys) {
         throw new Error('Razorpay keys are missing in backend environment');
@@ -277,7 +277,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
           amount: toMinorAmount(depositAmount, 'INR'),
           currency: 'INR',
           receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
-          keyIdPrefix: (process.env.RAZORPAY_KEY_ID || "rzp_test_S5oluQBX9NzAaf").substring(0, 5)
+          keyIdPrefix: process.env.RAZORPAY_KEY_ID?.substring(0, 5)
         });
 
         const razorpayOrder = await razorpay.orders.create({
@@ -328,7 +328,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
         razorpayOrderId: razorpayOrderId,
         amount: depositAmount,
         currency: 'INR',
-        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_S5oluQBX9NzAaf'
+        keyId: process.env.RAZORPAY_KEY_ID
       });
     }
 
@@ -413,7 +413,7 @@ router.post('/editor-deposit/verify', authenticate, async (req: AuthRequest, res
       // Skip signature verify & Razorpay fetch
       // Proceed to update DB directly
     } else {
-      const secret = process.env.RAZORPAY_KEY_SECRET || "e06z4YkdIIAmPv5B2w1HpmUT";
+      const secret = process.env.RAZORPAY_KEY_SECRET;
       if (!secret) {
         return res.status(500).json({ error: 'RAZORPAY_KEY_SECRET is not configured' });
       }
@@ -493,7 +493,7 @@ router.post('/verify', authenticate, requireCreator, async (req: AuthRequest, re
     }
 
     // Verify payment signature
-    const secret = process.env.RAZORPAY_KEY_SECRET || "e06z4YkdIIAmPv5B2w1HpmUT";
+    const secret = process.env.RAZORPAY_KEY_SECRET;
     if (!secret) {
       return res.status(500).json({ error: 'RAZORPAY_KEY_SECRET is not configured' });
     }
@@ -589,7 +589,7 @@ router.post('/webhook', async (req, res) => {
     }
 
     const body = req.body.toString();
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET || "e06z4YkdIIAmPv5B2w1HpmUT";
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
     if (!secret) {
       return res.status(500).json({ error: 'RAZORPAY_WEBHOOK_SECRET/RAZORPAY_KEY_SECRET not configured' });
     }

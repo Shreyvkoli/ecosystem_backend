@@ -6,8 +6,8 @@ let _razorpay: Razorpay | null = null;
 export function getRazorpay(): Razorpay {
   if (_razorpay) return _razorpay;
 
-  const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_S5oluQBX9NzAaf";
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || "e06z4YkdIIAmPv5B2w1HpmUT";
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
   if (!keyId || !keySecret) {
     throw new Error('RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not configured');
   }
