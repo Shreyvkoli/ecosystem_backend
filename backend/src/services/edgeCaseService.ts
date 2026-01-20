@@ -193,6 +193,64 @@ export class EdgeCaseService {
   }
 
   /**
+   * 2.5️⃣ Selection timeout logic (12 Hour Rule)
+   * If editor is SELECTED but fails to pay deposit within 12 hours, revert to OPEN.
+   */
+  static async handleSelectionTimeouts() {
+    console.log('Checking selection timeouts (12hr rule)...');
+
+    // 12 hours ago
+    const timeoutThreshold = new Date(Date.now() - 12 * 60 * 60 * 1000);
+
+    const staleSelectedOrders = await prisma.order.findMany({
+      where: {
+        status: OrderStatus.SELECTED, // Enum matches 'SELECTED'
+        updatedAt: {
+          lt: timeoutThreshold
+        },
+        editorDepositStatus: {
+          not: 'PAID'
+        }
+      },
+      include: { creator: true, editor: true }
+    });
+
+    for (const order of staleSelectedOrders) {
+      await prisma.$transaction(async (tx) => {
+        // Revert to OPEN
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: OrderStatus.OPEN,
+            editorId: null, // Clear the selected editor
+            editorDepositStatus: 'PENDING'
+          }
+        });
+
+        // Notify Editor
+        if (order.editor?.email) {
+          await sendEmail({
+            to: order.editor.email,
+            subject: 'Job Offer Expired - Deposit Not Paid',
+            template: 'selection-expired',
+            data: { orderTitle: order.title }
+          }).catch(console.error);
+        }
+
+        // Notify Creator
+        await sendEmail({
+          to: order.creator.email,
+          subject: 'Editor Failed to Confirm - Order Reopened',
+          template: 'selection-expired-creator',
+          data: { orderTitle: order.title, editorName: order.editor?.name || 'The editor' }
+        }).catch(console.error);
+      });
+    }
+
+    console.log(`Processed ${staleSelectedOrders.length} selection timeouts`);
+  }
+
+  /**
    * 3️⃣ File storage cleanup
    * Clean up old files to save S3/R2 costs
    */
@@ -355,6 +413,7 @@ export class EdgeCaseService {
     try {
       await this.handleDepositTimeouts();
       await this.handleOrderTimeouts();
+      await this.handleSelectionTimeouts();
       await this.cleanupOldFiles();
       await this.detectCommunicationGaps();
       await this.handleGhostUsers();
