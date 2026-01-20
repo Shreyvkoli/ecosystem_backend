@@ -290,10 +290,10 @@ export default function EditorJobsPage() {
               </h1>
               <p className="text-gray-600">Find and manage video editing jobs</p>
             </div>
-            <div className="grid grid-cols-2 sm:flex gap-2 w-full md:w-auto">
+            <div className="flex overflow-x-auto pb-2 gap-3 w-full md:w-auto no-scrollbar snap-x">
               <button
                 onClick={() => setTab('available')}
-                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
@@ -302,7 +302,7 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`relative px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center ${activeJobs.length > 0
+                className={`flex-shrink-0 whitespace-nowrap relative px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center ${activeJobs.length > 0
                   ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
                   : tab === 'active'
                     ? 'premium-button'
@@ -311,14 +311,14 @@ export default function EditorJobsPage() {
               >
                 Active Jobs
                 {activeJobs.length > 0 && (
-                  <span className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white shadow-sm animate-bounce">
+                  <span className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white shadow-sm">
                     {activeJobs.length}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setTab('history')}
-                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
@@ -327,7 +327,7 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('profile')}
-                className={`px-3 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
                   ? 'premium-button'
                   : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                   }`}
