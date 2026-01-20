@@ -125,7 +125,16 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   title={user.role === 'CREATOR' ? "Click to update profile photo" : ""}
                 >
                   {getAvatarUrl() ? (
-                    <img src={getAvatarUrl()} alt={user.name} className="w-full h-full object-cover" />
+                    <img
+                      key={getAvatarUrl()}
+                      src={getAvatarUrl()}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("Avatar failed to load:", getAvatarUrl());
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
                   ) : (
                     <span className="text-indigo-700 font-bold text-lg">{user.name.charAt(0).toUpperCase()}</span>
                   )}
