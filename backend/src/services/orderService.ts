@@ -427,20 +427,38 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
         }
       }
 
-      // 2. Release Funds to Editor if paid
+      // 2. Release Funds to Editor (Earnings + Deposit Refund)
       // Check strict conditions: Payment must be PAID (Captured) and Editor must be assigned
       if (order.paymentStatus === 'PAID' && order.amount && order.editorId) {
 
-        // Check if already released (idempotency check via WalletTransaction or Payment.releasedAt)
-        // But simplify for now: assume status transition to COMPLETED happens once.
+        let totalReleaseAmount = order.amount;
 
-        // A. Credit Editor Wallet
-        await tx.user.update({
-          where: { id: order.editorId },
-          data: { walletBalance: { increment: order.amount } }
+        // A. Check for Deposit
+        const deposit = await tx.editorDeposit.findFirst({
+          where: { orderId: order.id, editorId: order.editorId, status: 'PAID' }
         });
 
-        // B. Create Transaction History for Editor
+        if (deposit) {
+          totalReleaseAmount += deposit.amount;
+
+          // Log Deposit Refund Transaction
+          await tx.walletTransaction.create({
+            data: {
+              userId: order.editorId,
+              orderId: order.id,
+              type: 'DEPOSIT_REFUND',
+              amount: deposit.amount
+            }
+          });
+        }
+
+        // B. Credit Editor Wallet (Total = Earnings + Deposit)
+        await tx.user.update({
+          where: { id: order.editorId },
+          data: { walletBalance: { increment: totalReleaseAmount } }
+        });
+
+        // C. Create Transaction History for Earnings
         await tx.walletTransaction.create({
           data: {
             userId: order.editorId,
@@ -450,7 +468,7 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
           }
         });
 
-        // C. Mark Gateway Payment as Released (Internal tracking)
+        // D. Mark Gateway Payment as Released (Internal tracking)
         // Finds the Creator's payment for this order
         await tx.payment.updateMany({
           where: {
