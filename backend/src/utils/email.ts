@@ -89,6 +89,19 @@ const generateEmailContent = (template: string, data?: Record<string, any>): str
       Additional revisions require a paid upgrade.
     `,
 
+    'selection-expired': `
+      Order: ${data?.orderTitle}
+
+      Your job offer has expired because the security deposit was not paid within 12 hours.
+      The order has been reopened for other editors.
+    `,
+
+    'selection-expired-creator': `
+      Order: ${data?.orderTitle}
+
+      Review: The selected editor (${data?.editorName}) failed to pay the security deposit within 12 hours.
+      The order has been automatically reopened for new applications.
+    `,
     'job-assigned': `
       CONGRATULATIONS! YOU HAVE BEEN HIRED! 
       
