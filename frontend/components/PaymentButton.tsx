@@ -107,6 +107,42 @@ export default function PaymentButton({ projectId, orderId, amount, onSuccess }:
     }
   }
 
+  const handleSimulate = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      if (!id) {
+        setError('Order ID is required')
+        return
+      }
+
+      // 1. Create Order to get Razorpay Order ID
+      const orderResponse = await paymentsApi.createOrder(id)
+      const data = orderResponse.data as any
+
+      if (data.gateway === 'stripe') {
+        alert('Simulation only works for Razorpay flow')
+        return
+      }
+
+      const razorpayOrderId = data.razorpayOrderId
+
+      // 2. Simulate Verify with Dummy Signature
+      await paymentsApi.verify(
+        razorpayOrderId,
+        'dummy_pay_' + Date.now(),
+        'dummy_signature_dev_mode'
+      )
+
+      if (onSuccess) onSuccess()
+      router.refresh()
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Simulation failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div>
       {stripeClientSecret && (
@@ -121,13 +157,24 @@ export default function PaymentButton({ projectId, orderId, amount, onSuccess }:
           }}
         />
       )}
-      <button
-        onClick={handlePayment}
-        disabled={loading}
-        className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-      >
-        {loading ? 'Processing...' : `Pay ₹${amount.toLocaleString()}`}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <button
+          onClick={handlePayment}
+          disabled={loading}
+          className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {loading ? 'Processing...' : `Pay ₹${amount.toLocaleString()}`}
+        </button>
+
+        <button
+          onClick={handleSimulate}
+          disabled={loading}
+          className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm whitespace-nowrap"
+          title="Simulate successful payment (Dev Only)"
+        >
+          Simulate Pay
+        </button>
+      </div>
       {error && (
         <p className="mt-2 text-sm text-red-600">{error}</p>
       )}

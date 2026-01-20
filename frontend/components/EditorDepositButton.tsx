@@ -146,6 +146,15 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
         >
           {loading ? 'Processing...' : 'Pay Security Deposit'}
         </button>
+
+        <button
+          onClick={handleTestDeposit}
+          disabled={loading}
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 text-sm whitespace-nowrap"
+          title="Simulate successful deposit (Dev Only)"
+        >
+          Simulate Deposit
+        </button>
       </div>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
