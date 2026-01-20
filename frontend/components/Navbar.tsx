@@ -69,10 +69,10 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
   return (
     <nav className={`${lightTheme ? 'bg-white border-gray-200' : 'glass-morphism border-white/10'} sticky top-0 z-50 border-b`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-16 flex-nowrap">
           <div className="flex items-center">
             <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-2 py-2 floating-animation flex-shrink-0">
-              <Logo showWordmark size={48} />
+              <Logo showWordmark size={40} />
             </Link>
             <div className="flex ml-2 sm:ml-4 space-x-2 sm:space-x-4">
               {user.role === 'CREATOR' ? (

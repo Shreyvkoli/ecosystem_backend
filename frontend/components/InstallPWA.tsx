@@ -51,7 +51,7 @@ export default function InstallPWA() {
 
     // Render Install Button (Persistent until installed)
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-6 z-50 w-max">
             <button
                 onClick={handleInstallClick}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-indigo-400 animate-bounce"
