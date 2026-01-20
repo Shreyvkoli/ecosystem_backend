@@ -383,8 +383,8 @@ export default function OrderDetailPage() {
                                   }}
                                   disabled={approveEditorMutation.isPending}
                                   className={`px-3 py-2 rounded text-white text-sm transition-colors ${(app.editor as any)?.availability?.status === 'BUSY'
-                                      ? 'bg-orange-600 hover:bg-orange-700'
-                                      : 'bg-indigo-600 hover:bg-indigo-700'
+                                    ? 'bg-orange-600 hover:bg-orange-700'
+                                    : 'bg-indigo-600 hover:bg-indigo-700'
                                     } disabled:opacity-50`}
                                 >
                                   {approveEditorMutation.isPending ? 'Approving...' :
@@ -762,7 +762,7 @@ export default function OrderDetailPage() {
                 </div>
               )}
 
-              {user.role === 'CREATOR' && order.amount && order.amount > 0 && (
+              {user.role === 'CREATOR' && order.amount && order.amount > 0 && order.paymentStatus !== 'PAID' && (
                 <div className="bg-white rounded-lg shadow p-4">
                   <h3 className="font-semibold mb-3">Payment</h3>
                   <PaymentButton
@@ -772,6 +772,20 @@ export default function OrderDetailPage() {
                       queryClient.invalidateQueries({ queryKey: ['order', orderId] })
                     }}
                   />
+                </div>
+              )}
+
+              {user.role === 'CREATOR' && order.paymentStatus === 'PAID' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-sm flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-green-900">Payment Successful</h3>
+                    <p className="text-sm text-green-800">
+                      Paid ₹{order.amount?.toLocaleString()}
+                    </p>
+                  </div>
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
               )}
             </div>

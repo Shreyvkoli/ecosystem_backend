@@ -551,6 +551,42 @@ router.post('/verify', authenticate, requireCreator, async (req: AuthRequest, re
         } as any
       });
 
+      // --- Notification Logic ---
+      const { NotificationService } = await import('../services/notificationService.js');
+      const notifService = NotificationService.getInstance();
+      const updatedOrder = await prisma.order.findUnique({ where: { id: payment.orderId }, include: { editor: true } });
+
+      // 1. Notify Creator
+      await notifService.createAndSend({
+        userId: req.userId!,
+        type: 'SYSTEM',
+        title: 'Payment Successful',
+        message: `Your payment of ₹${payment.amount} for "${updatedOrder?.title}" was successful.`,
+        link: `/orders/${payment.orderId}`
+      });
+
+      // 2. Notify Editor (if assigned)
+      if (updatedOrder?.editorId) {
+        await notifService.createAndSend({
+          userId: updatedOrder.editorId,
+          type: 'SYSTEM',
+          title: 'Payment Secured',
+          message: `Creator has deposited ₹${payment.amount} into Escrow. You can proceed with confidence!`,
+          link: `/editor/jobs/${payment.orderId}`
+        });
+      }
+
+      // 3. System Chat Message
+      await prisma.message.create({
+        data: {
+          orderId: payment.orderId,
+          userId: req.userId!, // Sent by Creator (as system action)
+          type: 'SYSTEM',
+          content: `💰 Payment of ₹${payment.amount} secured in Escrow!`
+        }
+      });
+      // --------------------------
+
       return res.json({
         success: true,
         payment: updated,

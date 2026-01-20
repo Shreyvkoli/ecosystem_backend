@@ -7,9 +7,9 @@ import { buildYouTubeAuthUrl, upsertYouTubeAccountFromCode } from '../utils/yout
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.use(authenticate);
+// router.use(authenticate); // Removed global authentication to allow public callback default export router;
 
-router.get('/status', requireCreator, async (req: AuthRequest, res) => {
+router.get('/status', authenticate, requireCreator, async (req: AuthRequest, res) => {
   try {
     const account = await prisma.youTubeAccount.findUnique({
       where: { userId: req.userId! },
@@ -27,7 +27,7 @@ router.get('/status', requireCreator, async (req: AuthRequest, res) => {
   }
 });
 
-router.get('/auth-url', requireCreator, async (req: AuthRequest, res) => {
+router.get('/auth-url', authenticate, requireCreator, async (req: AuthRequest, res) => {
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -41,10 +41,10 @@ router.get('/auth-url', requireCreator, async (req: AuthRequest, res) => {
     );
 
     const url = buildYouTubeAuthUrl(state);
-    return res.json({ url });
-  } catch (error) {
+    return res.json({ authUrl: url });
+  } catch (error: any) {
     console.error('YouTube auth-url error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 

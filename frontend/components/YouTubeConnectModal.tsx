@@ -12,8 +12,6 @@ interface YouTubeConnectModalProps {
 export default function YouTubeConnectModal({ isOpen, onClose }: YouTubeConnectModalProps) {
   const queryClient = useQueryClient()
   const [isConnecting, setIsConnecting] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
-  const [feedback, setFeedback] = useState('')
 
   const { data: youtubeStatus } = useQuery({
     queryKey: ['youtube-status'],
@@ -30,20 +28,11 @@ export default function YouTubeConnectModal({ isOpen, onClose }: YouTubeConnectM
     },
     onError: (err: any) => {
       console.error('Failed to get YouTube auth URL:', err)
-      alert('Failed to connect YouTube. Please try again.')
+      alert(err?.response?.data?.error || err.message || 'Failed to connect YouTube. Please try again.')
     },
   })
-
   const handleConnect = () => {
-    // Intercept connect to show feedback form
-    setShowFeedback(true)
-  }
-
-  const submitFeedback = () => {
-    // Just close for now, maybe log if needed
-    console.log('User Feedback:', feedback)
-    setShowFeedback(false)
-    onClose()
+    connectMutation.mutate()
   }
 
   if (!isOpen) return null
@@ -63,48 +52,7 @@ export default function YouTubeConnectModal({ isOpen, onClose }: YouTubeConnectM
           </button>
         </div>
 
-
-
-        {showFeedback ? (
-          <div className="text-center space-y-6">
-            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-3xl">🚀</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Coming Soon!</h3>
-              <p className="text-gray-600 mb-4">
-                We are bringing this feature in the next update! You will be able to upload directly to YouTube.
-              </p>
-              <p className="text-gray-700 font-medium mb-2">
-                Any specific features you need or expect from us?
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                (Apko kuch chahiye toh jisse apko help ho aur humse expect karte ho toh ek short comment likh dijiye)
-              </p>
-              <textarea
-                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                rows={3}
-                placeholder="e.g. I want to schedule Shorts..."
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-              />
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowFeedback(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
-              >
-                Back
-              </button>
-              <button
-                onClick={submitFeedback}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 font-medium"
-              >
-                Send Feedback
-              </button>
-            </div>
-          </div>
-        ) : youtubeStatus?.data.connected ? (
+        {youtubeStatus?.data.connected ? (
           <div className="space-y-4">
             <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

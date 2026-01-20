@@ -470,26 +470,31 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     });
   }
 
-  return prisma.order.update({
-    where: { id: data.orderId },
-    data: updateData,
-    include: {
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true
-        }
-      },
-      editor: {
-        select: {
-          id: true,
-          name: true,
-          email: true
-        }
-      }
-    }
-  });
+  // --- Notification Logic for Non-Completion Status Updates ---
+  const notifService = NotificationService.getInstance();
+
+  // 1. Preview Approved (PREVIEW_SUBMITTED -> IN_PROGRESS by CREATOR)
+  if (order.status === 'PREVIEW_SUBMITTED' && data.status === 'IN_PROGRESS' && data.userRole === 'CREATOR' && order.editorId) {
+    await notifService.createAndSend({
+      userId: order.editorId,
+      type: 'SYSTEM',
+      title: 'Preview Approved! 🎥',
+      message: 'The creator has approved your preview. Please execute the final render and upload the Final Video.',
+      link: `/editor/jobs/${order.id}`
+    });
+  }
+
+  // 2. Revision Requested
+  if (data.status === 'REVISION_REQUESTED' && order.editorId) {
+    await notifService.createAndSend({
+      userId: order.editorId,
+      type: 'SYSTEM',
+      title: 'Revision Requested ✏️',
+      message: 'The creator has requested changes. Please check the feedback and upload a new version.',
+      link: `/editor/jobs/${order.id}`
+    });
+  }
+  // ------------------------------------------------------------
 }
 
 /**

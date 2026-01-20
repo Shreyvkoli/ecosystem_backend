@@ -1,219 +1,187 @@
 'use client'
 
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import Magnetic from '@/components/Magnetic'
 import Logo from '@/components/Logo'
-import CreatorEditorIllustrations from '@/components/CreatorEditorIllustrations'
+import HeroVisuals from '@/components/HeroVisuals'
 
 export default function Home() {
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#6366f1', '#a855f7', '#ec4899']
+    })
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <Logo showWordmark size={26} />
-        </Link>
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Pricing</Link>
-          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">How it works</Link>
-          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Trust & Safety</Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">About</Link>
-          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm">Support</Link>
-        </div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Aurora Background */}
+      <div className="aurora-bg"></div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
-            Login
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <Logo showWordmark size={32} />
           </Link>
-          <Magnetic strength={0.25}>
-            <Link href="/register" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 text-sm font-semibold whitespace-nowrap">
-              Join
-            </Link>
-          </Magnetic>
-        </div>
-      </div>
-
-      <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-        <div className="space-y-6">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/10 text-sm text-gray-700">
-            India's Most Reliable Video Editing Marketplace
+          <div className="hidden md:flex items-center gap-8">
+            {['Pricing', 'How it works', 'Trust & Safety', 'About'].map((item) => (
+              <Link
+                key={item}
+                href={`/${item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
+                className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm hover-lift"
+              >
+                {item}
+              </Link>
+            ))}
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Hire vetted Indian editors.
-            <span className="block bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Review with Timestamp Feedback. Zero payment risk with Razorpay Escrow.
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-xl">
-            Cutflow uses refundable editor wallet balances, private file handling, and a clean review workflow so projects move fast and finish right.
-          </p>
 
-          <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-4 mt-4 w-full sm:w-auto">
-            <Magnetic strength={0.35} className="w-full sm:w-auto">
-              <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow w-full sm:w-auto text-center justify-center flex items-center">
-                Apply as Creator
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm hover:underline">
+              Login
+            </Link>
+            <Magnetic strength={0.25}>
+              <Link href="/register" className="glass-morphism px-5 py-2.5 text-gray-900 hover:text-indigo-600 border-gray-200 hover:border-indigo-200 text-sm font-semibold whitespace-nowrap transition-all shadow-sm hover:shadow-md">
+                Join Now
               </Link>
             </Magnetic>
-            <div className="flex flex-col w-full sm:w-auto">
+          </div>
+        </header>
+
+        <main className="mt-16 sm:mt-24 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="space-y-8"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/40 border border-indigo-100 backdrop-blur-md text-sm font-medium text-indigo-900 shadow-sm"
+            >
+              <span className="w-2 h-2 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
+              India's Most Reliable Video Editing Marketplace
+            </motion.div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
+              Hire vetted Indian editors.
+              <span className="block text-gradient-primary mt-2">
+                Review with Timestamp Feedback.
+              </span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-gray-600 max-w-xl leading-relaxed">
+              Cutflow replaces email chains with a professional dashboard. Zero storage uploads, refundable editor deposits, and <span className="font-semibold text-gray-800">100% Escrow Protection</span>.
+            </p>
+
+            <div className="flex flex-col sm:flex-row flex-wrap gap-5 mt-8 w-full sm:w-auto">
+              {/* Hire Editor Button */}
               <Magnetic strength={0.35} className="w-full sm:w-auto">
-                <Link href="/register?role=EDITOR" className="premium-button-green-no-shimmer neon-glow-green w-full sm:w-auto text-center justify-center flex items-center">
-                  Apply as Editor
+                <Link
+                  href="/register?role=CREATOR"
+                  onClick={triggerConfetti}
+                  className="btn-primary w-full sm:w-auto text-lg"
+                >
+                  Hire an Editor
                 </Link>
               </Magnetic>
-              <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
-                Aapka deposit 100% safe hai. Kaam approve hote hi deposit refund aur payment seedha aapke wallet mein aa jayegi.
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="space-y-4">
-          <CreatorEditorIllustrations />
-        </div>
-      </div>
-
-      <div className="mt-20">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">WHY CREATORS USE CUTFLOW</h2>
-        <div className="premium-card group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative space-y-4">
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">You focus on creating — editing runs in background.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Travel, shoot, post. Editing tension = zero.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">No file chaos. No lost drives. Everything in one place.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Faster turnaround because editors are financially committed.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Shoot today. Review from anywhere tomorrow.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Clear revisions. Clean finish. No drama.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-20">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">WHY EDITORS USE CUTFLOW</h2>
-        <div className="premium-card group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative space-y-4">
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">No chasing creators for money.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">No vague feedback. Every comment is timestamped.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">All files, versions, and chats in one place.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Work with serious creators only.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Your time is protected.</div>
-            </div>
-            <div className="flex items-start gap-3 group/item">
-              <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-              <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">One dashboard. Zero chaos.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div className="mt-20">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Trust & Safety</h2>
-        <div className="premium-card group relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="text-lg text-gray-900 mb-4 relative">Your money and files are always protected.</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 group/item">
-                <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-                <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Editor wallet balances are refundable or adjusted in payouts</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 group/item">
-                <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-                <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Creator payments are locked before work begins</div>
+              {/* Apply as Editor Button */}
+              <div className="flex flex-col w-full sm:w-auto">
+                <Magnetic strength={0.35} className="w-full sm:w-auto">
+                  <Link href="/register?role=EDITOR" className="btn-secondary w-full sm:w-auto text-lg hover:text-indigo-700">
+                    Apply as Editor
+                  </Link>
+                </Magnetic>
+                <div className="text-xs text-gray-400 mt-3 text-center sm:text-left font-medium max-w-[200px] mx-auto sm:mx-0">
+                  <span className="text-green-500">Video Editors:</span> Build portfolio & get paid instantly.
                 </div>
               </div>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 group/item">
-                <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-                <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Zero-storage streaming tech (Google Drive / Dropbox) - no uploads needed</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 group/item">
-                <div className="text-green-400 mt-1 group-hover/item:scale-125 transition-transform duration-300">•</div>
-                <div>
-                  <div className="text-gray-900 font-medium group-hover/item:text-green-300 transition-colors duration-300">Secure Payments via Razorpay. Support for UPI, Netbanking, and Cards. Instant withdrawals for editors.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <div className="text-center text-gray-600">No hidden fees. No forced lock-ins.</div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
 
-      <div className="mt-20 glass-morphism p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <div className="text-2xl font-bold text-gray-900">Ready to ship your next edit?</div>
-          <div className="text-gray-600 mt-1">Apply as a creator on Cutflow or apply as an editor in under 2 minutes.</div>
-        </div>
-        <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-4 w-full sm:w-auto mt-4 sm:mt-0">
-          <Magnetic strength={0.35} className="w-full sm:w-auto">
-            <Link href="/register?role=CREATOR" className="premium-button-no-shimmer neon-glow w-full sm:w-auto text-center justify-center flex items-center">
-              Apply as Creator
-            </Link>
-          </Magnetic>
-          <div className="flex flex-col w-full sm:w-auto">
-            <Magnetic strength={0.35} className="w-full sm:w-auto">
-              <Link href="/register?role=EDITOR" className="premium-button-green-no-shimmer neon-glow-green w-full sm:w-auto text-center justify-center flex items-center">
-                Apply as Editor
-              </Link>
-            </Magnetic>
-            <div className="text-xs text-gray-400 mt-4 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
-              Aapka deposit 100% safe hai. Kaam approve hote hi deposit refund aur payment seedha aapke wallet mein aa jayegi.
-            </div>
-            <div className="text-xs text-indigo-400 font-medium mt-2 max-w-xs mx-auto sm:mx-0 text-center sm:text-left">
-              Join 100+ Indian Editors today. Free to join.
+          {/* Right Visuals */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+            className="relative"
+          >
+            <HeroVisuals />
+          </motion.div>
+        </main>
+
+        {/* Features Section */}
+        <section className="mt-32">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900">Why Creators Choose Cutflow</h2>
+            <p className="mt-4 text-gray-600">Built for high-volume content creators who need reliability.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { title: "Zero-Storage Tech", desc: "Keep your files on GDrive/Dropbox. We just sync the links. No re-uploading terabytes.", icon: "🚀" },
+              { title: "Escrow Protection", desc: "Payments are locked in Cutflow's secure wallet. Editors get paid only when you approve.", icon: "🛡️" },
+              { title: "Timestamp Feedback", desc: "Click anywhere on the video to leave a comment. Editors see exactly what to fix.", icon: "🎯" }
+            ].map((feature, i) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                key={i}
+                className="glass-card p-8 hover:bg-white/90"
+              >
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <div className="mt-32 mb-20">
+          <div className="glass-morphism p-10 md:p-16 rounded-3xl relative overflow-hidden text-center">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 z-0"></div>
+            <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Ready to streamline your video production?</h2>
+              <p className="text-xl text-gray-600">Join 100+ creators and editors shipping content daily.</p>
+
+              <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
+                <Link
+                  href="/register?role=CREATOR"
+                  className="premium-button-green text-lg px-8 py-4 shadow-xl shadow-green-500/20"
+                >
+                  Start Hiring Now
+                </Link>
+              </div>
+              <p className="text-sm text-gray-400">No credit card required for signup</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-16 text-sm text-gray-400 flex flex-wrap gap-4 justify-center">
-        <Link href="/legal/terms" className="hover:text-gray-700">Terms</Link>
-        <Link href="/legal/privacy" className="hover:text-gray-700">Privacy</Link>
-        <Link href="/legal/refund" className="hover:text-gray-700">Refund Policy</Link>
-        <Link href="/legal/editor-deposit" className="hover:text-gray-700">Editor Deposit Policy</Link>
-        <Link href="/trust" className="hover:text-gray-700">Payments & Wallet FAQ</Link>
+        {/* Footer Links */}
+        <footer className="mt-20 border-t border-gray-200 py-10">
+          <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500 font-medium">
+            <Link href="/legal/terms" className="hover:text-indigo-600 transition-colors">Terms of Service</Link>
+            <Link href="/legal/privacy" className="hover:text-indigo-600 transition-colors">Privacy Policy</Link>
+            <Link href="/legal/refund" className="hover:text-indigo-600 transition-colors">Refund Policy</Link>
+            <Link href="/contact" className="hover:text-indigo-600 transition-colors">Support</Link>
+          </div>
+          <div className="text-center text-xs text-gray-400 mt-8">
+            © {new Date().getFullYear()} Cutflow. Built for the Indian Creator Economy.
+          </div>
+        </footer>
       </div>
     </div>
   )
 }
+
 

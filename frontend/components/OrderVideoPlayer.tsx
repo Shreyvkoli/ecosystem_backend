@@ -6,7 +6,7 @@ import { filesApi, messagesApi, Message } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false })
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false })
 
 export interface OrderVideoPlayerRef {
   seekTo: (seconds: number) => void
@@ -90,10 +90,13 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
     }
 
     const handleSeek = (seconds: number) => {
-      if (internalPlayerRef.current) {
+      if (internalPlayerRef.current && typeof internalPlayerRef.current.seekTo === 'function') {
         internalPlayerRef.current.seekTo(seconds, 'seconds')
         setCommentTimestamp(seconds)
         setPlaying(true) // Auto-play when seeking via button/timestamp
+      } else {
+        // Fallback or retry?
+        console.warn('Player ref not ready yet');
       }
     }
 

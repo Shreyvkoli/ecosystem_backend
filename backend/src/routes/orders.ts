@@ -251,8 +251,9 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
       return res.status(404).json({ error: 'Order not found or access denied' });
     }
 
-    if (order.status !== (ORDER_STATUS.FINAL_SUBMITTED as any)) {
-      return res.status(400).json({ error: 'Order must be FINAL_SUBMITTED to upload to YouTube' });
+    const allowedStatuses = [ORDER_STATUS.FINAL_SUBMITTED, ORDER_STATUS.PUBLISHED, ORDER_STATUS.COMPLETED] as string[];
+    if (!allowedStatuses.includes(order.status)) {
+      return res.status(400).json({ error: `Order must be FINAL_SUBMITTED, PUBLISHED or COMPLETED to upload (current: ${order.status})` });
     }
 
     const finalFile = await prisma.file.findFirst({
@@ -269,34 +270,34 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
     }
 
     // Verify if file has S3 keys (Legacy) or is External
-    if (finalFile.provider !== 'S3' && finalFile.provider !== 'AWS') { // Assuming default was S3, new is GOOGLE_DRIVE
-      // If external, we can't stream easily without custom logic
-      return res.status(400).json({ error: 'Automatic YouTube upload is only supported for internal storage. Please download and upload manually.' });
+    // Verify if file has S3 keys (Legacy) or is External
+    if (!finalFile.publicLink) {
+      return res.status(400).json({ error: 'Final file has no public link to download.' });
     }
 
-    /* S3 Logic disabled for Zero Storage Compliance - would require fetching publicLink stream */
-    return res.status(400).json({ error: 'Direct YouTube upload temporarily unavailable for external links.' });
-    /*
-    const obj = await s3Client.send(new GetObjectCommand({
-      Bucket: finalFile.s3Bucket,
-      Key: finalFile.s3Key
-    }));
-    if (!obj.Body) {
-      return res.status(500).json({ error: 'Failed to read final video stream' });
-    }
-    */
+    console.log(`Fetching stream from: ${finalFile.publicLink}`);
 
-    /*
+    // Fetch the file stream
+    const fileResponse = await fetch(finalFile.publicLink);
+    if (!fileResponse.ok || !fileResponse.body) {
+      throw new Error(`Failed to fetch file from public link: ${fileResponse.statusText}`);
+    }
+
+    // Convert Web Stream to Node Stream for googleapis
+    const { Readable } = await import('stream');
+    // @ts-ignore
+    const nodeStream = Readable.fromWeb(fileResponse.body);
+
     const { videoId, videoUrl } = await uploadVideoToYouTube({
       userId: req.userId!,
-      videoStream: obj.Body as any,
+      videoStream: nodeStream,
       title,
       description,
       tags,
       visibility,
       scheduledPublishAt
     });
- 
+
     const updated = await prisma.order.update({
       where: { id: order.id },
       data: {
@@ -307,7 +308,7 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
         lastActivityAt: new Date()
       }
     });
- 
+
     return res.json({
       order: updated,
       youtube: {
@@ -315,8 +316,6 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
         videoUrl
       }
     });
-    */
-    return res.status(400).json({ error: 'Direct YouTube upload disabled.' });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
