@@ -35,13 +35,15 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
   const updateAvatarMutation = useMutation({
     mutationFn: (url: string) => usersApi.updateCreatorProfile({ avatarUrl: url }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      // Invalidate specific query to force refetch
+      queryClient.invalidateQueries({ queryKey: ['user-profile', user?.id] })
       alert('Profile photo updated!')
     }
   })
 
   const getAvatarUrl = () => {
     if (!user) return null
+    // If fullProfile is loading or not present, fallback to user.avatar (if we had it) or null
     if (!fullProfile) return null
     if (user.role === 'CREATOR') return fullProfile.creatorProfile?.avatarUrl
     if (user.role === 'EDITOR') return fullProfile.editorProfile?.avatarUrl
