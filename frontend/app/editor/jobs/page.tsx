@@ -290,7 +290,7 @@ export default function EditorJobsPage() {
               </h1>
               <p className="text-gray-600">Find and manage video editing jobs</p>
             </div>
-            <div className="flex overflow-x-auto pb-2 gap-3 w-full md:w-auto no-scrollbar snap-x">
+            <div className="flex overflow-x-auto p-2 gap-3 w-full md:w-auto no-scrollbar snap-x">
               <button
                 onClick={() => setTab('available')}
                 className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
