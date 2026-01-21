@@ -186,12 +186,12 @@ body {
   /* Premium Card Styles (from original) */
   /* Premium Card Styles (Wow Factor Upgrade) */
   .premium-card {
-    @apply bg-white/90 backdrop-blur-md border border-gray-200/60 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden;
+    @apply bg-white backdrop-blur-md border border-gray-300/80 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   }
 
   .premium-card:hover {
-    @apply -translate-y-2 shadow-2xl shadow-indigo-500/10 border-indigo-200/80 bg-white;
+    @apply -translate-y-2 shadow-2xl shadow-indigo-500/10 border-indigo-300 bg-white;
   }
 
   /* Shine effect on hover */
@@ -227,27 +227,27 @@ body {
 
   /* Specific color themes for job cards (used in dashboards) */
   .order-card-orange {
-    @apply border-orange-100 bg-gradient-to-br from-white/95 to-orange-50/30;
+    @apply border-orange-200 bg-gradient-to-br from-gray-50 to-orange-100/80;
   }
 
   .order-card-orange:hover {
-    @apply border-orange-300 shadow-orange-500/10;
+    @apply border-orange-400 shadow-orange-500/10;
   }
 
   .order-card-blue {
-    @apply border-blue-100 bg-gradient-to-br from-white/95 to-blue-50/30;
+    @apply border-blue-200 bg-gradient-to-br from-gray-50 to-blue-100/80;
   }
 
   .order-card-blue:hover {
-    @apply border-blue-300 shadow-blue-500/10;
+    @apply border-blue-400 shadow-blue-500/10;
   }
 
   .order-card-green {
-    @apply border-green-100 bg-gradient-to-br from-white/95 to-green-50/30;
+    @apply border-green-200 bg-gradient-to-br from-gray-50 to-green-100/80;
   }
 
   .order-card-green:hover {
-    @apply border-green-300 shadow-green-500/10;
+    @apply border-green-400 shadow-green-500/10;
   }
 
   /* Neon Effects */
