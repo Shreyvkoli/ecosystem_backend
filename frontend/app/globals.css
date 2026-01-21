@@ -227,27 +227,27 @@ body {
 
   /* Specific color themes for job cards (used in dashboards) */
   .order-card-orange {
-    @apply border-orange-200 bg-gradient-to-br from-gray-50 to-orange-100/80;
+    @apply border-orange-300 bg-gradient-to-br from-white to-orange-200;
   }
 
   .order-card-orange:hover {
-    @apply border-orange-400 shadow-orange-500/10;
+    @apply border-orange-500 shadow-orange-500/20;
   }
 
   .order-card-blue {
-    @apply border-blue-200 bg-gradient-to-br from-gray-50 to-blue-100/80;
+    @apply border-blue-300 bg-gradient-to-br from-white to-blue-200;
   }
 
   .order-card-blue:hover {
-    @apply border-blue-400 shadow-blue-500/10;
+    @apply border-blue-500 shadow-blue-500/20;
   }
 
   .order-card-green {
-    @apply border-green-200 bg-gradient-to-br from-gray-50 to-green-100/80;
+    @apply border-green-300 bg-gradient-to-br from-white to-green-200;
   }
 
   .order-card-green:hover {
-    @apply border-green-400 shadow-green-500/10;
+    @apply border-green-500 shadow-green-500/20;
   }
 
   /* Neon Effects */
