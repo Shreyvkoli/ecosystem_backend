@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cutflow-v1';
+const CACHE_NAME = 'cutflow-v2';
 const URLS_TO_CACHE = [
     '/',
     '/icon-192x192.png',
@@ -32,27 +32,27 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                if (response) {
+                // Network hit - return response and update cache
+                if (!response || response.status !== 200 || response.type !== 'basic') {
                     return response;
                 }
-                return fetch(event.request).then(
-                    (response) => {
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
+
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        // Don't cache API calls aggressively
+                        if (!event.request.url.includes('/api/')) {
+                            cache.put(event.request, responseToCache);
                         }
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                // Don't cache API calls or Next.js internals aggressively if not needed
-                                if (!event.request.url.includes('/api/')) {
-                                    cache.put(event.request, responseToCache);
-                                }
-                            });
-                        return response;
-                    }
-                );
+                    });
+
+                return response;
+            })
+            .catch(() => {
+                // Network failed - return cached version
+                return caches.match(event.request);
             })
     );
 });
