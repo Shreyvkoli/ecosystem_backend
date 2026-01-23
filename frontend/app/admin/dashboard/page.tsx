@@ -16,7 +16,10 @@ export default function AdminDashboardPage() {
 
     // Auth Check
     if (!user || user.role !== 'ADMIN') {
-        // In real app, middleware handles this.
+        // In real app, middleware handles this. For client-side safety:
+        if (typeof window !== 'undefined') {
+            // Optional: router.push('/dashboard'); 
+        }
         // return <div className="p-10">Access Denied</div>
     }
 
@@ -40,19 +43,42 @@ export default function AdminDashboardPage() {
         onError: (err: any) => alert('Error processing: ' + err.message)
     })
 
-    // --- DISPUTES (Placeholder logic if API not ready, but we'll try fetching open orders that are disputed) ---
-    // We need a way to fetch Disputed orders. Currently ordersApi.list() gets all. 
-    // We'll filter client side for MVP or add API param later.
-    const { data: allOrders } = useQuery({
-        queryKey: ['admin-orders'],
+    // --- DISPUTES ---
+    const { data: disputedOrders, refetch: refetchDisputes } = useQuery({
+        queryKey: ['admin-disputed-orders'],
         queryFn: async () => {
-            // Admin should use a specific adminList endpoint, but reusing list for now if allowed or add logic
-            // Assuming user is ADMIN, maybe backend returns all? Or we need specific route.
-            // For now, let's skip sophisticated dispute list and focus on Withdrawals.
-            return []
+            const response = await ordersApi.list({ status: 'DISPUTED' })
+            return response.data
         },
-        enabled: false // Disable until API ready
+        enabled: user?.role === 'ADMIN' && activeTab === 'DISPUTES'
     })
+
+    const resolveDisputeMutation = useMutation({
+        mutationFn: (data: { id: string; resolution: 'REFUND_CREATOR' | 'PAY_EDITOR'; note: string }) => {
+            // Map resolution to OrderStatus
+            const status = data.resolution === 'REFUND_CREATOR' ? 'CANCELLED' : 'COMPLETED';
+            return ordersApi.updateStatus(data.id, status);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-disputed-orders'] })
+            alert('Dispute resolved successfully')
+        },
+        onError: (err: any) => alert('Error resolving dispute: ' + err.message)
+    })
+
+    const handleResolveDispute = (orderId: string, resolution: 'REFUND_CREATOR' | 'PAY_EDITOR') => {
+        const action = resolution === 'REFUND_CREATOR' ? 'Refund Creator (Cancel Order)' : 'Pay Editor (Complete Order)';
+        const confirmMsg = `Are you sure you want to ${action}? This action is irreversible.`;
+        if (!confirm(confirmMsg)) return;
+
+        const note = prompt("Add a resolution note (optional):") || "Admin Resolution";
+
+        resolveDisputeMutation.mutate({
+            id: orderId,
+            resolution,
+            note
+        })
+    }
 
     const handleProcess = (id: string, decision: 'PROCESSED' | 'REJECTED') => {
         const note = prompt(decision === 'REJECTED' ? "Reason for rejection:" : "Transaction ID / Note (Optional):")
@@ -84,7 +110,7 @@ export default function AdminDashboardPage() {
                             onClick={() => setActiveTab('DISPUTES')}
                             className={`${activeTab === 'DISPUTES' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                         >
-                            Disputes (Coming Soon)
+                            Active Disputes
                         </button>
                     </nav>
                 </div>
@@ -130,8 +156,52 @@ export default function AdminDashboardPage() {
                 )}
 
                 {activeTab === 'DISPUTES' && (
-                    <div className="p-10 text-center text-gray-500">
-                        Dispute Management Interface is under construction.
+                    <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                        <ul className="divide-y divide-gray-200">
+                            {disputedOrders && disputedOrders.length > 0 ? disputedOrders.map((order: any) => (
+                                <li key={order.id}>
+                                    <div className="px-4 py-4 sm:px-6">
+                                        <div className="flex flex-col sm:flex-row justify-between mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-900">{order.title}</h3>
+                                                <p className="text-sm text-gray-500">Amount: ₹{order.amount}</p>
+                                                <p className="text-sm text-red-600 mt-1">Reason: {order.disputeReason || 'No reason provided'}</p>
+                                            </div>
+                                            <div className="mt-4 sm:mt-0 flex flex-col space-y-2">
+                                                <button
+                                                    onClick={() => handleResolveDispute(order.id, 'PAY_EDITOR')}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                >
+                                                    Release to Editor
+                                                </button>
+                                                <button
+                                                    onClick={() => handleResolveDispute(order.id, 'REFUND_CREATOR')}
+                                                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                                >
+                                                    Refund Creator
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="border-t pt-4 grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <h4 className="font-semibold">Creator</h4>
+                                                <p>{order.creator?.name}</p>
+                                                <p>{order.creator?.email}</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold">Editor</h4>
+                                                <p>{order.editor?.name || 'Unassigned'}</p>
+                                                <p>{order.editor?.email}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            )) : (
+                                <div className="p-10 text-center text-gray-500">
+                                    No active disputes found.
+                                </div>
+                            )}
+                        </ul>
                     </div>
                 )}
 

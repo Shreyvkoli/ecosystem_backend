@@ -300,6 +300,11 @@ export async function getOrderById(
 
   if (!order) return null;
 
+  // Security: Filter out FINAL_VIDEO for Creator until COMPLETED
+  if (userRole === 'CREATOR' && order.status !== OrderStatus.COMPLETED) {
+    order.files = order.files.filter(f => f.type !== FileType.FINAL_VIDEO);
+  }
+
   // Security: Filter out RAW_VIDEO for:
   // 1. Unassigned editors
   // 2. Assigned editors who haven't paid the deposit yet
@@ -488,13 +493,84 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     });
   }
 
+  if (data.status === OrderStatus.CANCELLED) {
+    // Refund Logic: Return funds to Creator Wallet (if paid) and Editor Deposit (if paid)
+    return prisma.$transaction(async (tx) => {
+      // 1. Update Order Status
+      const updatedOrder = await tx.order.update({
+        where: { id: data.orderId },
+        data: updateData,
+        include: {
+          creator: { select: { id: true, name: true, email: true } },
+          editor: { select: { id: true, name: true, email: true } }
+        }
+      });
+
+      // 2. Refund Creator (if they paid)
+      // Use order! to satisfy TS in strict callback scope
+      if (order!.paymentStatus === 'PAID' && order!.amount) {
+        await tx.user.update({
+          where: { id: order!.creatorId },
+          data: { walletBalance: { increment: order!.amount } }
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            userId: order!.creatorId,
+            orderId: order!.id,
+            type: 'REFUND',
+            amount: order!.amount
+          }
+        });
+
+        await tx.payment.updateMany({
+          where: {
+            orderId: order!.id,
+            kind: 'CREATOR_PAYMENT',
+            status: 'COMPLETED',
+            releasedAt: null
+          },
+          data: {
+            releasedAt: new Date(),
+            releaseNote: 'Refunded to Wallet on Cancellation'
+          }
+        });
+      }
+
+      // 3. Refund Editor Deposit (if they paid)
+      if (order!.editorId) {
+        const deposit = await tx.editorDeposit.findFirst({
+          where: { orderId: order!.id, editorId: order!.editorId, status: 'PAID' }
+        });
+
+        if (deposit) {
+          await tx.user.update({
+            where: { id: order!.editorId },
+            data: { walletBalance: { increment: deposit.amount } }
+          });
+
+          await tx.walletTransaction.create({
+            data: {
+              userId: order!.editorId,
+              orderId: order!.id,
+              type: 'DEPOSIT_REFUND',
+              amount: deposit.amount
+            }
+          });
+        }
+      }
+
+      return updatedOrder;
+    });
+  }
+
   // --- Notification Logic for Non-Completion Status Updates ---
   const notifService = NotificationService.getInstance();
 
   // 1. Preview Approved (PREVIEW_SUBMITTED -> IN_PROGRESS by CREATOR)
   if (order.status === 'PREVIEW_SUBMITTED' && data.status === 'IN_PROGRESS' && data.userRole === 'CREATOR' && order.editorId) {
     await notifService.createAndSend({
-      userId: order.editorId,
+      userId: order!.editorId!,
       type: 'SYSTEM',
       title: 'Preview Approved! 🎥',
       message: 'The creator has approved your preview. Please execute the final render and upload the Final Video.',
@@ -505,7 +581,7 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
   // 2. Revision Requested
   if (data.status === 'REVISION_REQUESTED' && order.editorId) {
     await notifService.createAndSend({
-      userId: order.editorId,
+      userId: order!.editorId!,
       type: 'SYSTEM',
       title: 'Revision Requested ✏️',
       message: 'The creator has requested changes. Please check the feedback and upload a new version.',

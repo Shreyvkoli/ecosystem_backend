@@ -210,7 +210,7 @@ export const videosApi = {
 
 // Orders
 export const ordersApi = {
-  list: () => api.get<Order[]>('/orders'),
+  list: (params?: { status?: string }) => api.get<Order[]>('/orders', { params }),
   listOpen: () => api.get<Order[]>('/orders', { params: { status: 'OPEN' } }),
   listAvailable: () => api.get<Order[]>('/orders', { params: { status: 'OPEN' } }),
   listAssigned: () => api.get<Order[]>('/orders', { params: { status: 'ASSIGNED' } }),

@@ -8,23 +8,46 @@ interface EmailData {
   data?: Record<string, any>;
 }
 
+import nodemailer from 'nodemailer';
+
+// Create reusable transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
 export const sendEmail = async (emailData: EmailData): Promise<void> => {
-  console.log('Email service called:', emailData);
-
-  // TODO: Implement actual email service
-  // For now, just log the email that would be sent
-
   const emailContent = generateEmailContent(emailData.template, emailData.data);
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  console.log(`
-    ==================== EMAIL ===================
-    To: ${Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to}
-    Subject: ${emailData.subject}
-    Template: ${emailData.template}
-    
-    ${emailContent}
-    ==========================================
-  `);
+  // In strictly development mode (without SMTP creds), we might still want to log
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('--- EMAIL SERVICE (SIMULATION) ---');
+    console.log(`To: ${emailData.to}`);
+    console.log(`Subject: ${emailData.subject}`);
+    console.log('Make sure to set SMTP_USER and SMTP_PASS in .env for real emails.');
+    return;
+  }
+
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"Ecosystem App" <no-reply@ecosystem.com>', // sender address
+      to: emailData.to, // list of receivers
+      subject: emailData.subject, // Subject line
+      text: emailContent, // plain text body
+      // html: "<b>Hello world?</b>", // html body (optional extension)
+    });
+
+    console.log(`Email sent: ${info.messageId}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    // Don't block the flow if email fails, but log it critical
+  }
 };
 
 const generateEmailContent = (template: string, data?: Record<string, any>): string => {

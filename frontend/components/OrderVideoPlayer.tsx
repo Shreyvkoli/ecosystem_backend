@@ -127,7 +127,20 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
 
     return (
       <div className="space-y-4">
-        <div className="bg-black rounded-lg overflow-hidden relative aspect-video">
+        <div
+          className="bg-black rounded-lg overflow-hidden relative aspect-video group"
+          onContextMenu={(e) => e.preventDefault()} // Disable right click
+        >
+          {/* Watermark Overlay for Previews */}
+          {fileName?.toLowerCase().includes('preview') && (
+            <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center overflow-hidden">
+              <div className="transform -rotate-12 text-white opacity-20 text-4xl sm:text-6xl md:text-8xl font-black whitespace-nowrap select-none">
+                PREVIEW ONLY • CUTFLOW • PREVIEW ONLY
+              </div>
+              <div className="absolute inset-0 bg-repeat opacity-10" style={{ backgroundImage: 'linear-gradient(45deg, transparent 25%, white 25%, white 50%, transparent 50%, transparent 75%, white 75%, white 100%)', backgroundSize: '20px 20px' }}></div>
+            </div>
+          )}
+
           <ReactPlayer
             ref={internalPlayerRef}
             url={viewUrl}
@@ -140,7 +153,8 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
             config={{
               file: {
                 attributes: {
-                  controlsList: 'nodownload',
+                  controlsList: 'nodownload', // Hide download button in native player
+                  disablePictureInPicture: true,
                 },
               },
             }}

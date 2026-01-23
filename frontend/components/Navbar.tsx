@@ -118,6 +118,15 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                     </Link>
                   </Magnetic>
                 </>
+              ) : user.role === 'ADMIN' ? (
+                <Magnetic strength={0.2}>
+                  <Link
+                    href="/admin/dashboard"
+                    className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                </Magnetic>
               ) : null}
             </div>
           </div>

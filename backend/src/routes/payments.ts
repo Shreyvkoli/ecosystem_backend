@@ -409,9 +409,12 @@ router.post('/editor-deposit/verify', authenticate, async (req: AuthRequest, res
     }
 
     // Bypass for Dev Mode
-    if (razorpaySignature === 'dummy_signature_dev_mode') {
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+    if (isDev && razorpaySignature === 'dummy_signature_dev_mode') {
       // Skip signature verify & Razorpay fetch
       // Proceed to update DB directly
+      console.log('⚠️ DEV MODE: Bypassing Editor Deposit Signature Verification');
     } else {
       const secret = process.env.RAZORPAY_KEY_SECRET;
       if (!secret) {
@@ -493,7 +496,12 @@ router.post('/verify', authenticate, requireCreator, async (req: AuthRequest, re
     }
 
     // Verify payment signature
-    if (razorpaySignature !== 'dummy_signature_dev_mode') {
+    // STRICT SECURITY: Only allow dummy signature in DEVELOPMENT or TEST mode.
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+    if (isDev && razorpaySignature === 'dummy_signature_dev_mode') {
+      console.log('⚠️ DEV MODE: Bypassing Razorpay Signature Verification');
+    } else {
       const secret = process.env.RAZORPAY_KEY_SECRET;
       if (!secret) {
         return res.status(500).json({ error: 'RAZORPAY_KEY_SECRET is not configured' });
