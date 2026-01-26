@@ -10,7 +10,6 @@ import YouTubeConnectModal from '@/components/YouTubeConnectModal'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Link from 'next/link'
 import { MessageCircle, Briefcase, Users } from 'lucide-react'
-import { AvatarCircles } from '@/components/ui/avatar-circles'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -314,15 +313,13 @@ export default function DashboardPage() {
                       </p>
                     )}
                     <div className="flex flex-wrap justify-between items-center gap-2 text-sm">
-                      <span className="flex-1 min-w-0 pr-2 mr-2 border-r border-gray-300">
+                      <span className="text-gray-600 truncate max-w-[60%] border-r pr-2 mr-2 border-gray-300">
                         {user.role === 'CREATOR' ? (
                           order.status === 'OPEN' ? (
-                            <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
-                              <AvatarCircles
-                                numPeople={Math.max(0, (order._count?.applications || 0) - (order.applications?.length || 0))}
-                                avatarUrls={order.applications?.map((app: any) => app.editor?.editorProfile?.avatarUrl).filter(Boolean) || []}
-                              />
-                            </div>
+                            <span className="flex items-center text-blue-600 font-medium">
+                              <Users className="w-3 h-3 mr-1" />
+                              {order._count?.applications || 0} Applicants
+                            </span>
                           ) : (
                             order.editor?.name || 'Unassigned'
                           )

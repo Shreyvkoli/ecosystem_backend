@@ -177,25 +177,12 @@ export async function getUserOrders(
           email: true
         }
       },
-      applications: {
-        select: {
-          id: true,
-          status: true,
-          editorId: true,
-          editor: {
-            select: {
-              id: true,
-              editorProfile: {
-                select: {
-                  avatarUrl: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 5 // Limit to 5 for performance/UI
-      },
+      applications: userRole === 'EDITOR'
+        ? {
+          where: { editorId: userId },
+          select: { id: true, status: true, depositAmount: true, createdAt: true, editorId: true }
+        }
+        : undefined,
       files: {
         orderBy: { createdAt: 'desc' }
       },

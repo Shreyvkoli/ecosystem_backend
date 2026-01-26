@@ -9,7 +9,6 @@ import Navbar from '@/components/Navbar'
 import EditorTimeline from '@/components/EditorTimeline'
 import Link from 'next/link'
 import { Eye, FileText, Calendar, Clock, ExternalLink, X, Users, ArrowRight } from 'lucide-react'
-import { AvatarCircles } from '@/components/ui/avatar-circles'
 
 export default function EditorJobsPage() {
   const router = useRouter()
@@ -423,11 +422,9 @@ export default function EditorJobsPage() {
                         </div>
 
                         {/* Applicants - Full Width */}
-                        <div className="col-span-2 mt-2 px-1">
-                          <AvatarCircles
-                            numPeople={Math.max(0, (order._count?.applications || 0) - (order.applications?.length || 0))}
-                            avatarUrls={order.applications?.map((app: any) => app.editor?.editorProfile?.avatarUrl).filter(Boolean) || []}
-                          />
+                        <div className="col-span-2 flex items-center gap-2 text-xs text-gray-500 px-1 mt-1">
+                          <Users className="w-3 h-3" />
+                          <span>{order._count?.applications || order.applications?.length || 0} Editors applied</span>
                         </div>
                       </div>
 
