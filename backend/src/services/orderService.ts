@@ -177,12 +177,25 @@ export async function getUserOrders(
           email: true
         }
       },
-      applications: userRole === 'EDITOR'
-        ? {
-          where: { editorId: userId },
-          select: { id: true, status: true, depositAmount: true, createdAt: true, editorId: true }
-        }
-        : undefined,
+      applications: {
+        select: {
+          id: true,
+          status: true,
+          editorId: true,
+          editor: {
+            select: {
+              id: true,
+              editorProfile: {
+                select: {
+                  avatarUrl: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5 // Limit to 5 for performance/UI
+      },
       files: {
         orderBy: { createdAt: 'desc' }
       },
@@ -381,7 +394,10 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     updateData.completedAt = new Date();
 
     // Execute completion logic in a transaction to ensure wallet consistency
-    return prisma.$transaction(async (tx) => {
+    // Execute completion logic in a transaction to ensure wallet consistency
+    const { updatedOrder, notifications } = await prisma.$transaction(async (tx) => {
+      const notifications = [];
+
       // 1. Update Order Status
       const updatedOrder = await tx.order.update({
         where: { id: data.orderId },
@@ -419,7 +435,7 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
           });
 
           if (nextJob) {
-            await tx.notification.create({
+            const slotNotif = await tx.notification.create({
               data: {
                 userId: updatedOrder.editorId,
                 type: 'SYSTEM',
@@ -428,6 +444,7 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
                 link: `/editor/jobs/${nextJob.id}`
               }
             });
+            notifications.push(slotNotif);
           }
         }
       }
@@ -487,10 +504,29 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
             releaseNote: 'Auto-released on completion'
           }
         });
+
+        // E. Send Payment Released Notification
+        const paymentNotif = await tx.notification.create({
+          data: {
+            userId: order.editorId,
+            type: 'SYSTEM',
+            title: 'Payment Released 💰',
+            message: `Payment of ₹${order.amount.toLocaleString()} for "${order.title}" has been released to your wallet.`,
+            link: `/editor/wallet`
+          }
+        });
+        notifications.push(paymentNotif);
       }
 
-      return updatedOrder;
+      return { updatedOrder, notifications };
     });
+
+    // Emit real-time notifications
+    const notifService = NotificationService.getInstance();
+    notifications.forEach(n => notifService.notifyUser(n.userId, n));
+
+    return updatedOrder;
+
   }
 
   if (data.status === OrderStatus.CANCELLED) {
