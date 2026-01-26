@@ -13,8 +13,8 @@ import PaymentButton from '@/components/PaymentButton'
 import EditorDepositButton from '@/components/EditorDepositButton'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Timeline from '@/components/Timeline'
-import YouTubeConnectModal from '@/components/YouTubeConnectModal'
-import YouTubeUploadModal from '@/components/YouTubeUploadModal'
+// import YouTubeConnectModal from '@/components/YouTubeConnectModal'
+// import YouTubeUploadModal from '@/components/YouTubeUploadModal'
 import ChatRoom from '@/components/ChatRoom'
 import ReviewModal from '@/components/ReviewModal'
 import DisputeModal from '@/components/DisputeModal'
@@ -31,8 +31,8 @@ export default function OrderDetailPage() {
   const queryClient = useQueryClient()
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [showProfileModal, setShowProfileModal] = useState<string | null>(null)
-  const [showYouTubeConnectModal, setShowYouTubeConnectModal] = useState(false)
-  const [showYouTubeUploadModal, setShowYouTubeUploadModal] = useState(false)
+  // const [showYouTubeConnectModal, setShowYouTubeConnectModal] = useState(false)
+  // const [showYouTubeUploadModal, setShowYouTubeUploadModal] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
   const [showRevisionLimitModal, setShowRevisionLimitModal] = useState(false)
@@ -126,11 +126,11 @@ export default function OrderDetailPage() {
     enabled: !!orderId && !!user && user.role === 'CREATOR',
   })
 
-  const { data: youtubeStatus } = useQuery({
-    queryKey: ['youtube-status'],
-    queryFn: () => youtubeApi.getStatus(),
-    enabled: !!user && user.role === 'CREATOR',
-  })
+  // const { data: youtubeStatus } = useQuery({
+  //   queryKey: ['youtube-status'],
+  //   queryFn: () => youtubeApi.getStatus(),
+  //   enabled: !!user && user.role === 'CREATOR',
+  // })
 
   // Sort files to get LATEST raw video
   const rawVideo = order?.files
@@ -623,47 +623,67 @@ export default function OrderDetailPage() {
                   <h3 className="font-semibold">{order.status === 'COMPLETED' ? 'Final Assets' : 'Final Delivery'}</h3>
                   {finalVideo && (
                     <>
-                      {/* Download Button */}
-                      <a
-                        href={finalVideo.publicLink || '#'}
-                        target="_blank"
-                        download
-                        className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center font-medium"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download Final Video
-                      </a>
-
-                      {youtubeStatus?.data.connected ? (
-                        <button
-                          onClick={() => setShowYouTubeUploadModal(true)}
-                          className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center justify-center"
-                        >
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                          </svg>
-                          Upload to YouTube
-                        </button>
+                      {order.status !== 'COMPLETED' ? (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-3">
+                          <p className="text-sm text-yellow-800 mb-3 font-medium text-center">
+                            Review the video above. To download the watermark-free file, please complete the order.
+                          </p>
+                          <button
+                            onClick={() => {
+                              if (confirm("Are you sure you want to mark this order as completed ?\n\nThis will release the payment to the editor and you won't be able to request further revisions.")) {
+                                completeMutation.mutate()
+                              }
+                            }}
+                            disabled={completeMutation.isPending}
+                            className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center font-bold shadow-sm"
+                          >
+                            {completeMutation.isPending ? (
+                              'Processing...'
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Finish Job & Download
+                              </>
+                            )}
+                          </button>
+                        </div>
                       ) : (
-                        <button
-                          onClick={() => setShowYouTubeConnectModal(true)}
-                          className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center justify-center"
-                        >
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                          </svg>
-                          Connect YouTube & Upload
-                        </button>
+                        <div className="space-y-3">
+                          <a
+                            href={finalVideo.publicLink || '#'}
+                            target="_blank"
+                            download
+                            className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center justify-center font-medium shadow-sm"
+                          >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download Final Video
+                          </a>
+
+                          <a
+                            href="https://studio.youtube.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center justify-center font-medium shadow-sm"
+                          >
+                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                            Upload on YouTube
+                          </a>
+                        </div>
                       )}
                     </>
                   )}
-                  {order.status !== 'COMPLETED' && (
+                  {/* Fallback mark completed if no video but status needs update (rare) */}
+                  {!finalVideo && order.status !== 'COMPLETED' && (
                     <button
                       onClick={() => completeMutation.mutate()}
                       disabled={completeMutation.isPending}
-                      className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 mt-2"
                     >
                       {completeMutation.isPending ? 'Completing...' : 'Mark Completed'}
                     </button>
@@ -800,19 +820,7 @@ export default function OrderDetailPage() {
         }
       />
 
-      {/* YouTube Connect Modal */}
-      <YouTubeConnectModal
-        isOpen={showYouTubeConnectModal}
-        onClose={() => setShowYouTubeConnectModal(false)}
-      />
-
-      {/* YouTube Upload Modal */}
-      <YouTubeUploadModal
-        isOpen={showYouTubeUploadModal}
-        onClose={() => setShowYouTubeUploadModal(false)}
-        orderId={orderId}
-        orderTitle={order.title}
-      />
+      {/* YouTube Modals Removed */}
 
       {/* Review Modal */}
       <ReviewModal
