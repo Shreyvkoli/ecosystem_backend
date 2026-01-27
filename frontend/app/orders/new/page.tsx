@@ -133,6 +133,7 @@ function NewOrderContent() {
   // but better to rely on type inference or implicit any for now to be fast.
   // State for raw footage upload modal after creation
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null)
+  const [linkInput, setLinkInput] = useState('')
 
   // Handlers for the Raw Footage Modal
   const handleSkipUpload = () => {
@@ -208,24 +209,23 @@ function NewOrderContent() {
                     <h4 className="font-semibold text-indigo-900 text-sm mb-1">Option 1: Paste a Link (Recommended)</h4>
                     <p className="text-xs text-indigo-700 mb-3">Best for vlogs, large files (&gt;500MB), or multiple clips (Drive/Dropbox/WeTransfer).</p>
 
-                    <form onSubmit={(e) => {
-                      e.preventDefault();
-                      const form = e.target as HTMLFormElement;
-                      const input = form.elements.namedItem('link') as HTMLInputElement;
-                      handleLinkSubmit(input.value);
-                    }}>
+                    <div className="flex flex-col gap-2">
                       <input
-                        name="link"
                         type="url"
-                        required
+                        value={linkInput}
+                        onChange={(e) => setLinkInput(e.target.value)}
                         placeholder="Paste Google Drive/Dropbox link here..."
                         className="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                       />
-                      <p className="text-[10px] text-gray-500 mt-1">⚠️ Ensure link permission is set to "Anyone with the link".</p>
-                      <button type="submit" disabled={registerFileMutation.isPending} className="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                      <p className="text-[10px] text-gray-500">⚠️ Ensure link permission is set to "Anyone with the link".</p>
+                      <button
+                        onClick={() => handleLinkSubmit(linkInput)}
+                        disabled={registerFileMutation.isPending || !linkInput}
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                      >
                         {registerFileMutation.isPending ? 'Saving...' : 'Submit Link →'}
                       </button>
-                    </form>
+                    </div>
                   </div>
 
                   {/* Divider */}
