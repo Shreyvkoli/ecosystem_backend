@@ -7,6 +7,7 @@ import { ordersApi, youtubeApi, usersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import YouTubeConnectModal from '@/components/YouTubeConnectModal'
+import CreatorHandbookModal from '@/components/CreatorHandbookModal'
 import EditorProfileModal from '@/components/EditorProfileModal'
 import Link from 'next/link'
 import { MessageCircle, Briefcase, Users } from 'lucide-react'
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   const user = getUser()
   const [showYouTubeConnectModal, setShowYouTubeConnectModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState<string | null>(null)
+  const [showHandbookModal, setShowHandbookModal] = useState(false)
   const [activeTab, setActiveTab] = useState('active')
   const queryClient = useQueryClient()
 
@@ -139,6 +141,13 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Connect</span>
                     </button>
                   )}
+                  <button
+                    onClick={() => setShowHandbookModal(true)}
+                    className="flex items-center px-3 sm:px-4 py-2 bg-white text-indigo-600 rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors text-sm font-medium shadow-sm"
+                  >
+                    <span className="mr-1">📘</span>
+                    <span className="hidden sm:inline">Handbook</span>
+                  </button>
                   <Link
                     href="/orders/new"
                     className="premium-button flex items-center space-x-2 text-sm sm:text-base"
@@ -350,6 +359,11 @@ export default function DashboardPage() {
       <EditorProfileModal
         editorId={showProfileModal}
         onClose={() => setShowProfileModal(null)}
+      />
+
+      <CreatorHandbookModal
+        isOpen={showHandbookModal}
+        onClose={() => setShowHandbookModal(false)}
       />
     </div>
   )
