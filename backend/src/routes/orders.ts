@@ -706,8 +706,19 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
           }
         });
       }
-    } catch (emailError) {
-      console.error('Failed to send application email:', emailError);
+
+      // Send In-App Notification
+      const { NotificationService } = await import('../services/notificationService.js');
+      await NotificationService.getInstance().createAndSend({
+        userId: order.creatorId,
+        type: 'ORDER',
+        title: 'New Application',
+        message: `${application.editor.name} has applied for "${order.title}".`,
+        link: `/orders/${orderId}`
+      });
+
+    } catch (notifError) {
+      console.error('Failed to send notification:', notifError);
     }
 
     return res.status(201).json(application);
