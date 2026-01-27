@@ -511,16 +511,17 @@ function NewOrderContent() {
                     </div>
 
                     {/* Option 2 - Placeholder for Direct Upload */}
-                    <div className="border border-gray-200 rounded-lg p-4 opacity-75">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Option 2: Direct Upload</h4>
+                    <div className="border border-gray-200 rounded-lg p-4 opacity-75 hover:opacity-100 transition-opacity">
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Option 2: Upload Files</h4>
                       <p className="text-xs text-gray-500 mb-3">Fast for small clips (Reels/Shorts). Max 500MB.</p>
                       <button
                         onClick={() => router.push(`/orders/${createdOrderId}`)}
-                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                        className="w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
                       >
-                        <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Go to Upload Page
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        📂 Upload from Device
                       </button>
+                      <p className="text-[10px] text-center text-gray-400 mt-2">Redirects to secure upload page</p>
                     </div>
                   </div>
                 </div>
