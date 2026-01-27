@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ordersApi, usersApi } from '@/lib/api'
+import { ordersApi, usersApi, filesApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 
@@ -131,13 +131,142 @@ function NewOrderContent() {
 
   // Define interfaces here if needed to avoid typescript errors in mutationFn,
   // but better to rely on type inference or implicit any for now to be fast.
+  // State for raw footage upload modal after creation
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null)
+
+  // Handlers for the Raw Footage Modal
+  const handleSkipUpload = () => {
+    if (createdOrderId) router.push(`/orders/${createdOrderId}`)
+  }
+
+  const registerFileMutation = useMutation({
+    mutationFn: (data: any) => filesApi.register(data),
+    onSuccess: () => {
+      // Once registered, move to order page
+      if (createdOrderId) router.push(`/orders/${createdOrderId}`)
+    },
+    onError: () => {
+      alert("Failed to register link. You can try again on the order page.")
+      if (createdOrderId) router.push(`/orders/${createdOrderId}`)
+    }
+  })
+
+  // Mock Upload Handler (since actual file upload logic is in LinkSubmission/RawVideoUploader usually)
+  // For this modal, we will just handle LINK submission to keep it simple as per prompt
+  // But prompt mentions "Button: Select Files" -> In a real app we'd reuse the upload logic. 
+  // Here we'll simulate the choice leading to the order page's upload section OR handle link right here.
+
+  const handleLinkSubmit = (link: string) => {
+    if (!createdOrderId || !link) return
+    registerFileMutation.mutate({
+      orderId: createdOrderId,
+      fileName: 'Raw Footage Link',
+      type: 'RAW_VIDEO',
+      provider: link.includes('drive.google') ? 'GOOGLE_DRIVE' : link.includes('dropbox') ? 'DROPBOX' : 'OTHER',
+      publicLink: link
+    })
+  }
+
   const createMutation = useMutation({
     mutationFn: (data: any) =>
       ordersApi.create(data),
     onSuccess: (response) => {
-      router.push(`/orders/${response.data.id}`)
+      // Instead of direct push, open the modal
+      setCreatedOrderId(response.data.id)
     },
   })
+
+  // ... (rest of query code)
+
+  // Render Modal if Order Created
+  if (createdOrderId) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="mt-3 text-center sm:mt-5">
+                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                  Order Created Successfully!
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    Now, let's get your raw footage to the editor.
+                  </p>
+                </div>
+
+                <div className="mt-6 text-left space-y-6">
+                  {/* Option 1 */}
+                  <div className="border border-indigo-100 bg-indigo-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-indigo-900 text-sm mb-1">Option 1: Paste a Link (Recommended)</h4>
+                    <p className="text-xs text-indigo-700 mb-3">Best for vlogs, large files (&gt;500MB), or multiple clips (Drive/Dropbox/WeTransfer).</p>
+
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const input = form.elements.namedItem('link') as HTMLInputElement;
+                      handleLinkSubmit(input.value);
+                    }}>
+                      <input
+                        name="link"
+                        type="url"
+                        required
+                        placeholder="Paste Google Drive/Dropbox link here..."
+                        className="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      <p className="text-[10px] text-gray-500 mt-1">⚠️ Ensure link permission is set to "Anyone with the link".</p>
+                      <button type="submit" disabled={registerFileMutation.isPending} className="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                        {registerFileMutation.isPending ? 'Saving...' : 'Submit Link →'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="px-2 bg-white text-sm text-gray-500">OR</span>
+                    </div>
+                  </div>
+
+                  {/* Option 2 - Placeholder for Direct Upload */}
+                  <div className="border border-gray-200 rounded-lg p-4 opacity-75">
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1">Option 2: Direct Upload</h4>
+                    <p className="text-xs text-gray-500 mb-3">Fast for small clips (Reels/Shorts). Max 500MB.</p>
+                    <button
+                      onClick={() => router.push(`/orders/${createdOrderId}`)}
+                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                    >
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                      Go to Upload Page
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 sm:mt-6">
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                onClick={handleSkipUpload}
+              >
+                I'll do this later
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Fetch Saved Editors
   const { data: savedEditors } = useQuery({
