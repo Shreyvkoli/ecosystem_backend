@@ -143,7 +143,7 @@ export default function DashboardPage() {
                   )}
                   <button
                     onClick={() => setShowHandbookModal(true)}
-                    className="flex items-center px-3 sm:px-4 py-2 bg-white text-indigo-600 rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors text-sm font-medium shadow-sm"
+                    className="flex items-center px-3 sm:px-4 py-2 bg-gradient-to-b from-gray-50 to-gray-300 border border-gray-300 text-gray-800 rounded-lg hover:from-gray-200 hover:to-gray-400 transition-all text-sm font-bold shadow-sm"
                   >
                     <span className="mr-1">📘</span>
                     <span className="hidden sm:inline">Handbook</span>
