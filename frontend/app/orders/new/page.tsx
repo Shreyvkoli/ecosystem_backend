@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ordersApi, usersApi, filesApi } from '@/lib/api'
-import { getUser } from '@/lib/auth'
+import { getUser, getAuthToken } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 
 import { Suspense } from 'react'
@@ -33,11 +33,12 @@ function NewOrderContent() {
 
   useEffect(() => {
     const currentUser = getUser()
+    const token = getAuthToken()
     setUser(currentUser)
     setIsLoading(false)
 
-    if (!currentUser || currentUser.role !== 'CREATOR') {
-      router.push('/dashboard')
+    if (!currentUser || !token || currentUser.role !== 'CREATOR') {
+      router.push('/login')
     }
   }, [router])
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ordersApi, youtubeApi, usersApi } from '@/lib/api'
-import { getUser } from '@/lib/auth'
+import { getUser, getAuthToken, removeUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import YouTubeConnectModal from '@/components/YouTubeConnectModal'
 import CreatorHandbookModal from '@/components/CreatorHandbookModal'
@@ -25,7 +25,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true)
-    if (!user) {
+    const token = getAuthToken()
+
+    if (!user || !token) {
+      if (!token) removeUser() // Clear stale user data if token is missing
       router.push('/login')
     } else if (user.role === 'EDITOR') {
       router.push('/editor/jobs')
