@@ -23,7 +23,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         <header className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <Logo showWordmark size={28} />
+            <Logo showWordmark size={36} />
           </Link>
           <div className="hidden md:flex items-center gap-8">
             {['Pricing', 'How it works', 'Trust & Safety', 'About'].map((item) => (
@@ -47,24 +47,24 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="pt-12 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <main className="pt-16 pb-28 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-xl"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="max-w-2xl"
           >
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-charcoal leading-tight tracking-tight">
-              Video editing <br />
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-charcoal leading-[1.1] tracking-tight">
+              Get your video edited <br />
               <span className="text-brand">without the stress.</span>
             </h1>
-            <p className="mt-6 text-lg text-gray-600 leading-relaxed font-medium">
+            <p className="mt-8 text-xl text-gray-600 leading-relaxed font-medium">
               Hire vetted Indian editors. No ghosting, no storage mess, and <span className="text-charcoal font-bold">100% money protection.</span>
             </p>
-            <div className="mt-8 flex items-center gap-4">
-              <Link href="/register?role=CREATOR" className="btn-primary text-lg px-12 py-5 shadow-2xl shadow-brand/20 transition-transform hover:-translate-y-1">
+            <div className="mt-10 flex flex-col sm:flex-row gap-5">
+              <Link href="/register?role=CREATOR" className="btn-primary px-10 py-4 shadow-xl shadow-brand/20 transition-transform hover:-translate-y-1">
                 Hire an Editor
               </Link>
-              <Link href="/register?role=EDITOR" className="btn-secondary text-lg px-12 py-5 border-2 hover:bg-gray-50 transition-all">
+              <Link href="/register?role=EDITOR" className="btn-secondary px-10 py-4 border-2 hover:bg-gray-50 transition-all">
                 I'm an Editor
               </Link>
             </div>
@@ -102,21 +102,21 @@ export default function Home() {
         </section>
 
         {/* How it Works - Stepped UI */}
-        <section className="py-32 bg-[#F9FAFB] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 rounded-[60px] border border-gray-100 mb-40">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-20 text-center tracking-tight">How it works</h2>
-            <div className="grid md:grid-cols-3 gap-12">
+        <section className="py-24 bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 rounded-[40px] border border-gray-100 mb-32">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-16 text-center tracking-tight">How it works</h2>
+            <div className="grid md:grid-cols-3 gap-12 lg:gap-20">
               {[
-                { step: "1", title: "Post your Link", desc: "Share your GDrive link." },
-                { step: "2", title: "Pick Editor", desc: "Choose from applicants." },
-                { step: "3", title: "Download", desc: "Approve and get your video." }
+                { step: "1", title: "Post your Link", desc: "Share your GDrive/Dropbox link and budget." },
+                { step: "2", title: "Choose Editor", desc: "Vetted editors apply. Pick your match." },
+                { step: "3", title: "Get Video", desc: "Review, approve, and download final cut." }
               ].map((item, i) => (
                 <div key={i} className="text-center group">
-                  <div className="w-12 h-12 bg-white border border-gray-200 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6 text-brand font-bold text-lg group-hover:border-brand transition-colors">
+                  <div className="w-16 h-16 bg-white border-2 border-gray-100 shadow-sm rounded-full flex items-center justify-center mx-auto mb-8 text-brand font-black text-2xl group-hover:border-brand transition-colors">
                     {item.step}
                   </div>
-                  <h4 className="text-lg font-bold mb-3">{item.title}</h4>
-                  <p className="text-sm text-gray-500 font-medium">{item.desc}</p>
+                  <h4 className="text-xl font-bold mb-4">{item.title}</h4>
+                  <p className="text-gray-600 font-medium leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -155,12 +155,12 @@ export default function Home() {
 
         {/* Final CTA */}
         <section className="mb-32">
-          <div className="bg-charcoal p-12 md:p-24 rounded-[48px] text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-brand/10 to-transparent opacity-20" />
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight relative z-10">Start your first project today.</h2>
-            <p className="text-lg text-gray-400 mb-10 font-medium relative z-10 max-w-lg mx-auto">Join the premium community of creators shipping with Cutflow.</p>
-            <Link href="/register?role=CREATOR" className="btn-primary px-10 py-4 shadow-xl shadow-brand/40 relative z-10">
-              Get Started
+          <div className="bg-charcoal p-12 md:p-28 rounded-[40px] text-center shadow-3xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-brand/20 to-transparent opacity-20" />
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tighter relative z-10">Start your first project today.</h2>
+            <p className="text-xl text-gray-400 mb-12 font-medium relative z-10 max-w-2xl mx-auto">Join the premium community of creators shipping content daily with Cutflow.</p>
+            <Link href="/register?role=CREATOR" className="btn-primary text-xl px-12 py-5 shadow-2xl shadow-brand/40 relative z-10">
+              Get Started Now
             </Link>
           </div>
         </section>
