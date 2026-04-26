@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const [showYouTubeConnectModal, setShowYouTubeConnectModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState<string | null>(null)
   const [showHandbookModal, setShowHandbookModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('active')
+  const [activeTab, setActiveTab] = useState('browse')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSkill, setSelectedSkill] = useState('All')
   const queryClient = useQueryClient()
@@ -188,12 +188,15 @@ export default function DashboardPage() {
           {/* Tabs */}
           <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit overflow-x-auto no-scrollbar">
             {[
-              { key: 'active', label: 'Active Orders' },
-              { key: 'history', label: 'History' },
               ...(user.role === 'CREATOR' ? [
                 { key: 'browse', label: 'Browse Editors' },
+                { key: 'active', label: 'Active Orders' },
+                { key: 'history', label: 'History' },
                 { key: 'saved', label: 'Saved' }
-              ] : [])
+              ] : [
+                { key: 'active', label: 'Active Orders' },
+                { key: 'history', label: 'History' }
+              ])
             ].map((tab) => (
               <button
                 key={tab.key}
