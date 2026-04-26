@@ -47,11 +47,11 @@ export default function HeroVisuals() {
                         loop
                         muted
                         playsInline
-                        className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-110"
                         onPlay={() => setIsPlaying(true)}
                         onPause={() => setIsPlaying(false)}
                     >
-                        <source src="https://player.vimeo.com/external/370331493.sd.mp4?s=33d5964f697d028453443a7a9745ad7570ed364a&profile_id=139&oauth2_token_id=57447761" type="video/mp4" />
+                        <source src="https://player.vimeo.com/external/434045526.sd.mp4?s=c83134639d6756855b41cf434e3e3b38144b209c&profile_id=164&oauth2_token_id=57447761" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
 
