@@ -20,8 +20,8 @@ export default function ContactPage() {
     <div className="min-h-screen">
       <PublicNav />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-5xl font-extrabold text-gray-900">
-          <span className="bg-gradient-to-r from-brand to-purple-400 bg-clip-text text-transparent">Contact / Support</span>
+        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
+          Contact / <span className="text-brand">Support</span>
         </h1>
         <p className="text-gray-600 mt-4 text-lg">
           Email us at <span className="text-gray-900 font-semibold">support@yourdomain.com</span> or use the form below.
@@ -68,7 +68,7 @@ export default function ContactPage() {
                 />
               </div>
               <Magnetic strength={0.35}>
-                <button type="submit" className="premium-button neon-glow">
+                <button type="submit" className="btn-primary w-full shadow-lg">
                   Send Message
                 </button>
               </Magnetic>
