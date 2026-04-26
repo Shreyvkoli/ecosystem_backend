@@ -51,13 +51,13 @@ export default function InstallPWA() {
 
     // Render Install Button (Persistent until installed)
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-6 z-50 w-max">
+        <div className="fixed bottom-4 right-4 z-50 w-max">
             <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-2 bg-brand hover:bg-brand-dark text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-brand"
+                className="flex items-center gap-1.5 bg-white/90 backdrop-blur-lg hover:bg-white text-gray-600 hover:text-charcoal text-micro font-semibold py-2 px-3.5 rounded-lg shadow-card border border-gray-200 transition-all duration-200"
             >
-                <Download className="w-5 h-5" />
-                Install App
+                <Download className="w-3.5 h-3.5" />
+                Install
             </button>
 
             {/* Helper text/tooltip can be added here if needed, or simple Alert for now */}

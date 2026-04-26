@@ -2,60 +2,47 @@
 
 import PublicNav from '@/components/PublicNav'
 import PublicFooter from '@/components/PublicFooter'
-import Magnetic from '@/components/Magnetic'
 import Link from 'next/link'
 
 export default function TrustPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <PublicNav />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-3xl">
-          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
-            <span className="text-brand">Trust</span> & <span className="text-charcoal opacity-80">Safety</span>
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-2xl mb-12">
+          <span className="text-micro text-brand uppercase tracking-widest">Safety first</span>
+          <h1 className="text-display-sm text-charcoal mt-2 tracking-tight">
+            Trust & Safety
           </h1>
-          <p className="text-gray-600 mt-4 text-lg font-medium">
+          <p className="text-body-lg text-gray-400 mt-3">
             Cutflow is designed to prevent ghosting and protect files with clear rules.
           </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="pro-card relative overflow-hidden">
-            <h2 className="text-2xl font-bold text-gray-900">Why deposits exist</h2>
-            <p className="text-gray-600 mt-3 font-medium">
-              Editors lock a refundable deposit when they apply. This reduces spam and ensures editors take assignments seriously.
-            </p>
-          </div>
-          <div className="pro-card relative overflow-hidden">
-            <h2 className="text-2xl font-bold text-gray-900">Ghosting Policy</h2>
-            <p className="text-gray-600 mt-3 font-medium">
-              If an editor ghosts, their deposit is deducted. If a creator disappears, jobs are cancelled and deposits released safely.
-            </p>
-          </div>
-          <div className="pro-card relative overflow-hidden">
-            <h2 className="text-2xl font-bold text-gray-900">Disputes & Fairness</h2>
-            <p className="text-gray-600 mt-3 font-medium">
-              We review chat + file timelines to apply policy fairly. Milestone-based workflows ensure everyone stays aligned.
-            </p>
-          </div>
-          <div className="pro-card relative overflow-hidden">
-            <h2 className="text-2xl font-bold text-gray-900">File Security</h2>
-            <p className="text-gray-600 mt-3 font-medium">
-              Raw files are stored privately. Only assigned editors can access downloads, protecting your IP at all times.
-            </p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {[
+            { title: 'Why deposits exist', desc: 'Editors lock a refundable deposit when they apply. This reduces spam and ensures editors take assignments seriously.' },
+            { title: 'Ghosting Policy', desc: 'If an editor ghosts, their deposit is deducted. If a creator disappears, jobs are cancelled and deposits released safely.' },
+            { title: 'Disputes & Fairness', desc: 'We review chat + file timelines to apply policy fairly. Milestone-based workflows ensure everyone stays aligned.' },
+            { title: 'File Security', desc: 'Raw files are stored privately. Only assigned editors can access downloads, protecting your IP at all times.' },
+          ].map((item, i) => (
+            <div key={i} className="pro-card">
+              <h2 className="text-heading-sm text-charcoal">{item.title}</h2>
+              <p className="text-body text-gray-400 mt-2 leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-16 bg-gray-50 border border-gray-100 rounded-3xl p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="mt-12 bg-charcoal rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <div className="text-3xl font-bold text-gray-900">Want the full rules?</div>
-            <div className="text-gray-600 mt-2 font-medium">Read the exact legal policies for deposits and refunds.</div>
+            <div className="text-heading text-white">Want the full rules?</div>
+            <div className="text-body text-gray-400 mt-1">Read the exact legal policies for deposits and refunds.</div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
             <Link href="/legal/editor-deposit" className="btn-primary whitespace-nowrap">
               Editor Deposit Policy
             </Link>
-            <Link href="/legal/refund" className="btn-secondary whitespace-nowrap">
+            <Link href="/legal/refund" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20 whitespace-nowrap">
               Refund Policy
             </Link>
           </div>

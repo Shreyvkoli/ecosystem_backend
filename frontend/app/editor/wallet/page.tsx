@@ -84,15 +84,15 @@ export default function EditorWalletPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50/50">
             <Navbar />
-            <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
+                    <h1 className="text-heading text-charcoal">My Wallet</h1>
                     {kycStatus !== 'VERIFIED' && (
                         <button
                             onClick={() => setShowKYCModal(true)}
-                            className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-sm font-semibold"
+                            className="btn-secondary !py-2 !px-4 !text-caption text-blue-700 !border-blue-200 !bg-blue-50 hover:!bg-blue-100"
                         >
                             {kycStatus === 'NOT_STARTED' ? 'Start Identity Verification' : 'Check KYC Status'}
                         </button>
@@ -121,22 +121,18 @@ export default function EditorWalletPage() {
                 )}
 
                 {/* Balance Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-4 py-5 sm:p-6">
-                            <dt className="text-sm font-medium text-gray-500 truncate">Available Balance</dt>
-                            <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                                ₹{profile?.walletBalance?.toLocaleString() || '0'}
-                            </dd>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div className="pro-card">
+                        <dt className="text-micro text-gray-400 uppercase tracking-widest">Available Balance</dt>
+                        <dd className="mt-2 text-display-sm text-charcoal">
+                            ₹{profile?.walletBalance?.toLocaleString() || '0'}
+                        </dd>
                     </div>
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-4 py-5 sm:p-6">
-                            <dt className="text-sm font-medium text-gray-500 truncate">Locked / Pending Withdrawal</dt>
-                            <dd className="mt-1 text-3xl font-semibold text-gray-900 text-gray-400">
-                                ₹{profile?.walletLocked?.toLocaleString() || '0'}
-                            </dd>
-                        </div>
+                    <div className="pro-card">
+                        <dt className="text-micro text-gray-400 uppercase tracking-widest">Locked / Pending</dt>
+                        <dd className="mt-2 text-display-sm text-gray-300">
+                            ₹{profile?.walletLocked?.toLocaleString() || '0'}
+                        </dd>
                     </div>
                 </div>
 
@@ -145,16 +141,16 @@ export default function EditorWalletPage() {
                     <button
                         onClick={() => setShowWithdrawModal(true)}
                         disabled={kycStatus !== 'VERIFIED'}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand hover:bg-brand-dark focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
+                        className="btn-primary !py-2.5 disabled:opacity-50 disabled:!bg-gray-300 disabled:!shadow-none"
                     >
                         Request Withdrawal
                     </button>
                 </div>
 
                 {/* Withdrawal History */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                    <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Withdrawal History</h3>
+                <div className="pro-card !p-0 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-100">
+                        <h3 className="text-heading-sm text-charcoal">Withdrawal History</h3>
                     </div>
                     <ul className="divide-y divide-gray-200">
                         {withdrawals && withdrawals.length > 0 ? (

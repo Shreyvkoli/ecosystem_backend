@@ -196,12 +196,12 @@ function NewOrderContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50/50">
         <Navbar lightTheme={true} />
         <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-            <div className="bg-white shadow rounded-lg p-6 text-center">
-              <p className="text-gray-500">Loading...</p>
+            <div className="pro-card text-center py-12">
+              <p className="text-body text-gray-400">Loading...</p>
             </div>
           </div>
         </div>
@@ -214,16 +214,16 @@ function NewOrderContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       <Navbar lightTheme={true} />
       <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Order</h1>
+          <h1 className="text-heading text-charcoal mb-6">Create New Order</h1>
 
-          <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="pro-card !p-6 space-y-6">
             {createMutation.error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">
+              <div className="bg-red-50 border border-red-100 p-3.5 rounded-xl">
+                <p className="text-caption text-red-600">
                   {(createMutation.error as any)?.response?.data?.error || 'Failed to create order'}
                 </p>
               </div>
@@ -232,13 +232,13 @@ function NewOrderContent() {
 
             {/* Preferred Editor Selection */}
             {savedEditors && savedEditors.length > 0 && (
-              <div className="bg-bg-brand/10 p-4 rounded-md border border-indigo-100">
-                <label htmlFor="editorId" className="block text-sm font-medium text-indigo-900 mb-2">
+              <div className="bg-brand-light/50 p-4 rounded-xl border border-brand/10">
+                <label htmlFor="editorId" className="block text-caption font-bold text-brand-dark mb-2">
                   Directly Hire a Saved Editor (Optional)
                 </label>
                 <select
                   id="editorId"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   value={formData.editorId}
                   onChange={(e) => setFormData({ ...formData, editorId: e.target.value })}
                 >
@@ -249,51 +249,51 @@ function NewOrderContent() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-brand-dark">
+                <p className="mt-1.5 text-micro text-brand-dark">
                   Selecting an editor will assign this order directly to them.
                 </p>
               </div>
             )}
 
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="title" className="block text-micro text-gray-400 uppercase tracking-widest mb-2">
                 Order Title *
               </label>
               <input
                 type="text"
                 id="title"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
+                className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
 
             {/* New Detailed Fields */}
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="rawFootageDuration" className="block text-sm font-medium text-gray-700">
-                  Raw Footage Duration (Minutes)
+                <label htmlFor="rawFootageDuration" className="block text-micro text-gray-400 uppercase tracking-widest mb-2">
+                  Raw Footage Duration (Min)
                 </label>
                 <input
                   type="number"
                   id="rawFootageDuration"
                   min="0"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   value={formData.rawFootageDuration}
                   onChange={(e) => setFormData({ ...formData, rawFootageDuration: e.target.value })}
                   placeholder="e.g. 60"
                 />
               </div>
               <div>
-                <label htmlFor="expectedDuration" className="block text-sm font-medium text-gray-700">
-                  Expected Final Duration (Minutes)
+                <label htmlFor="expectedDuration" className="block text-micro text-gray-400 uppercase tracking-widest mb-2">
+                  Final Duration (Min)
                 </label>
                 <input
                   type="number"
                   id="expectedDuration"
                   min="0"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   value={formData.expectedDuration}
                   onChange={(e) => setFormData({ ...formData, expectedDuration: e.target.value })}
                   placeholder="e.g. 5"
@@ -302,8 +302,8 @@ function NewOrderContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Editing Level</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="block text-micro text-gray-400 uppercase tracking-widest mb-3">Editing Level</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
                   { id: 'BASIC', label: 'Basic', desc: 'Standard cuts, basic titles, and background music.' },
                   { id: 'PROFESSIONAL', label: 'Professional', desc: 'Motion graphics, sound effects, B-roll, and dynamic subtitles.', popular: true },
@@ -312,25 +312,25 @@ function NewOrderContent() {
                   <div
                     key={option.id}
                     onClick={() => setFormData({ ...formData, editingLevel: option.id })}
-                    className={`relative cursor-pointer rounded-xl border p-4 text-left transition-all hover:shadow-lg ${formData.editingLevel === option.id
-                      ? 'border-brand bg-bg-brand/10/50 ring-1 ring-brand'
-                      : 'border-gray-200 bg-white hover:border-indigo-300'
+                    className={`relative cursor-pointer rounded-xl border-2 p-4 text-left transition-all duration-200 ${formData.editingLevel === option.id
+                      ? 'border-brand bg-brand-light/50'
+                      : 'border-gray-100 bg-gray-50/50 hover:border-gray-200'
                       }`}
                   >
                     {option.popular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand to-brand text-white text-[10px] uppercase tracking-wider font-bold px-3 py-0.5 rounded-full shadow-sm">
-                        Most Popular
+                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-brand text-white text-micro uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-md">
+                        Popular
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <div className={`font-bold ${formData.editingLevel === option.id ? 'text-indigo-900' : 'text-gray-900'}`}>
+                      <div className={`font-bold text-caption ${formData.editingLevel === option.id ? 'text-brand-dark' : 'text-charcoal'}`}>
                         {option.label}
                       </div>
                       {formData.editingLevel === option.id && (
-                        <div className="h-4 w-4 rounded-full bg-brand"></div>
+                        <div className="h-3.5 w-3.5 rounded-full bg-brand"></div>
                       )}
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 leading-relaxed">
+                    <div className="mt-1.5 text-micro text-gray-400 leading-relaxed">
                       {option.desc}
                     </div>
                   </div>
@@ -433,18 +433,18 @@ function NewOrderContent() {
               )}
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-2">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="btn-secondary !py-2.5 !px-5"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-50"
+                className="btn-primary !py-2.5 !px-5 disabled:opacity-60"
               >
                 {createMutation.isPending ? 'Creating...' : 'Create Order'}
               </button>
@@ -548,12 +548,12 @@ function NewOrderContent() {
 export default function NewOrderPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50/50">
         <Navbar lightTheme={true} />
         <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-            <div className="bg-white shadow rounded-lg p-6 text-center">
-              <p className="text-gray-500">Loading...</p>
+            <div className="pro-card text-center py-12">
+              <p className="text-body text-gray-400">Loading...</p>
             </div>
           </div>
         </div>

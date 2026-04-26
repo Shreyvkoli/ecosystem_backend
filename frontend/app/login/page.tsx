@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api'
 import { setAuthToken, setUser } from '@/lib/auth'
 import Link from 'next/link'
-import Magnetic from '@/components/Magnetic'
 import Logo from '@/components/Logo'
 
 export default function LoginPage() {
@@ -33,30 +32,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-soft-gray py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center mb-6">
-            <Logo href="/" size={40} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-brand-light/20 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-5">
+            <Logo href="/" size={36} />
           </div>
-          <h2 className="text-3xl font-bold text-charcoal">
+          <h2 className="text-heading text-charcoal">
             Welcome back
           </h2>
-          <p className="text-gray-500 font-medium">
+          <p className="text-body text-gray-400 mt-1">
             Sign in to manage your video projects
           </p>
         </div>
 
-        <div className="pro-card shadow-xl p-8 md:p-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="pro-card !p-8 !shadow-elevated">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-700 p-4 rounded-xl text-sm font-medium">
+              <div className="bg-red-50 border border-red-100 text-red-600 p-3.5 rounded-xl text-caption">
                 {error}
               </div>
             )}
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                <label htmlFor="email" className="block text-micro text-gray-400 uppercase tracking-widest mb-2 ml-0.5">
                   Email Address
                 </label>
                 <input
@@ -65,14 +64,14 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-charcoal placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all outline-none"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                <label htmlFor="password" className="block text-micro text-gray-400 uppercase tracking-widest mb-2 ml-0.5">
                   Password
                 </label>
                 <input
@@ -81,7 +80,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-charcoal placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all outline-none"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -89,20 +88,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full text-lg py-4 shadow-lg shadow-brand/20"
+                className="btn-primary w-full !py-3 shadow-brand disabled:opacity-60"
               >
                 {loading ? 'Authenticating...' : 'Sign In'}
               </button>
             </div>
 
-            <div className="text-center pt-4">
-              <p className="text-sm text-gray-500 font-medium">
+            <div className="text-center pt-2">
+              <p className="text-caption text-gray-400">
                 New to Cutflow?{' '}
-                <Link href="/register" className="text-brand hover:text-brand-dark font-bold underline underline-offset-4 transition-colors">
+                <Link href="/register" className="text-brand hover:text-brand-dark font-semibold transition-colors">
                   Create an account
                 </Link>
               </p>
@@ -113,4 +112,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

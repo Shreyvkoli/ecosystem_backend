@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { getUser, removeUser, removeAuthToken } from '@/lib/auth'
 import { usersApi } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import Magnetic from './Magnetic'
 import Logo from '@/components/Logo'
 import NotificationBell from './NotificationBell'
 
@@ -35,7 +34,6 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
   const updateAvatarMutation = useMutation({
     mutationFn: (url: string) => usersApi.updateCreatorProfile({ avatarUrl: url }),
     onSuccess: () => {
-      // Invalidate specific query to force refetch
       queryClient.invalidateQueries({ queryKey: ['user-profile', user?.id] })
       alert('Profile photo updated!')
     }
@@ -43,7 +41,6 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
 
   const getAvatarUrl = () => {
     if (!user) return null
-    // If fullProfile is loading or not present, fallback to user.avatar (if we had it) or null
     if (!fullProfile) return null
     if (user.role === 'CREATOR') return fullProfile.creatorProfile?.avatarUrl
     if (user.role === 'EDITOR') return fullProfile.editorProfile?.avatarUrl
@@ -51,7 +48,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
   }
 
   const handleAvatarClick = () => {
-    if (!user || user.role !== 'CREATOR') return // Only creators for now based on request
+    if (!user || user.role !== 'CREATOR') return
     const url = window.prompt("Enter your Profile Photo URL (e.g. from LinkedIn/Google):")
     if (url && url.trim()) {
       updateAvatarMutation.mutate(url.trim())
@@ -67,111 +64,94 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
   if (!user) return null
 
   return (
-    <nav className={`${lightTheme ? 'bg-white border-gray-200' : 'glass-morphism border-white/10'} sticky top-0 z-50 border-b`}>
+    <nav className="bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 flex-nowrap">
+        <div className="flex justify-between h-14 flex-nowrap">
           <div className="flex items-center">
-            <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-1 py-2 flex-shrink-0 transition-transform hover:scale-105">
-              <div className="md:hidden">
-                <Logo showWordmark={true} size={32} />
-              </div>
-              <div className="hidden md:block">
-                <Logo showWordmark={true} size={40} />
-              </div>
+            <Link href={user.role === 'EDITOR' ? '/editor/jobs' : '/dashboard'} className="flex items-center px-1 py-2 flex-shrink-0">
+              <Logo showWordmark={true} size={28} />
             </Link>
-            <div className="flex ml-2 sm:ml-4 space-x-2 sm:space-x-4">
+            <div className="flex ml-3 sm:ml-5 space-x-1 sm:space-x-3">
               {user.role === 'CREATOR' ? (
                 <>
-                  <Magnetic strength={0.2}>
-                    <Link
-                      href="/dashboard"
-                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
-                    >
-                      Dashboard
-                    </Link>
-                  </Magnetic>
-                  <Magnetic strength={0.2}>
-                    <Link
-                      href="/orders/new"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
-                    >
-                      New Order
-                    </Link>
-                  </Magnetic>
+                  <Link
+                    href="/dashboard"
+                    className="hidden md:inline-flex items-center px-3 py-1.5 text-caption text-gray-500 hover:text-charcoal hover:bg-gray-50 rounded-lg transition-all"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/orders/new"
+                    className="hidden md:inline-flex items-center px-3 py-1.5 text-caption text-gray-500 hover:text-charcoal hover:bg-gray-50 rounded-lg transition-all whitespace-nowrap"
+                  >
+                    New Order
+                  </Link>
                 </>
               ) : user.role === 'EDITOR' ? (
                 <>
-                  <Magnetic strength={0.2}>
-                    <Link
-                      href="/editor/jobs"
-                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
-                    >
-                      Dashboard
-                    </Link>
-                  </Magnetic>
-                  <Magnetic strength={0.2}>
-                    <Link
-                      href="/editor/wallet"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
-                    >
-                      Wallet
-                    </Link>
-                  </Magnetic>
+                  <Link
+                    href="/editor/jobs"
+                    className="hidden md:inline-flex items-center px-3 py-1.5 text-caption text-gray-500 hover:text-charcoal hover:bg-gray-50 rounded-lg transition-all"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/editor/wallet"
+                    className="hidden md:inline-flex items-center px-3 py-1.5 text-caption text-gray-500 hover:text-charcoal hover:bg-gray-50 rounded-lg transition-all"
+                  >
+                    Wallet
+                  </Link>
                 </>
               ) : user.role === 'ADMIN' ? (
-                <Magnetic strength={0.2}>
-                  <Link
-                    href="/admin/dashboard"
-                    className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
-                  >
-                    Admin Dashboard
-                  </Link>
-                </Magnetic>
+                <Link
+                  href="/admin/dashboard"
+                  className="hidden md:inline-flex items-center px-3 py-1.5 text-caption text-gray-500 hover:text-charcoal hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  Admin Dashboard
+                </Link>
               ) : null}
             </div>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <NotificationBell user={user} />
 
-            <div className={`text-sm ${lightTheme ? 'text-gray-600' : 'text-gray-700'}`}>
-              <div className="flex items-center gap-3">
-                {/* Avatar */}
-                <div
-                  onClick={handleAvatarClick}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand/10 flex items-center justify-center overflow-hidden border-2 border-brand/20 cursor-pointer hover:border-brand transition-all shadow-sm ${user.role === 'CREATOR' ? 'hover:scale-105' : ''}`}
-                  title={user.role === 'CREATOR' ? "Click to update profile photo" : ""}
-                >
-                  {getAvatarUrl() ? (
-                    <img
-                      key={getAvatarUrl()}
-                      src={getAvatarUrl()}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.error("Avatar failed to load:", getAvatarUrl());
-                      }}
-                    />
-                  ) : (
-                    <span className="text-brand font-bold text-sm sm:text-lg">{user.name.charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
-                <div className="hidden md:flex flex-col">
-                  <span className={`font-medium text-sm leading-tight ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
-                  <span className={`self-start px-1.5 py-0.5 ${lightTheme ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-gray-600'} rounded text-[10px] uppercase tracking-wider font-bold`}>
-                    {user.role}
-                  </span>
-                </div>
+            <div className="flex items-center gap-2.5">
+              {/* Avatar */}
+              <div
+                onClick={handleAvatarClick}
+                className={`w-8 h-8 rounded-full bg-brand-light flex items-center justify-center overflow-hidden border border-brand/10 ${user.role === 'CREATOR' ? 'cursor-pointer hover:border-brand/30' : ''} transition-all`}
+                title={user.role === 'CREATOR' ? "Click to update profile photo" : ""}
+              >
+                {getAvatarUrl() ? (
+                  <img
+                    key={getAvatarUrl()}
+                    src={getAvatarUrl()}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error("Avatar failed to load:", getAvatarUrl());
+                    }}
+                  />
+                ) : (
+                  <span className="text-brand font-bold text-micro">{user.name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div className="hidden md:flex flex-col">
+                <span className="font-semibold text-micro text-charcoal leading-tight">{user.name}</span>
+                <span className="text-micro text-gray-400 leading-tight">
+                  {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+                </span>
               </div>
             </div>
 
-            <div className="border-l border-gray-200 h-6 mx-2 hidden sm:block"></div>
+            <div className="border-l border-gray-100 h-5 mx-1 hidden sm:block"></div>
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300 transform hover:scale-110"
+              className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
               title="Logout"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -179,4 +159,3 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
     </nav>
   )
 }
-

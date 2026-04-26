@@ -277,59 +277,57 @@ export default function EditorJobsPage() {
   const sortedOpenOrders = useMemo(() => sortOrders(openOrders || []), [openOrders, sortBy])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50/50">
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                <span className="bg-gradient-to-r from-brand to-brand bg-clip-text text-transparent floating-animation">
-                  Editor Dashboard
-                </span>
+              <h1 className="text-heading text-charcoal">
+                Editor Dashboard
               </h1>
-              <p className="text-gray-600">Find and manage video editing jobs</p>
+              <p className="text-body text-gray-400 mt-1">Find and manage video editing jobs</p>
             </div>
-            <div className="flex overflow-x-auto p-2 gap-3 w-full md:w-auto no-scrollbar snap-x">
+            <div className="flex bg-gray-100 p-1 rounded-xl gap-1 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setTab('available')}
-                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'available'
-                  ? 'premium-button'
-                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 ${tab === 'available'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
                   }`}
               >
                 Available Jobs
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`flex-shrink-0 whitespace-nowrap relative px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center ${activeJobs.length > 0
-                  ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
+                className={`flex-shrink-0 whitespace-nowrap relative px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 flex items-center justify-center ${activeJobs.length > 0
+                  ? 'bg-brand text-white'
                   : tab === 'active'
-                    ? 'premium-button'
-                    : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                    ? 'bg-white text-charcoal shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
                   }`}
               >
                 Active Jobs
                 {activeJobs.length > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white shadow-sm">
+                  <span className="ml-1.5 w-5 h-5 flex items-center justify-center bg-white/20 text-white text-micro font-bold rounded-full">
                     {activeJobs.length}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setTab('history')}
-                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'history'
-                  ? 'premium-button'
-                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 ${tab === 'history'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
                   }`}
               >
                 History
               </button>
               <button
                 onClick={() => setTab('profile')}
-                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${tab === 'profile'
-                  ? 'premium-button'
-                  : 'glass-morphism text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 ${tab === 'profile'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
                   }`}
               >
                 Profile

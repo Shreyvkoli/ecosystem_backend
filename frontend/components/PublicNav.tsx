@@ -1,41 +1,38 @@
 'use client'
 
 import Link from 'next/link'
-import Magnetic from '@/components/Magnetic'
 import Logo from '@/components/Logo'
 
 export default function PublicNav() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between">
-        <Logo href="/" size={24} />
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-white">
-            Pricing
-          </Link>
-          <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-white">
-            How it works
-          </Link>
-          <Link href="/trust" className="text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-white">
-            Trust & Safety
-          </Link>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-white">
-            About
-          </Link>
-          <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors dark:text-gray-300 dark:hover:text-white">
-            Support
-          </Link>
-        </div>
+        <Logo href="/" size={28} />
+        <nav className="hidden md:flex items-center gap-7">
+          {[
+            { label: 'Pricing', href: '/pricing' },
+            { label: 'How it works', href: '/how-it-works' },
+            { label: 'Trust & Safety', href: '/trust' },
+            { label: 'About', href: '/about' },
+            { label: 'Support', href: '/contact' },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="text-gray-500 hover:text-charcoal transition-colors text-caption"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm dark:text-gray-300 dark:hover:text-white">
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="text-gray-500 hover:text-charcoal font-medium text-caption">
             Login
           </Link>
-          <Magnetic strength={0.25}>
-            <Link href="/register" className="glass-morphism px-4 py-2 text-gray-700 hover:text-gray-900 text-sm font-semibold whitespace-nowrap dark:text-gray-200 dark:hover:text-white">
-              Join
-            </Link>
-          </Magnetic>
+          <Link href="/register" className="btn-primary !py-2 !px-5 !text-sm !rounded-lg">
+            Get Started
+          </Link>
         </div>
       </div>
     </div>

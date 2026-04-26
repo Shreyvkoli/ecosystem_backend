@@ -2,177 +2,256 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import confetti from 'canvas-confetti'
-import Magnetic from '@/components/Magnetic'
 import Logo from '@/components/Logo'
 import HeroVisuals from '@/components/HeroVisuals'
 
 export default function Home() {
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#6366f1', '#a855f7', '#ec4899']
-    })
-  }
-
   return (
     <div className="relative min-h-screen bg-white">
+      {/* Subtle top gradient accent */}
+      <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-brand-light/40 via-white to-white pointer-events-none -z-0" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-        <header className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6 relative z-10">
+        {/* ─── NAV ─── */}
+        <header className="flex items-center justify-between py-2">
           <Link href="/" className="flex items-center">
-            <Logo showWordmark size={36} />
+            <Logo showWordmark size={32} />
           </Link>
-          <div className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-7">
             {['Pricing', 'How it works', 'Trust & Safety', 'About'].map((item) => (
               <Link
                 key={item}
                 href={`/${item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                className="text-gray-600 hover:text-brand transition-colors font-semibold text-sm"
+                className="text-gray-500 hover:text-charcoal transition-colors text-caption tracking-tight"
               >
                 {item}
               </Link>
             ))}
-          </div>
-
-          <div className="flex items-center gap-8">
-            <Link href="/login" className="text-gray-600 hover:text-charcoal font-bold text-base">
+          </nav>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-gray-500 hover:text-charcoal font-medium text-caption">
               Log In
             </Link>
-            <Link href="/register" className="btn-primary min-w-[140px] py-3 px-8 text-base">
-              Sign Up
+            <Link href="/register" className="btn-primary !py-2.5 !px-6 !text-sm !rounded-lg">
+              Get Started
             </Link>
           </div>
         </header>
 
-        <main className="pt-16 pb-28 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        {/* ─── HERO ─── */}
+        <main className="pt-20 pb-28 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl"
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-charcoal leading-[1.1] tracking-tight">
-              Get your video edited <br />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-light rounded-full mb-6 border border-brand/10">
+              <span className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse" />
+              <span className="text-micro text-brand-dark uppercase tracking-wider">Now live — India's first</span>
+            </div>
+
+            <h1 className="text-[3.2rem] sm:text-[3.8rem] lg:text-display font-bold text-charcoal leading-[1.08] tracking-tight">
+              Get your video edited{' '}
               <span className="text-brand">without the stress.</span>
             </h1>
-            <p className="mt-8 text-xl text-gray-600 leading-relaxed font-medium">
-              Hire vetted Indian editors. No ghosting, no storage mess, and <span className="text-charcoal font-bold">100% money protection.</span>
+
+            <p className="mt-6 text-body-lg text-gray-500 leading-relaxed max-w-md">
+              Hire vetted Indian editors. No ghosting, no storage mess, and{' '}
+              <span className="text-charcoal font-semibold">100% money protection.</span>
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-5">
-              <Link href="/register?role=CREATOR" className="btn-primary px-10 py-4 shadow-xl shadow-brand/20 transition-transform hover:-translate-y-1">
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/register?role=CREATOR" className="btn-primary shadow-brand">
                 Hire an Editor
               </Link>
-              <Link href="/register?role=EDITOR" className="btn-secondary px-10 py-4 border-2 hover:bg-gray-50 transition-all">
+              <Link href="/register?role=EDITOR" className="btn-secondary">
                 I'm an Editor
               </Link>
+            </div>
+
+            {/* Social proof */}
+            <div className="mt-10 flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {[
+                  'bg-brand-light text-brand',
+                  'bg-blue-100 text-blue-600',
+                  'bg-amber-100 text-amber-600',
+                  'bg-purple-100 text-purple-600'
+                ].map((cls, i) => (
+                  <div key={i} className={`w-8 h-8 rounded-full border-2 border-white ${cls} flex items-center justify-center text-xs font-bold`}>
+                    {['S', 'R', 'A', 'P'][i]}
+                  </div>
+                ))}
+              </div>
+              <p className="text-caption text-gray-400">
+                <span className="text-charcoal font-semibold">50+</span> editors joined this month
+              </p>
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="hidden lg:block relative"
           >
-            <div className="absolute -inset-10 bg-brand/5 blur-3xl rounded-full" />
+            <div className="absolute -inset-16 bg-gradient-to-br from-brand/[0.04] via-transparent to-emerald-500/[0.03] blur-3xl rounded-full" />
             <HeroVisuals />
           </motion.div>
         </main>
 
-        {/* Benefits - Icons & Text */}
-        <section className="py-24 border-t border-gray-100">
-          <div className="grid md:grid-cols-3 gap-16">
-            <div className="space-y-6 group">
-              <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center text-3xl group-hover:bg-brand group-hover:text-white transition-colors duration-500">🤝</div>
-              <h3 className="text-2xl font-bold text-charcoal">No Ghosting</h3>
-              <p className="text-gray-500 text-lg font-medium leading-relaxed">Editors pay a security deposit. They don't disappear, ever. Reliablity is built-in.</p>
-            </div>
-            <div className="space-y-6 group">
-              <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center text-3xl group-hover:bg-brand group-hover:text-white transition-colors duration-500">🛡️</div>
-              <h3 className="text-2xl font-bold text-charcoal">Locked Payments</h3>
-              <p className="text-gray-500 text-lg font-medium leading-relaxed">Your money stays in Escrow. You pay only when you approve the final cut.</p>
-            </div>
-            <div className="space-y-6 group">
-              <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center text-3xl group-hover:bg-brand group-hover:text-white transition-colors duration-500">💬</div>
-              <h3 className="text-2xl font-bold text-charcoal">Timestamp Chat</h3>
-              <p className="text-gray-500 text-lg font-medium leading-relaxed">Click on the video to leave notes. No more confusing emails or timestamp typing.</p>
-            </div>
+        {/* ─── BENEFITS ─── */}
+        <section className="py-20 border-t border-gray-100">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-heading text-charcoal tracking-tight">Why creators choose Cutflow</h2>
+            <p className="text-body text-gray-400 mt-3 max-w-lg mx-auto">Built from scratch to solve the biggest problems in hiring video editors.</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              { icon: "🤝", title: "No Ghosting", desc: "Editors pay a security deposit. They don't disappear — reliability is built in.", color: "from-green-50 to-emerald-50/50" },
+              { icon: "🛡️", title: "Locked Payments", desc: "Your money stays in Escrow. You pay only when you approve the final cut.", color: "from-blue-50 to-sky-50/50" },
+              { icon: "💬", title: "Timestamp Chat", desc: "Click on the video to leave notes. No more confusing emails or timestamp typing.", color: "from-amber-50 to-orange-50/50" }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className={`group p-7 rounded-2xl bg-gradient-to-br ${item.color} border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5`}
+              >
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-gray-100 group-hover:scale-110 transition-transform duration-300">
+                  {item.icon}
+                </div>
+                <h3 className="text-heading-sm text-charcoal mt-5">{item.title}</h3>
+                <p className="text-body text-gray-500 mt-2 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </section>
 
-        {/* How it Works - Stepped UI */}
-        <section className="py-24 bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 rounded-[40px] border border-gray-100 mb-32">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-16 text-center tracking-tight">How it works</h2>
-            <div className="grid md:grid-cols-3 gap-12 lg:gap-20">
+        {/* ─── HOW IT WORKS ─── */}
+        <section className="py-20 bg-charcoal -mx-5 sm:-mx-6 lg:-mx-8 px-5 sm:px-6 lg:px-8 rounded-[32px] mb-20">
+          <div className="max-w-5xl mx-auto text-center">
+            <span className="text-micro text-brand uppercase tracking-widest">Simple steps</span>
+            <h2 className="text-display-sm text-white mt-3 tracking-tight">How it works</h2>
+
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-14 mt-14">
               {[
-                { step: "1", title: "Post your Link", desc: "Share your GDrive/Dropbox link and budget." },
-                { step: "2", title: "Choose Editor", desc: "Vetted editors apply. Pick your match." },
-                { step: "3", title: "Get Video", desc: "Review, approve, and download final cut." }
+                { step: "01", title: "Post your project", desc: "Share your GDrive/Dropbox link and budget." },
+                { step: "02", title: "Choose your editor", desc: "Vetted editors apply. Pick your perfect match." },
+                { step: "03", title: "Get your video", desc: "Review, approve, and download the final cut." }
               ].map((item, i) => (
-                <div key={i} className="text-center group">
-                  <div className="w-16 h-16 bg-white border-2 border-gray-100 shadow-sm rounded-full flex items-center justify-center mx-auto mb-8 text-brand font-black text-2xl group-hover:border-brand transition-colors">
-                    {item.step}
-                  </div>
-                  <h4 className="text-xl font-bold mb-4">{item.title}</h4>
-                  <p className="text-gray-600 font-medium leading-relaxed">{item.desc}</p>
-                </div>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="text-center group"
+                >
+                  <div className="text-micro text-brand font-bold mb-4 tracking-widest">{item.step}</div>
+                  <h4 className="text-xl font-bold text-white mb-3">{item.title}</h4>
+                  <p className="text-body text-gray-400">{item.desc}</p>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Global Connection - Premium Dual Portrait */}
-        <section className="py-20 mb-32">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-6 max-w-lg">
-              <div className="inline-block px-3 py-1 bg-brand/10 text-brand text-[10px] font-black uppercase tracking-widest rounded-full">Global Reach</div>
-              <h2 className="text-4xl md:text-5xl font-bold text-charcoal leading-tight tracking-tight">
-                India's best for <br />
+        {/* ─── GLOBAL REACH ─── */}
+        <section className="py-20 mb-20">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-5 max-w-md"
+            >
+              <div className="inline-block px-3 py-1 bg-brand-light text-brand text-micro font-bold uppercase tracking-widest rounded-full border border-brand/10">
+                Global Reach
+              </div>
+              <h2 className="text-display-sm text-charcoal tracking-tight">
+                India's best for{' '}
                 <span className="text-brand">the World.</span>
               </h2>
-              <p className="text-lg text-gray-500 font-medium leading-relaxed">
-                Empowering India's top talent to serve world-class creators. Simple workflows, total peace of mind.
+              <p className="text-body-lg text-gray-500 leading-relaxed">
+                Empowering India's top editing talent to serve world-class creators. Simple workflows, total peace of mind.
               </p>
-            </div>
-            <div className="relative h-[450px]">
-              <div className="absolute top-0 right-0 z-10 w-[300px] shadow-xl rounded-[32px] overflow-hidden border-4 border-white transform hover:scale-105 transition-all duration-700">
-                <img src="/indian-editor.png" alt="Talent" className="w-full aspect-square object-cover" />
-                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-white/20 shadow-sm">
-                  <p className="text-xs font-black text-gray-900">Rohit V.</p>
+              <Link href="/about" className="inline-flex items-center gap-2 text-brand font-semibold text-caption hover:gap-3 transition-all">
+                Learn more
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="relative h-[400px]"
+            >
+              <div className="absolute top-0 right-0 z-10 w-[280px] rounded-2xl overflow-hidden border border-gray-100 shadow-elevated transform hover:scale-[1.02] transition-all duration-500">
+                <div className="bg-gradient-to-br from-brand-light to-emerald-100 aspect-square flex items-center justify-center">
+                  <span className="text-7xl">🇮🇳</span>
+                </div>
+                <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm">
+                  <p className="text-caption font-bold text-charcoal">Rohit V.</p>
+                  <p className="text-micro text-gray-400">Motion Designer</p>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 z-20 w-[240px] shadow-xl rounded-[32px] overflow-hidden border-4 border-white transform rotate-3 hover:rotate-0 transition-all duration-700">
-                <img src="/foreign-creator.png" alt="Client" className="w-full aspect-square object-cover" />
-                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-white/20 shadow-sm">
-                  <p className="text-sm font-black text-gray-900">Clara M.</p>
+              <div className="absolute bottom-0 left-0 z-20 w-[220px] rounded-2xl overflow-hidden border border-gray-100 shadow-elevated transform -rotate-2 hover:rotate-0 transition-all duration-500">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 aspect-square flex items-center justify-center">
+                  <span className="text-7xl">🌍</span>
+                </div>
+                <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm">
+                  <p className="text-caption font-bold text-charcoal">Clara M.</p>
+                  <p className="text-micro text-gray-400">Content Creator</p>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ─── FINAL CTA ─── */}
+        <section className="mb-24">
+          <div className="bg-charcoal p-12 md:p-20 rounded-[32px] text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-emerald-500/5" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-brand/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-[2.8rem] font-bold text-white tracking-tight leading-tight">
+                Start your first project today.
+              </h2>
+              <p className="text-body-lg text-gray-400 mt-4 mb-8 max-w-xl mx-auto">
+                Join the premium community of creators shipping content daily with Cutflow.
+              </p>
+              <Link href="/register?role=CREATOR" className="btn-primary !text-base !px-8 !py-3.5 shadow-brand-lg">
+                Get Started — It's Free
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="mb-32">
-          <div className="bg-charcoal p-12 md:p-28 rounded-[40px] text-center shadow-3xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-brand/20 to-transparent opacity-20" />
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tighter relative z-10">Start your first project today.</h2>
-            <p className="text-xl text-gray-400 mb-12 font-medium relative z-10 max-w-2xl mx-auto">Join the premium community of creators shipping content daily with Cutflow.</p>
-            <Link href="/register?role=CREATOR" className="btn-primary text-xl px-12 py-5 shadow-2xl shadow-brand/40 relative z-10">
-              Get Started Now
-            </Link>
-          </div>
-        </section>
-
-        {/* Minimal Footer */}
-        <footer className="pb-20 border-t border-gray-100 pt-16">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="text-[11px] font-black tracking-[0.3em] text-gray-400 uppercase">© {new Date().getFullYear()} CUTFLOW • MADE IN BHARAT</div>
-            <div className="flex gap-12 text-[11px] font-black tracking-[0.2em] text-gray-400 uppercase">
-              <Link href="/legal/terms" className="hover:text-brand transition-colors">Terms</Link>
-              <Link href="/legal/privacy" className="hover:text-brand transition-colors">Privacy</Link>
-              <Link href="/contact" className="hover:text-brand transition-colors">Support</Link>
+        {/* ─── FOOTER ─── */}
+        <footer className="pb-16 border-t border-gray-100 pt-12">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-micro text-gray-400 uppercase tracking-widest">
+              © {new Date().getFullYear()} Cutflow · Made in Bharat
+            </div>
+            <div className="flex gap-8 text-micro text-gray-400 uppercase tracking-wider">
+              <Link href="/legal/terms" className="hover:text-charcoal transition-colors">Terms</Link>
+              <Link href="/legal/privacy" className="hover:text-charcoal transition-colors">Privacy</Link>
+              <Link href="/contact" className="hover:text-charcoal transition-colors">Support</Link>
             </div>
           </div>
         </footer>
@@ -180,5 +259,3 @@ export default function Home() {
     </div>
   )
 }
-
-

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import PublicNav from '@/components/PublicNav'
 import PublicFooter from '@/components/PublicFooter'
-import Magnetic from '@/components/Magnetic'
 
 export default function ContactPage() {
   const [name, setName] = useState('')
@@ -17,61 +16,67 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <PublicNav />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
-          Contact / <span className="text-brand">Support</span>
-        </h1>
-        <p className="text-gray-600 mt-4 text-lg">
-          Email us at <span className="text-gray-900 font-semibold">support@yourdomain.com</span> or use the form below.
-        </p>
+      <div className="max-w-2xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
+        <div className="mb-10">
+          <span className="text-micro text-brand uppercase tracking-widest">Get in touch</span>
+          <h1 className="text-display-sm text-charcoal mt-2 tracking-tight">
+            Contact & Support
+          </h1>
+          <p className="text-body-lg text-gray-400 mt-3">
+            Email us at <span className="text-charcoal font-semibold">support@cutflow.in</span> or use the form below.
+          </p>
+        </div>
 
-        <div className="mt-10 premium-card">
+        <div className="pro-card !shadow-elevated">
           {submitted ? (
-            <div className="glass-morphism p-6 text-center">
-              <div className="text-gray-900 font-semibold">Thanks — we received your message.</div>
-              <div className="text-gray-600 text-sm mt-1">We’ll get back within 24–48 hours.</div>
+            <div className="text-center py-8">
+              <div className="w-14 h-14 bg-brand-light rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="text-heading-sm text-charcoal">Thanks — we received your message.</div>
+              <div className="text-body text-gray-400 mt-2">We'll get back within 24–48 hours.</div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+                <label className="block text-micro text-gray-400 uppercase tracking-widest mb-2 ml-0.5">Name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   placeholder="Your name"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+                <label className="block text-micro text-gray-400 uppercase tracking-widest mb-2 ml-0.5">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
                   placeholder="you@example.com"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">Message</label>
+                <label className="block text-micro text-gray-400 uppercase tracking-widest mb-2 ml-0.5">Message</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand"
-                  rows={6}
+                  className="w-full px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl text-charcoal placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body resize-none"
+                  rows={5}
                   placeholder="Tell us what you need help with..."
                   required
                 />
               </div>
-              <Magnetic strength={0.35}>
-                <button type="submit" className="btn-primary w-full shadow-lg">
-                  Send Message
-                </button>
-              </Magnetic>
+              <button type="submit" className="btn-primary w-full shadow-brand">
+                Send Message
+              </button>
             </form>
           )}
         </div>

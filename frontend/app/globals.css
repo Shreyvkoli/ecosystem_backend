@@ -11,94 +11,209 @@
   --primary: #108a00;
   --primary-hover: #0d7600;
   --charcoal: #181818;
+  --accent-warm: #f59e0b;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: #ffffff;
+  background-color: #fafafa;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection Color */
+::selection {
+  background: rgba(16, 138, 0, 0.15);
+  color: #0d7600;
 }
 
 /* Premium Utilities */
 @layer components {
+  /* ────── CARDS ────── */
   .pro-card {
-    @apply bg-white border border-gray-200 shadow-sm rounded-2xl p-6 transition-all duration-300;
+    @apply bg-white border border-gray-100 rounded-2xl p-7 transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  }
+  .pro-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    transform: translateY(-2px);
   }
 
-  .pro-card:hover {
-    @apply shadow-md border-gray-300 -translate-y-0.5;
+  .premium-card {
+    @apply bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  }
+  .premium-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
   }
 
   .glass-morphism {
-    @apply bg-white border border-gray-200 shadow-sm rounded-xl;
+    @apply bg-white/80 backdrop-blur-xl border border-gray-100 rounded-xl;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
-  /* Buttons */
+  /* ────── BUTTONS ────── */
   .btn-base {
-    @apply px-10 py-5 rounded-2xl font-black text-center flex items-center justify-center gap-3 transition-all duration-300 min-w-[220px] text-lg active:scale-[0.97];
+    @apply px-7 py-3 rounded-xl font-bold text-center inline-flex items-center justify-center gap-2 transition-all duration-200 text-[15px] leading-snug;
   }
 
   .btn-primary {
-    @apply btn-base bg-brand text-white hover:bg-brand-dark active:scale-[0.98] shadow-sm;
+    @apply btn-base bg-brand text-white hover:bg-brand-dark active:scale-[0.98];
+    box-shadow: 0 2px 8px rgba(16, 138, 0, 0.2);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(16, 138, 0, 0.3);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active {
+    box-shadow: 0 1px 4px rgba(16, 138, 0, 0.15);
   }
 
   .btn-secondary {
-    @apply btn-base bg-white text-charcoal border-2 border-charcoal hover:bg-gray-50 active:scale-[0.98];
+    @apply btn-base bg-white text-charcoal border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98];
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
-  /* Fallback/Legacy Compatibility */
+  /* Legacy Compat */
   .premium-button {
     @apply btn-primary;
   }
-
   .premium-button-green {
     @apply btn-primary;
   }
-
   .glass-card {
     @apply pro-card;
   }
 
-  /* Text Gradients (Subtle & Professional) */
+  /* ────── TEXT ────── */
   .text-gradient-primary {
     @apply text-charcoal;
   }
-
   .text-highlight {
     @apply text-brand;
   }
 
-  /* Floating Animation (Keep it subtle) */
+  /* ────── ANIMATIONS ────── */
   .float-slow {
     animation: float 6s ease-in-out infinite;
   }
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .floating-animation {
+    animation: subtleFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes subtleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Stagger animation for children */
+  .stagger-in > * {
+    opacity: 0;
+    animation: staggerFadeIn 0.5s ease-out forwards;
+  }
+  .stagger-in > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-in > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-in > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-in > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-in > *:nth-child(5) { animation-delay: 0.25s; }
+
+  @keyframes staggerFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Shimmer for loading states */
+  .shimmer {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ececec 50%, #f3f3f3 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Pulse dot for live/status */
+  .pulse-dot {
+    @apply relative;
+  }
+  .pulse-dot::after {
+    content: '';
+    @apply absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
   }
 }
 
-/* Scrollbar */
+/* ────── SCROLLBAR ────── */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f9f9f9;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
-  border-radius: 4px;
+  background: #ddd;
+  border-radius: 100px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #d0d0d0;
+  background: #bbb;
 }
 
-/* Dark Mode Overrides (if applicable, though sticking to light/pro look mainly) */
-@media (prefers-color-scheme: dark) {
-  /* ... (keeping light themed for now as requested for pro look) */
+/* ────── FORM INPUTS – Global polish ────── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="date"],
+textarea,
+select {
+  @apply transition-all duration-200;
 }
+input:focus,
+textarea:focus,
+select:focus {
+  @apply ring-2 ring-brand/30 border-brand;
+}
+
+/* ────── PAGE TRANSITION ────── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageIn 0.4s ease-out;
+}
+
+/* ────── NOISE / GRAIN TEXTURE (optional overlay) ────── */
+.grain-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ────── Hide scrollbar utility ────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
