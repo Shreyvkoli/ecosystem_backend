@@ -140,7 +140,7 @@ export default function Home() {
         </section>
 
         {/* Global Marketplace Section */}
-        <section className="mt-40 bg-soft-gray rounded-[40px] p-10 md:p-20 overflow-hidden">
+        <section className="mt-40 bg-soft-gray rounded-[40px] p-10 md:p-20 relative">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <div className="inline-flex items-center px-4 py-1 rounded-full bg-brand/10 text-brand text-xs font-black uppercase tracking-[0.2em]">
@@ -164,7 +164,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative py-10">
               {/* Overlapping Images for a Premium Look */}
               <div className="relative z-10 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white transform -rotate-3 hover:rotate-0 transition-transform duration-500 max-w-[400px] ml-auto">
                 <img src="/indian-editor.png" alt="Indian Video Editor" className="w-full aspect-square object-cover" />
@@ -173,7 +173,7 @@ export default function Home() {
                   <p className="text-sm font-bold text-charcoal">Rohit V., Sr. Editor</p>
                 </div>
               </div>
-              <div className="absolute top-1/2 -left-10 z-20 rounded-[32px] overflow-hidden shadow-2xl border-8 border-white transform rotate-6 hover:rotate-0 transition-transform duration-500 max-w-[300px] hidden lg:block">
+              <div className="absolute top-1/4 -left-10 z-20 rounded-[32px] overflow-hidden shadow-2xl border-8 border-white transform rotate-6 hover:rotate-0 transition-transform duration-500 max-w-[300px] hidden lg:block">
                 <img src="/foreign-creator.png" alt="Global Creator" className="w-full aspect-[4/5] object-cover" />
                 <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
                   <p className="text-[10px] font-black text-brand uppercase tracking-widest">Our Client</p>
