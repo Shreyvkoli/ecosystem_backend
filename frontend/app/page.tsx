@@ -139,6 +139,51 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Global Marketplace Section */}
+        <section className="mt-40 bg-soft-gray rounded-[40px] p-10 md:p-20 overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center px-4 py-1 rounded-full bg-brand/10 text-brand text-xs font-black uppercase tracking-[0.2em]">
+                The Global Connect
+              </div>
+              <h2 className="text-4xl md:text-6xl font-bold text-charcoal leading-tight">
+                Bridging Indian Talent with <span className="text-brand">Global Creators.</span>
+              </h2>
+              <p className="text-xl text-gray-600 leading-relaxed">
+                We empower India's most skilled video editors to serve world-class content creators. Professional workflows, guaranteed payments, and seamless communication.
+              </p>
+              <div className="flex items-center gap-10 pt-4">
+                <div>
+                  <p className="text-3xl font-bold text-charcoal">500+</p>
+                  <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Vetted Editors</p>
+                </div>
+                <div className="w-px h-12 bg-gray-200" />
+                <div>
+                  <p className="text-3xl font-bold text-charcoal">10K+</p>
+                  <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Videos Delivered</p>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              {/* Overlapping Images for a Premium Look */}
+              <div className="relative z-10 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white transform -rotate-3 hover:rotate-0 transition-transform duration-500 max-w-[400px] ml-auto">
+                <img src="/indian-editor.png" alt="Indian Video Editor" className="w-full aspect-square object-cover" />
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
+                  <p className="text-[10px] font-black text-brand uppercase tracking-widest">Our Talent</p>
+                  <p className="text-sm font-bold text-charcoal">Rohit V., Sr. Editor</p>
+                </div>
+              </div>
+              <div className="absolute top-1/2 -left-10 z-20 rounded-[32px] overflow-hidden shadow-2xl border-8 border-white transform rotate-6 hover:rotate-0 transition-transform duration-500 max-w-[300px] hidden lg:block">
+                <img src="/foreign-creator.png" alt="Global Creator" className="w-full aspect-[4/5] object-cover" />
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
+                  <p className="text-[10px] font-black text-brand uppercase tracking-widest">Our Client</p>
+                  <p className="text-sm font-bold text-charcoal">Clara M., YouTuber</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <div className="mt-32 mb-20">
           <div className="bg-charcoal p-10 md:p-20 rounded-[32px] relative overflow-hidden text-center shadow-2xl">
