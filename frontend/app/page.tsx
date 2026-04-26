@@ -164,17 +164,17 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="relative py-10">
+            <div className="relative py-12 px-10">
               {/* Overlapping Images for a Premium Look */}
-              <div className="relative z-10 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white transform -rotate-3 hover:rotate-0 transition-transform duration-500 max-w-[400px] ml-auto">
-                <img src="/indian-editor.png" alt="Indian Video Editor" className="w-full aspect-square object-cover" />
+              <div className="relative z-10 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white transform -rotate-3 hover:rotate-0 transition-transform duration-500 max-w-[380px] ml-auto">
+                <img src="/indian-editor.png" alt="Our Talent" className="w-full aspect-square object-cover" />
                 <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
                   <p className="text-[10px] font-black text-brand uppercase tracking-widest">Our Talent</p>
                   <p className="text-sm font-bold text-charcoal">Rohit V., Sr. Editor</p>
                 </div>
               </div>
-              <div className="absolute top-1/4 -left-10 z-20 rounded-[32px] overflow-hidden shadow-2xl border-8 border-white transform rotate-6 hover:rotate-0 transition-transform duration-500 max-w-[300px] hidden lg:block">
-                <img src="/foreign-creator.png" alt="Global Creator" className="w-full aspect-[4/5] object-cover" />
+              <div className="absolute top-1/3 -left-16 z-20 rounded-[32px] overflow-hidden shadow-2xl border-8 border-white transform rotate-6 hover:rotate-0 transition-transform duration-500 max-w-[280px] hidden lg:block">
+                <img src="/foreign-creator.png" alt="Our Client" className="w-full aspect-[4/5] object-cover" />
                 <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
                   <p className="text-[10px] font-black text-brand uppercase tracking-widest">Our Client</p>
                   <p className="text-sm font-bold text-charcoal">Clara M., YouTuber</p>
