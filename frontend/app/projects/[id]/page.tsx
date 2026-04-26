@@ -26,7 +26,7 @@ export default function ProjectDetailPage() {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="text-center py-12">
           <p className="text-gray-500">Redirecting to Orders...</p>
-          <Link href="/dashboard" className="mt-4 text-indigo-600 hover:text-indigo-700">
+          <Link href="/dashboard" className="mt-4 text-brand hover:text-brand-dark">
             Go to Dashboard
           </Link>
         </div>

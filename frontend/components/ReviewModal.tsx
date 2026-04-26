@@ -93,7 +93,7 @@ export default function ReviewModal({ isOpen, onClose, orderId, revieweeName }: 
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="Share your feedback..."
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-2 focus:ring-brand focus:outline-none resize-none"
                     />
                 </div>
 
@@ -107,7 +107,7 @@ export default function ReviewModal({ isOpen, onClose, orderId, revieweeName }: 
                     <button
                         onClick={handleSubmit}
                         disabled={createReviewMutation.isPending || rating === 0}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                        className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brand-dark disabled:opacity-50"
                     >
                         {createReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
                     </button>

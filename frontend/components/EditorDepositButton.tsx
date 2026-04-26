@@ -142,7 +142,7 @@ export default function EditorDepositButton({ orderId, onSuccess }: EditorDeposi
         <button
           onClick={handleDeposit}
           disabled={loading}
-          className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 font-medium"
+          className="w-full px-4 py-2 bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50 font-medium"
         >
           {loading ? 'Processing...' : 'Pay Security Deposit'}
         </button>

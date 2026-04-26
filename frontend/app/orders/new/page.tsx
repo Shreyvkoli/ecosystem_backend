@@ -232,13 +232,13 @@ function NewOrderContent() {
 
             {/* Preferred Editor Selection */}
             {savedEditors && savedEditors.length > 0 && (
-              <div className="bg-indigo-50 p-4 rounded-md border border-indigo-100">
+              <div className="bg-bg-brand/10 p-4 rounded-md border border-indigo-100">
                 <label htmlFor="editorId" className="block text-sm font-medium text-indigo-900 mb-2">
                   Directly Hire a Saved Editor (Optional)
                 </label>
                 <select
                   id="editorId"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                   value={formData.editorId}
                   onChange={(e) => setFormData({ ...formData, editorId: e.target.value })}
                 >
@@ -249,7 +249,7 @@ function NewOrderContent() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-indigo-700">
+                <p className="mt-1 text-xs text-brand-dark">
                   Selecting an editor will assign this order directly to them.
                 </p>
               </div>
@@ -263,7 +263,7 @@ function NewOrderContent() {
                 type="text"
                 id="title"
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
@@ -279,7 +279,7 @@ function NewOrderContent() {
                   type="number"
                   id="rawFootageDuration"
                   min="0"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                   value={formData.rawFootageDuration}
                   onChange={(e) => setFormData({ ...formData, rawFootageDuration: e.target.value })}
                   placeholder="e.g. 60"
@@ -293,7 +293,7 @@ function NewOrderContent() {
                   type="number"
                   id="expectedDuration"
                   min="0"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                   value={formData.expectedDuration}
                   onChange={(e) => setFormData({ ...formData, expectedDuration: e.target.value })}
                   placeholder="e.g. 5"
@@ -313,12 +313,12 @@ function NewOrderContent() {
                     key={option.id}
                     onClick={() => setFormData({ ...formData, editingLevel: option.id })}
                     className={`relative cursor-pointer rounded-xl border p-4 text-left transition-all hover:shadow-lg ${formData.editingLevel === option.id
-                      ? 'border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-500'
+                      ? 'border-brand bg-bg-brand/10/50 ring-1 ring-brand'
                       : 'border-gray-200 bg-white hover:border-indigo-300'
                       }`}
                   >
                     {option.popular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] uppercase tracking-wider font-bold px-3 py-0.5 rounded-full shadow-sm">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand to-brand text-white text-[10px] uppercase tracking-wider font-bold px-3 py-0.5 rounded-full shadow-sm">
                         Most Popular
                       </div>
                     )}
@@ -327,7 +327,7 @@ function NewOrderContent() {
                         {option.label}
                       </div>
                       {formData.editingLevel === option.id && (
-                        <div className="h-4 w-4 rounded-full bg-indigo-600"></div>
+                        <div className="h-4 w-4 rounded-full bg-brand"></div>
                       )}
                     </div>
                     <div className="mt-2 text-xs text-gray-500 leading-relaxed">
@@ -345,7 +345,7 @@ function NewOrderContent() {
               <input
                 type="url"
                 id="referenceLink"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                 value={formData.referenceLink}
                 onChange={(e) => setFormData({ ...formData, referenceLink: e.target.value })}
                 placeholder="https://youtube.com/..."
@@ -360,7 +360,7 @@ function NewOrderContent() {
                 type="date"
                 id="deadline"
                 min={new Date().toISOString().split('T')[0]}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                 value={formData.deadline}
                 onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
               />
@@ -373,7 +373,7 @@ function NewOrderContent() {
               <textarea
                 id="description"
                 rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
@@ -387,7 +387,7 @@ function NewOrderContent() {
                 id="brief"
                 rows={6}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 text-gray-900"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm px-3 py-2 text-gray-900"
                 placeholder="Describe what editing you need... (transitions, color correction, music, etc.)"
                 value={formData.brief}
                 onChange={(e) => setFormData({ ...formData, brief: e.target.value })}
@@ -415,7 +415,7 @@ function NewOrderContent() {
                 step="0.01"
                 className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm px-3 py-2 text-gray-900 ${budgetError
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                  : 'border-gray-300 focus:border-brand focus:ring-brand'
                   }`}
                 value={formData.amount}
                 onChange={handleAmountChange}
@@ -444,7 +444,7 @@ function NewOrderContent() {
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-50"
               >
                 {createMutation.isPending ? 'Creating...' : 'Create Order'}
               </button>
@@ -478,9 +478,9 @@ function NewOrderContent() {
 
                   <div className="mt-6 text-left space-y-6">
                     {/* Option 1 */}
-                    <div className="border border-indigo-100 bg-indigo-50 rounded-lg p-4">
+                    <div className="border border-indigo-100 bg-bg-brand/10 rounded-lg p-4">
                       <h4 className="font-semibold text-indigo-900 text-sm mb-1">Option 1: Paste a Link (Recommended)</h4>
-                      <p className="text-xs text-indigo-700 mb-3">Best for vlogs, large files (&gt;500MB), or multiple clips (Drive/Dropbox/WeTransfer).</p>
+                      <p className="text-xs text-brand-dark mb-3">Best for vlogs, large files (&gt;500MB), or multiple clips (Drive/Dropbox/WeTransfer).</p>
 
                       <div className="flex flex-col gap-2">
                         <input
@@ -488,13 +488,13 @@ function NewOrderContent() {
                           value={linkInput}
                           onChange={(e) => setLinkInput(e.target.value)}
                           placeholder="Paste Google Drive/Dropbox link here..."
-                          className="w-full text-sm border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
+                          className="w-full text-sm border-gray-300 rounded focus:ring-brand focus:border-brand"
                         />
                         <p className="text-[10px] text-gray-500">⚠️ Ensure link permission is set to "Anyone with the link".</p>
                         <button
                           onClick={() => handleLinkSubmit(linkInput)}
                           disabled={registerFileMutation.isPending || !linkInput}
-                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-brand text-base font-medium text-white hover:bg-brand-dark disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand sm:text-sm"
                         >
                           {registerFileMutation.isPending ? 'Saving...' : 'Submit Link →'}
                         </button>
@@ -517,7 +517,7 @@ function NewOrderContent() {
                       <p className="text-xs text-gray-500 mb-3">Fast for small clips (Reels/Shorts). Max 500MB.</p>
                       <button
                         onClick={() => router.push(`/orders/${createdOrderId}`)}
-                        className="w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+                        className="w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-bold rounded-md text-white bg-brand hover:bg-brand-dark focus:outline-none"
                       >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         📂 Upload from Device
@@ -530,7 +530,7 @@ function NewOrderContent() {
               <div className="mt-5 sm:mt-6">
                 <button
                   type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand sm:text-sm"
                   onClick={handleSkipUpload}
                 >
                   I'll do this later

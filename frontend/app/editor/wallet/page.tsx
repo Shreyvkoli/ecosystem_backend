@@ -145,7 +145,7 @@ export default function EditorWalletPage() {
                     <button
                         onClick={() => setShowWithdrawModal(true)}
                         disabled={kycStatus !== 'VERIFIED'}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand hover:bg-brand-dark focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
                     >
                         Request Withdrawal
                     </button>
@@ -162,7 +162,7 @@ export default function EditorWalletPage() {
                                 <li key={req.id}>
                                     <div className="px-4 py-4 sm:px-6">
                                         <div className="flex items-center justify-between">
-                                            <div className="text-sm font-medium text-indigo-600 truncate">
+                                            <div className="text-sm font-medium text-brand truncate">
                                                 ₹{req.amount} - {req.paymentMethod}
                                             </div>
                                             <div className="ml-2 flex-shrink-0 flex">
@@ -218,7 +218,7 @@ export default function EditorWalletPage() {
                                                     type="number"
                                                     value={withdrawAmount}
                                                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand sm:text-sm"
                                                     placeholder="0.00"
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">Available: ₹{profile?.walletBalance}</p>
@@ -228,7 +228,7 @@ export default function EditorWalletPage() {
                                                 <select
                                                     value={paymentMethod}
                                                     onChange={(e) => setPaymentMethod(e.target.value)}
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand sm:text-sm"
                                                 >
                                                     <option value="UPI">UPI</option>
                                                     <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -241,7 +241,7 @@ export default function EditorWalletPage() {
                                                     value={paymentDetails}
                                                     onChange={(e) => setPaymentDetails(e.target.value)}
                                                     rows={3}
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand focus:border-brand sm:text-sm"
                                                     placeholder={paymentMethod === 'UPI' ? 'example@upi' : 'Account No, IFSC code...'}
                                                 />
                                             </div>
@@ -254,7 +254,7 @@ export default function EditorWalletPage() {
                                     type="button"
                                     onClick={handleWithdraw}
                                     disabled={withdrawMutation.isPending}
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-brand text-base font-medium text-white hover:bg-brand-dark focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                                 >
                                     {withdrawMutation.isPending ? 'Processing...' : 'Submit Request'}
                                 </button>

@@ -71,7 +71,7 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 required
-                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -87,7 +87,7 @@ export default function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                 placeholder="Create a strong password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -116,7 +116,7 @@ export default function RegisterPage() {
               <select
                 id="role"
                 name="role"
-                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as 'CREATOR' | 'EDITOR' })}
               >
@@ -132,7 +132,7 @@ export default function RegisterPage() {
               <select
                 id="countryCode"
                 name="countryCode"
-                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                 value={formData.countryCode}
                 onChange={(e) => setFormData({ ...formData, countryCode: e.target.value.toUpperCase() })}
               >
@@ -161,7 +161,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/login" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors duration-300">
+            <Link href="/login" className="text-sm text-brand hover:text-indigo-300 transition-colors duration-300">
               Already have an account? <span className="font-semibold">Sign in to Cutflow</span>
             </Link>
           </div>

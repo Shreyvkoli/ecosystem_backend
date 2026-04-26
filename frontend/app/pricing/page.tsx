@@ -12,7 +12,7 @@ export default function PricingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-3xl">
           <h1 className="text-5xl font-extrabold text-gray-900">
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Pricing</span>
+            <span className="bg-gradient-to-r from-brand to-purple-400 bg-clip-text text-transparent">Pricing</span>
           </h1>
           <p className="text-gray-600 mt-4 text-lg">
             Cutflow is designed to be transparent. Creators pay only when they approve an editor. Editors place a refundable security deposit to prevent ghosting.
@@ -21,7 +21,7 @@ export default function PricingPage() {
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="premium-card group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-brand/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative text-sm text-indigo-300 font-bold">For Creators</div>
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Pay only when you approve an editor</h2>
             <div className="mt-6 space-y-4">
@@ -52,7 +52,7 @@ export default function PricingPage() {
           </div>
 
           <div className="premium-card group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative text-sm text-purple-300 font-bold">For Editors</div>
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Refundable security deposit</h2>
             <p className="text-gray-600 mt-3">

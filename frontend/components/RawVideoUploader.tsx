@@ -86,7 +86,7 @@ export default function RawVideoUploader({ orderId, onUploadComplete }: RawVideo
         />
         <label
           htmlFor="raw-video-upload"
-          className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-brand-dark disabled:opacity-50"
         >
           {file ? file.name : 'Select Raw Video File'}
         </label>
@@ -108,7 +108,7 @@ export default function RawVideoUploader({ orderId, onUploadComplete }: RawVideo
               <div className="mt-4">
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
-                    className="bg-indigo-600 h-2.5 rounded-full transition-all"
+                    className="bg-brand h-2.5 rounded-full transition-all"
                     style={{ width: `${progress}%` }}
                   />
                 </div>

@@ -79,10 +79,10 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
     }
 
     return (
-        <div className="flex flex-col h-[400px] w-full bg-white rounded-lg shadow-lg border-t-4 border-indigo-500 overflow-hidden">
+        <div className="flex flex-col h-[400px] w-full bg-white rounded-lg shadow-lg border-t-4 border-brand overflow-hidden">
             <div className="py-3 px-4 border-b bg-gray-50 flex flex-row items-center justify-between">
                 <h3 className="text-sm font-bold flex items-center text-gray-700">
-                    <MessageSquare size={16} className="mr-2 text-indigo-500" />
+                    <MessageSquare size={16} className="mr-2 text-brand" />
                     {recipientName ? `Chat with ${recipientName}` : 'Order Chat'}
                 </h3>
             </div>
@@ -107,7 +107,7 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
                             <div className={`
                                 max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm
                                 ${isMe
-                                    ? 'bg-indigo-600 text-white rounded-br-none'
+                                    ? 'bg-brand text-white rounded-br-none'
                                     : 'bg-gray-100 text-gray-800 rounded-bl-none'}
                             `}>
                                 <p>{msg.content}</p>
@@ -125,9 +125,9 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
                 />
-                <button onClick={handleSend} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md transition-colors shadow-sm">
+                <button onClick={handleSend} className="bg-brand hover:bg-brand-dark text-white p-2 rounded-md transition-colors shadow-sm">
                     <Send size={18} />
                 </button>
             </div>

@@ -12,7 +12,7 @@ export default function HowItWorksPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-3xl">
           <h1 className="text-5xl font-extrabold text-gray-900">
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">How Cutflow Works</span>
+            <span className="bg-gradient-to-r from-brand to-purple-400 bg-clip-text text-transparent">How Cutflow Works</span>
           </h1>
           <p className="text-gray-600 mt-4 text-lg">
             Simple, predictable workflow — split for creators and editors.
@@ -21,7 +21,7 @@ export default function HowItWorksPage() {
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="premium-card group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative text-sm text-indigo-300 font-bold">Creator</div>
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Post → review → approve → done</h2>
             <div className="mt-6 space-y-4">
@@ -58,7 +58,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="premium-card group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative text-sm text-purple-300 font-bold">Editor</div>
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Apply → Selected → Deposit → Escrow Funded → Deliver → Refunded + Paid</h2>
             <div className="mt-6 space-y-4">

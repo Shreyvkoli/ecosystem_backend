@@ -46,12 +46,12 @@ export default function SaveEditorButton({ editorId }: SaveEditorButtonProps) {
             disabled={saveMutation.isPending}
             className={`w-full mb-3 flex items-center justify-center px-4 py-2 border shadow-sm text-sm font-medium rounded-md transition-colors
                 ${isSaved
-                    ? 'border-indigo-500 text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+                    ? 'border-brand text-brand-dark bg-bg-brand/10 hover:bg-indigo-100'
                     : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
                 }`}
         >
             <svg
-                className={`w-4 h-4 mr-2 ${isSaved ? 'text-indigo-600 fill-indigo-600' : 'text-gray-400'}`}
+                className={`w-4 h-4 mr-2 ${isSaved ? 'text-brand fill-brand' : 'text-gray-400'}`}
                 fill={isSaved ? 'currentColor' : 'none'}
                 viewBox="0 0 20 20"
                 stroke="currentColor"

@@ -12,7 +12,7 @@ export default function TrustPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-3xl">
           <h1 className="text-5xl font-extrabold text-gray-900">
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Trust & Safety</span>
+            <span className="bg-gradient-to-r from-brand to-purple-400 bg-clip-text text-transparent">Trust & Safety</span>
           </h1>
           <p className="text-gray-600 mt-4 text-lg">
             Cutflow is designed to prevent ghosting and protect files with clear rules.
@@ -39,7 +39,7 @@ export default function TrustPage() {
             </p>
           </div>
           <div className="premium-card group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-brand/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative">
               <h2 className="text-2xl font-bold text-gray-900">Disputes & fairness</h2>
             </div>

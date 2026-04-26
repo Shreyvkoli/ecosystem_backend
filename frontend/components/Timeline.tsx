@@ -59,7 +59,7 @@ export default function Timeline({ order }: TimelineProps) {
               {/* Timeline dot */}
               <div className={`
                 relative z-10 w-8 h-8 rounded-full flex items-center justify-center
-                ${isCompletedStage ? 'bg-green-500' : isCurrent ? 'bg-indigo-500' : 'bg-gray-300'}
+                ${isCompletedStage ? 'bg-green-500' : isCurrent ? 'bg-brand' : 'bg-gray-300'}
               `}>
                 {isCompletedStage ? (
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -95,7 +95,7 @@ export default function Timeline({ order }: TimelineProps) {
                 {stage.key === 'ASSIGNED' && order.editor && (
                   <div className="mt-2 flex items-center space-x-2">
                     <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <span className="text-indigo-600 font-bold text-xs">
+                      <span className="text-brand font-bold text-xs">
                         {order.editor.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -107,7 +107,7 @@ export default function Timeline({ order }: TimelineProps) {
                   <div className="mt-2">
                     <button
                       onClick={() => document.getElementById('main-video-player')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="text-xs text-brand hover:text-indigo-800 font-medium"
                     >
                       View Preview →
                     </button>
@@ -140,7 +140,7 @@ export default function Timeline({ order }: TimelineProps) {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+            className="bg-brand h-2 rounded-full transition-all duration-300"
             style={{
               width: `${currentStageIndex >= 0 ? ((currentStageIndex + 1) / stages.length) * 100 : 0}%`
             }}

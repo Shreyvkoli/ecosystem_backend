@@ -142,7 +142,7 @@ export default function EditorJobDetailPage() {
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <p className="text-gray-500">Job not found</p>
-            <Link href="/editor/jobs" className="mt-4 text-indigo-600 hover:text-indigo-700">
+            <Link href="/editor/jobs" className="mt-4 text-brand hover:text-brand-dark">
               Back to Jobs
             </Link>
           </div>
@@ -158,7 +158,7 @@ export default function EditorJobDetailPage() {
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <p className="text-gray-500">Access denied</p>
-            <Link href="/editor/jobs" className="mt-4 text-indigo-600 hover:text-indigo-700">
+            <Link href="/editor/jobs" className="mt-4 text-brand hover:text-brand-dark">
               Back to Jobs
             </Link>
           </div>
@@ -188,7 +188,7 @@ export default function EditorJobDetailPage() {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-            <Link href="/editor/jobs" className="text-indigo-600 hover:text-indigo-700 text-sm mb-2 inline-block">
+            <Link href="/editor/jobs" className="text-brand hover:text-brand-dark text-sm mb-2 inline-block">
               ← Back to Jobs
             </Link>
             <div className="flex justify-between items-start">
@@ -244,7 +244,7 @@ export default function EditorJobDetailPage() {
                         key={video.id}
                         onClick={() => setSelectedFileId(video.id)}
                         className={`w-full text-left px-3 py-2 rounded border ${selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
-                          ? 'border-indigo-500 bg-indigo-50'
+                          ? 'border-brand bg-bg-brand/10'
                           : 'border-gray-300 hover:bg-gray-50'
                           }`}
                       >
@@ -265,7 +265,7 @@ export default function EditorJobDetailPage() {
                   <h3 className="font-semibold">Job Details</h3>
                   <button
                     onClick={() => setShowDetailsModal(true)}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
+                    className="text-xs text-brand hover:text-indigo-800 font-medium flex items-center"
                   >
                     View All <FileText className="w-3 h-3 ml-1" />
                   </button>
@@ -325,7 +325,7 @@ export default function EditorJobDetailPage() {
                         
                         {/* Dispute Logic */}
                         {order.isDisputed ? (
-                            <div className="mt-2 p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-[10px] text-indigo-700 font-bold flex items-center gap-2">
+                            <div className="mt-2 p-2 bg-bg-brand/10 border border-indigo-100 rounded-lg text-[10px] text-brand-dark font-bold flex items-center gap-2">
                                 <ShieldCheck className="w-3 h-3" />
                                 DISPUTE UNDER REVIEW
                             </div>
@@ -396,7 +396,7 @@ export default function EditorJobDetailPage() {
                   <button
                     onClick={handleStartWork}
                     disabled={updateStatusMutation.isPending || (depositRequired && !depositPaid)}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50"
                   >
                     {updateStatusMutation.isPending ? 'Starting...' : 'Start Working'}
                   </button>
@@ -528,7 +528,7 @@ export default function EditorJobDetailPage() {
                   <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
                   <div>
                     <span className="text-xs font-semibold text-gray-500 uppercase">Level</span>
-                    <div className="text-indigo-600 font-bold mt-1">
+                    <div className="text-brand font-bold mt-1">
                       {order.editingLevel || 'Basic'}
                     </div>
                   </div>
@@ -548,7 +548,7 @@ export default function EditorJobDetailPage() {
                     <FileText className="w-4 h-4 mr-2" />
                     Editing Brief
                   </h3>
-                  <div className="text-gray-700 bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
+                  <div className="text-gray-700 bg-bg-brand/10 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
                     {order.brief || 'No specific brief provided.'}
                   </div>
                 </div>

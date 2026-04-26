@@ -53,7 +53,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoLi
                     type="checkbox"
                     checked={task.resolved}
                     onChange={(e) => updateStatusMutation.mutate({ id: task.id, resolved: e.target.checked })}
-                    className="mt-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500 rounded border-gray-300 cursor-pointer"
+                    className="mt-1.5 h-4 w-4 text-brand focus:ring-brand rounded border-gray-300 cursor-pointer"
                 />
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
@@ -63,7 +63,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoLi
                         {task.timestamp !== null && (
                             <button
                                 onClick={() => onSeek(task.timestamp!)}
-                                className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 font-medium whitespace-nowrap ml-2"
+                                className="text-xs px-2 py-0.5 bg-bg-brand/10 text-brand-dark rounded hover:bg-indigo-100 font-medium whitespace-nowrap ml-2"
                             >
                                 Jump to {formatTime(task.timestamp!)}
                             </button>
@@ -83,7 +83,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoLi
         <div className="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                     Pending Tasks

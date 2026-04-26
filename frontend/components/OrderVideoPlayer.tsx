@@ -166,7 +166,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
             <h3 className="text-lg font-semibold">Comments</h3>
             <button
               onClick={() => setShowCommentForm(!showCommentForm)}
-              className="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              className="px-3 py-1 text-sm bg-brand text-white rounded hover:bg-brand-dark"
             >
               Add Comment at {formatTime(commentTimestamp)}
             </button>
@@ -178,7 +178,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Enter your comment..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand focus:border-brand"
                 rows={3}
               />
               <div className="mt-2 flex justify-end space-x-2">
@@ -194,7 +194,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
                 <button
                   onClick={handleAddComment}
                   disabled={createCommentMutation.isPending || !commentText.trim()}
-                  className="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+                  className="px-3 py-1 text-sm bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50"
                 >
                   {createCommentMutation.isPending ? 'Posting...' : 'Post Comment'}
                 </button>
@@ -216,7 +216,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
                         {message.timestamp !== null && message.timestamp !== undefined && (
                           <button
                             onClick={() => handleSeek(message.timestamp!)}
-                            className="text-xs text-indigo-600 hover:text-indigo-700 underline"
+                            className="text-xs text-brand hover:text-brand-dark underline"
                           >
                             {formatTime(message.timestamp)}
                           </button>

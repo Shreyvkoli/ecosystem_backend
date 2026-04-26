@@ -39,7 +39,7 @@ export default function CreatorHandbookModal({ isOpen, onClose }: CreatorHandboo
 
                                 {/* Section 1 */}
                                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    <h4 className="font-bold text-indigo-700 mb-1">1. Editor Assignment & Payment</h4>
+                                    <h4 className="font-bold text-brand-dark mb-1">1. Editor Assignment & Payment</h4>
                                     <p className="text-gray-600">
                                         Once you select an Editor, you must fund the <strong>Escrow</strong>. Your money is held safely by Cutflow and only released to the Editor after your final approval.
                                     </p>
@@ -88,7 +88,7 @@ export default function CreatorHandbookModal({ isOpen, onClose }: CreatorHandboo
 
                                 {/* Pro Tip */}
                                 <div className="border-t border-gray-200 pt-3">
-                                    <p className="text-indigo-600 text-xs">
+                                    <p className="text-brand text-xs">
                                         <strong>🚀 Pro-Tip:</strong> keep all communication on the platform to ensure your Escrow protection and to use the Timestamped Review Player for faster edits.
                                     </p>
                                 </div>
@@ -100,7 +100,7 @@ export default function CreatorHandbookModal({ isOpen, onClose }: CreatorHandboo
                     <div className="mt-5 sm:mt-6">
                         <button
                             type="button"
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm"
+                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-brand text-base font-medium text-white hover:bg-brand-dark focus:outline-none sm:text-sm"
                             onClick={onClose}
                         >
                             Got it, let's create!

@@ -62,7 +62,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
               {/* Timeline dot */}
               <div className={`
                 relative z-10 w-8 h-8 rounded-full flex items-center justify-center
-                ${isCompletedStage ? 'bg-green-500' : isCurrent ? 'bg-indigo-500' : 'bg-gray-300'}
+                ${isCompletedStage ? 'bg-green-500' : isCurrent ? 'bg-brand' : 'bg-gray-300'}
               `}>
                 {isCompletedStage ? (
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -103,7 +103,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
                 
                 {stage.key === 'RAW_FILES_AVAILABLE' && (
                   <div className="mt-2">
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                    <button className="text-xs text-brand hover:text-indigo-800 font-medium">
                       Download Raw Files →
                     </button>
                   </div>
@@ -114,7 +114,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
                     <p className="text-xs text-orange-600 font-medium">
                       Deadline: {new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                     </p>
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-1">
+                    <button className="text-xs text-brand hover:text-indigo-800 font-medium mt-1">
                       Submit Preview →
                     </button>
                   </div>
@@ -125,7 +125,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
                     <p className="text-xs text-orange-600 font-medium">
                       {revisionCount} revision{revisionCount !== 1 ? 's' : ''} requested
                     </p>
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-1">
+                    <button className="text-xs text-brand hover:text-indigo-800 font-medium mt-1">
                       View Revision Details →
                     </button>
                   </div>
@@ -136,7 +136,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
                     <p className="text-xs text-orange-600 font-medium">
                       Deadline: {new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                     </p>
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-1">
+                    <button className="text-xs text-brand hover:text-indigo-800 font-medium mt-1">
                       Submit Final Video →
                     </button>
                   </div>
@@ -174,7 +174,7 @@ export default function EditorTimeline({ order }: EditorTimelineProps) {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+            className="bg-brand h-2 rounded-full transition-all duration-300"
             style={{ 
               width: `${currentStageIndex >= 0 ? ((currentStageIndex + 1) / editorTimelineStages.length) * 100 : 0}%` 
             }}

@@ -88,7 +88,7 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-indigo-600 font-bold text-2xl">
+                    <span className="text-brand font-bold text-2xl">
                       {profile.name.charAt(0).toUpperCase()}
                     </span>
                   )}
@@ -157,7 +157,7 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                               className="w-6 h-6 rounded-full object-cover"
                             />
                           ) : (
-                            <span className="text-indigo-600 font-bold text-xs">
+                            <span className="text-brand font-bold text-xs">
                               {profile.name.charAt(0).toUpperCase()}
                             </span>
                           )}
@@ -166,7 +166,7 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                           href={item}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-800 underline"
+                          className="text-brand hover:text-indigo-800 underline"
                         >
                           {item}
                         </a>
@@ -189,7 +189,7 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                               {review.reviewer.creatorProfile?.avatarUrl ? (
                                 <img src={review.reviewer.creatorProfile.avatarUrl} alt={review.reviewer.name} className="w-full h-full object-cover" />
                               ) : (
-                                <span className="text-indigo-700 font-bold text-xs">
+                                <span className="text-brand-dark font-bold text-xs">
                                   {review.reviewer.name.charAt(0)}
                                 </span>
                               )}

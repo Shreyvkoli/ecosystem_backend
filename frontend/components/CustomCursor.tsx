@@ -64,7 +64,7 @@ export default function CustomCursor() {
       {trail.map((pos, index) => (
         <div
           key={index}
-          className="fixed pointer-events-none z-50 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20"
+          className="fixed pointer-events-none z-50 rounded-full bg-gradient-to-r from-brand/20 to-brand/20"
           style={{
             left: pos.x - 4,
             top: pos.y - 4,

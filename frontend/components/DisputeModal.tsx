@@ -45,7 +45,7 @@ export default function DisputeModal({ orderId, isOpen, onClose }: DisputeModalP
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-6 h-6 text-indigo-600" />
+                            <ShieldCheck className="w-6 h-6 text-brand" />
                             <h2 className="text-xl font-bold text-gray-900">Challenge Penalty</h2>
                         </div>
                         <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -69,7 +69,7 @@ export default function DisputeModal({ orderId, isOpen, onClose }: DisputeModalP
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                                 placeholder="e.g. My internet was out for 4 hours, or the file was 50GB and took longer to sync..."
-                                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none min-h-[120px] text-sm"
+                                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand focus:border-transparent outline-none min-h-[120px] text-sm"
                             />
                             <p className="text-[10px] text-gray-400 mt-1">Min 20 characters required.</p>
                         </div>
@@ -81,14 +81,14 @@ export default function DisputeModal({ orderId, isOpen, onClose }: DisputeModalP
                                 value={proofUrl}
                                 onChange={(e) => setProofUrl(e.target.value)}
                                 placeholder="Screenshot of upload progress..."
-                                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand outline-none text-sm"
                             />
                         </div>
 
                         <button
                             onClick={() => disputeMutation.mutate({ orderId, reason, proofUrl })}
                             disabled={reason.length < 20 || disputeMutation.isPending}
-                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200"
+                            className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200"
                         >
                             {disputeMutation.isPending ? 'Submitting...' : 'Confirm Dispute'}
                         </button>

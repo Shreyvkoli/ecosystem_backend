@@ -34,9 +34,9 @@ export default function KYCModal({ isOpen, onClose, currentStatus }: KYCModalPro
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="px-6 py-4 border-b flex justify-between items-center bg-indigo-600 text-white">
+        <div className="px-6 py-4 border-b flex justify-between items-center bg-brand text-white">
           <h2 className="text-xl font-bold">Identity Verification (KYC)</h2>
-          <button onClick={onClose} className="p-1 hover:bg-indigo-500 rounded-full transition-colors">
+          <button onClick={onClose} className="p-1 hover:bg-brand rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -72,7 +72,7 @@ export default function KYCModal({ isOpen, onClose, currentStatus }: KYCModalPro
                     value={idUrl}
                     onChange={(e) => setIdUrl(e.target.value)}
                     placeholder="https://drive.google.com/..."
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
 
@@ -83,7 +83,7 @@ export default function KYCModal({ isOpen, onClose, currentStatus }: KYCModalPro
                     value={selfieUrl}
                     onChange={(e) => setSelfieUrl(e.target.value)}
                     placeholder="https://drive.google.com/..."
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
               </div>
@@ -91,7 +91,7 @@ export default function KYCModal({ isOpen, onClose, currentStatus }: KYCModalPro
               <button
                 onClick={() => submitMutation.mutate()}
                 disabled={!idUrl || !selfieUrl || submitMutation.isPending}
-                className="w-full py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
+                className="w-full py-3 bg-brand text-white rounded-lg font-bold hover:bg-brand-dark disabled:opacity-50 flex items-center justify-center"
               >
                 {submitMutation.isPending ? 'Submitting...' : 'Submit Documents'}
               </button>

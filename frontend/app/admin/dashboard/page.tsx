@@ -71,7 +71,7 @@ export default function AdminDashboardPage() {
     })
 
     return (
-        <div className="min-h-screen bg-neutral-900 text-white selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-neutral-900 text-white selection:bg-brand/30">
             <Navbar lightTheme={false} />
             <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 
@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
                     <div className="flex gap-4">
                          <div className="glass-morphism px-6 py-3 rounded-2xl border border-white/5 flex flex-col items-center">
                             <span className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Active Stakes</span>
-                            <span className="text-xl font-bold text-indigo-400">₹{pendingWithdrawals?.reduce((acc: number, r: any) => acc + r.amount, 0).toLocaleString() || 0}</span>
+                            <span className="text-xl font-bold text-brand">₹{pendingWithdrawals?.reduce((acc: number, r: any) => acc + r.amount, 0).toLocaleString() || 0}</span>
                          </div>
                     </div>
                 </div>
@@ -101,14 +101,14 @@ export default function AdminDashboardPage() {
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`flex items-center px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                                 activeTab === tab.id 
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+                                ? 'bg-brand text-white shadow-lg shadow-brand/20' 
                                 : 'text-gray-400 hover:text-white hover:bg-white/5'
                             }`}
                         >
                             {tab.label}
                             {tab.count > 0 && (
                                 <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] ${
-                                    activeTab === tab.id ? 'bg-white/20' : 'bg-indigo-500/20 text-indigo-400'
+                                    activeTab === tab.id ? 'bg-white/20' : 'bg-brand/20 text-brand'
                                 }`}>
                                     {tab.count}
                                 </span>
@@ -174,7 +174,7 @@ export default function AdminDashboardPage() {
                                         <div className="flex gap-3 w-full md:w-auto">
                                             <button
                                                 onClick={() => approveKYCMutation.mutate(profile.userId)}
-                                                className="flex-1 md:flex-none px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition-all"
+                                                className="flex-1 md:flex-none px-6 py-2.5 bg-brand hover:bg-brand text-white rounded-xl text-sm font-bold transition-all"
                                             >
                                                 Verify Documents
                                             </button>
@@ -192,11 +192,11 @@ export default function AdminDashboardPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <a href={profile.kycIdUrl} target="_blank" className="group p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-between">
                                             <span className="text-sm font-bold text-gray-300">View Legal ID</span>
-                                            <span className="text-indigo-400 text-xs">Open Hook →</span>
+                                            <span className="text-brand text-xs">Open Hook →</span>
                                         </a>
                                         <a href={profile.kycSelfieUrl} target="_blank" className="group p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-between">
                                             <span className="text-sm font-bold text-gray-300">View Verification Selfie</span>
-                                            <span className="text-indigo-400 text-xs">Open Hook →</span>
+                                            <span className="text-brand text-xs">Open Hook →</span>
                                         </a>
                                     </div>
                                 </div>
@@ -225,13 +225,13 @@ export default function AdminDashboardPage() {
                                                 <span className="text-lg font-bold text-white">₹{dispute.order?.amount?.toLocaleString()}</span>
                                             </div>
                                             {dispute.proofUrl && (
-                                                <a href={dispute.proofUrl} target="_blank" className="text-indigo-400 text-xs font-bold hover:underline">View Proof →</a>
+                                                <a href={dispute.proofUrl} target="_blank" className="text-brand text-xs font-bold hover:underline">View Proof →</a>
                                             )}
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => handleResolveDispute(dispute)}
-                                        className="w-full md:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-indigo-600/20"
+                                        className="w-full md:w-auto px-8 py-4 bg-brand hover:bg-brand text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-brand/20"
                                     >
                                         Execute Resolution
                                     </button>

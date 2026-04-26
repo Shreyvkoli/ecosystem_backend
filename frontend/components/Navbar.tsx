@@ -85,7 +85,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/dashboard"
-                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
                     >
                       Dashboard
                     </Link>
@@ -93,7 +93,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/orders/new"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap`}
                     >
                       New Order
                     </Link>
@@ -104,7 +104,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/editor/jobs"
-                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                      className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
                     >
                       Dashboard
                     </Link>
@@ -112,7 +112,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                   <Magnetic strength={0.2}>
                     <Link
                       href="/editor/wallet"
-                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                      className={`border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand hidden md:inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
                     >
                       Wallet
                     </Link>
@@ -122,7 +122,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                 <Magnetic strength={0.2}>
                   <Link
                     href="/admin/dashboard"
-                    className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-700 hover:text-indigo-600'} hover:border-indigo-400 items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
+                    className={`hidden md:inline-flex border-transparent ${lightTheme ? 'text-gray-700 hover:text-brand' : 'text-gray-700 hover:text-brand'} hover:border-brand items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:scale-105`}
                   >
                     Admin Dashboard
                   </Link>
@@ -138,7 +138,7 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                 {/* Avatar */}
                 <div
                   onClick={handleAvatarClick}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border-2 border-indigo-200 cursor-pointer hover:border-indigo-400 transition-all shadow-sm ${user.role === 'CREATOR' ? 'hover:scale-105' : ''}`}
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand/10 flex items-center justify-center overflow-hidden border-2 border-brand/20 cursor-pointer hover:border-brand transition-all shadow-sm ${user.role === 'CREATOR' ? 'hover:scale-105' : ''}`}
                   title={user.role === 'CREATOR' ? "Click to update profile photo" : ""}
                 >
                   {getAvatarUrl() ? (
@@ -152,12 +152,12 @@ export default function Navbar({ lightTheme = false }: NavbarProps) {
                       }}
                     />
                   ) : (
-                    <span className="text-indigo-700 font-bold text-sm sm:text-lg">{user.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-brand font-bold text-sm sm:text-lg">{user.name.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
                 <div className="hidden md:flex flex-col">
                   <span className={`font-medium text-sm leading-tight ${lightTheme ? 'text-gray-900' : 'text-gray-900'}`}>{user.name}</span>
-                  <span className={`self-start px-1.5 py-0.5 ${lightTheme ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'} rounded text-[10px] uppercase tracking-wider font-bold`}>
+                  <span className={`self-start px-1.5 py-0.5 ${lightTheme ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-gray-600'} rounded text-[10px] uppercase tracking-wider font-bold`}>
                     {user.role}
                   </span>
                 </div>

@@ -191,11 +191,11 @@ export default function EditorJobsPage() {
     const colors: Record<string, string> = {
       OPEN: 'bg-gray-100 text-gray-700 border border-gray-300',
       APPLIED: 'bg-yellow-100 text-yellow-700 border border-yellow-300',
-      ASSIGNED: 'bg-green-100 text-green-700 border border-green-300',
-      IN_PROGRESS: 'bg-purple-100 text-purple-700 border border-purple-300',
+      ASSIGNED: 'bg-blue-100 text-blue-700 border border-blue-300',
+      IN_PROGRESS: 'bg-brand/10 text-brand-dark border border-brand/20',
       PREVIEW_SUBMITTED: 'bg-orange-100 text-orange-700 border border-orange-300',
       REVISION_REQUESTED: 'bg-red-100 text-red-700 border border-red-300',
-      FINAL_SUBMITTED: 'bg-indigo-100 text-indigo-700 border border-indigo-300',
+      FINAL_SUBMITTED: 'bg-brand text-white border border-brand-dark shadow-sm',
       COMPLETED: 'bg-green-100 text-green-700 border border-green-300',
       CANCELLED: 'bg-gray-100 text-gray-700 border border-gray-300',
     }
@@ -284,7 +284,7 @@ export default function EditorJobsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent floating-animation">
+                <span className="bg-gradient-to-r from-brand to-brand bg-clip-text text-transparent floating-animation">
                   Editor Dashboard
                 </span>
               </h1>
@@ -380,13 +380,13 @@ export default function EditorJobsPage() {
                             {order.creator?.creatorProfile?.avatarUrl ? (
                               <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700 bg-indigo-50">
+                              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-brand-dark bg-bg-brand/10">
                                 {order.creator?.name?.charAt(0)}
                               </div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-bold text-gray-900 leading-tight line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                            <h3 className="text-base font-bold text-gray-900 leading-tight line-clamp-1 group-hover:text-brand transition-colors">
                               {order.title}
                             </h3>
                             <p className="text-xs text-gray-500 mt-0.5 truncate">{order.creator?.name}</p>
@@ -394,7 +394,7 @@ export default function EditorJobsPage() {
                         </div>
                         {order.amount && (
                           <div className="text-right flex-shrink-0 ml-2">
-                            <span className="block text-lg font-extrabold text-indigo-600">₹{order.amount.toLocaleString()}</span>
+                            <span className="block text-lg font-extrabold text-brand">₹{order.amount.toLocaleString()}</span>
                           </div>
                         )}
                       </div>
@@ -430,7 +430,7 @@ export default function EditorJobsPage() {
 
                       <button
                         onClick={() => setSelectedJob(order)}
-                        className="w-full mb-3 flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-sm font-medium transition-colors border border-indigo-200"
+                        className="w-full mb-3 flex items-center justify-center px-4 py-2 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-sm font-medium transition-colors border border-brand/20"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View Full Details
@@ -532,17 +532,17 @@ export default function EditorJobsPage() {
                   {activeJobs.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Active</span>
+                        <span className="bg-brand/10 text-brand px-3 py-1 rounded-lg mr-3">Active</span>
                         <span className="text-gray-500 text-sm font-normal">{activeJobs.length} jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {activeJobs.map((order) => (
                           <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300 relative">
-                            <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-20 bg-indigo-50">
+                            <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden z-20 bg-bg-brand/10">
                               {order.creator?.creatorProfile?.avatarUrl ? (
                                 <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-indigo-700">
+                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-brand-dark">
                                   {order.creator?.name?.charAt(0)}
                                 </div>
                               )}
@@ -581,7 +581,7 @@ export default function EditorJobsPage() {
                           <Link key={order.id} href={`/editor/jobs/${order.id}`} className="premium-card group md:hover:scale-105 transition-all duration-300">
                             <h3 className="font-bold text-gray-900 break-words mb-2">{order.title}</h3>
                             <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded">Completed</span>
-                            <div className="mt-2 font-bold text-indigo-400">₹{order.amount?.toLocaleString()}</div>
+                            <div className="mt-2 font-bold text-brand">₹{order.amount?.toLocaleString()}</div>
                           </Link>
                         ))}
                       </div>
@@ -605,7 +605,7 @@ export default function EditorJobsPage() {
                 <>
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Wallet</span>
+                      <span className="bg-brand/10 text-brand-dark px-3 py-1 rounded-lg mr-3">Wallet</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="glass-morphism p-6 border border-green-500/30">
@@ -624,7 +624,7 @@ export default function EditorJobsPage() {
                           type="number"
                           value={topupAmount}
                           onChange={(e) => setTopupAmount(Number(e.target.value))}
-                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                           min="100"
                           step="100"
                         />
@@ -641,11 +641,11 @@ export default function EditorJobsPage() {
 
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-lg mr-3">Active Jobs</span>
+                      <span className="bg-brand/10 text-brand-dark px-3 py-1 rounded-lg mr-3">Active Jobs</span>
                     </h2>
-                    <div className="glass-morphism p-6 border border-indigo-500/30">
+                    <div className="glass-morphism p-6 border border-brand/30">
                       <div className="text-sm text-gray-500 mb-2">Active jobs count</div>
-                      <div className="text-3xl font-bold text-indigo-400">
+                      <div className="text-3xl font-bold text-brand">
                         {activeJobLoading ? '...' : `${activeJobData?.activeJobs || 0} / ${activeJobData?.maxActiveJobs || 2}`}
                       </div>
                       <div className="mt-2 text-sm text-gray-500">
@@ -660,14 +660,14 @@ export default function EditorJobsPage() {
 
                   <div className="premium-card">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-lg mr-3">Editor Profile</span>
+                      <span className="bg-brand/10 text-brand-dark px-3 py-1 rounded-lg mr-3">Editor Profile</span>
                     </h2>
                     <div className="space-y-6">
                       {/* Profile Photo */}
                       <div>
                         <label className="block text-sm font-medium text-gray-600 mb-2">Profile Photo *</label>
                         <div className="flex items-center space-x-4">
-                          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <div className="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center">
                             {profileForm.avatarUrl ? (
                               <img
                                 src={profileForm.avatarUrl}
@@ -675,7 +675,7 @@ export default function EditorJobsPage() {
                                 className="w-20 h-20 rounded-full object-cover"
                               />
                             ) : (
-                              <span className="text-indigo-600 font-bold text-2xl">
+                              <span className="text-brand font-bold text-2xl">
                                 {user?.name?.charAt(0).toUpperCase() || 'E'}
                               </span>
                             )}
@@ -689,10 +689,10 @@ export default function EditorJobsPage() {
                                   accept="image/*"
                                   onChange={handlePhotoUpload}
                                   disabled={uploadingPhoto}
-                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-bg-brand/10 file:text-brand-dark hover:file:bg-indigo-100 disabled:opacity-50"
                                 />
                                 {uploadingPhoto && (
-                                  <p className="text-xs text-indigo-600">Uploading...</p>
+                                  <p className="text-xs text-brand">Uploading...</p>
                                 )}
                               </div>
                               <div>
@@ -701,7 +701,7 @@ export default function EditorJobsPage() {
                                   type="url"
                                   value={profileForm.avatarUrl}
                                   onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
-                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 text-sm"
+                                  className="w-full px-3 py-2 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15 text-sm"
                                   placeholder="https://example.com/your-photo.jpg"
                                   required
                                 />
@@ -716,7 +716,7 @@ export default function EditorJobsPage() {
                         <textarea
                           value={profileForm.bio}
                           onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
-                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                           rows={4}
                           placeholder="Tell creators about your editing style and expertise..."
                         />
@@ -726,7 +726,7 @@ export default function EditorJobsPage() {
                         <input
                           value={profileForm.rate}
                           onChange={(e) => setProfileForm((p) => ({ ...p, rate: e.target.value }))}
-                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                           placeholder="Your typical rate per project"
                         />
                       </div>
@@ -735,7 +735,7 @@ export default function EditorJobsPage() {
                         <input
                           value={profileForm.skills}
                           onChange={(e) => setProfileForm((p) => ({ ...p, skills: e.target.value }))}
-                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                           placeholder="e.g., color grading, motion graphics, sound design"
                         />
                       </div>
@@ -744,7 +744,7 @@ export default function EditorJobsPage() {
                         <input
                           value={profileForm.portfolio}
                           onChange={(e) => setProfileForm((p) => ({ ...p, portfolio: e.target.value }))}
-                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                          className="w-full px-4 py-3 bg-white/10 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 hover:bg-white/15"
                           placeholder="e.g., https://vimeo.com/yourwork, https://youtube.com/yourchannel"
                         />
                       </div>
@@ -753,7 +753,7 @@ export default function EditorJobsPage() {
                           type="checkbox"
                           checked={profileForm.available}
                           onChange={(e) => setProfileForm((p) => ({ ...p, available: e.target.checked }))}
-                          className="w-5 h-5 rounded border-gray-300 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
+                          className="w-5 h-5 rounded border-gray-300 bg-white/10 text-brand focus:ring-brand focus:ring-offset-0"
                         />
                         <span className="font-medium">Available for new projects</span>
                       </label>
@@ -806,7 +806,7 @@ export default function EditorJobsPage() {
                   <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
                   <div>
                     <span className="text-xs font-semibold text-gray-500 uppercase">Level</span>
-                    <div className="text-indigo-600 font-bold mt-1">
+                    <div className="text-brand font-bold mt-1">
                       {selectedJob.editingLevel || 'Not Specified'}
                     </div>
                   </div>
@@ -826,7 +826,7 @@ export default function EditorJobsPage() {
                     <FileText className="w-4 h-4 mr-2" />
                     Editing Brief
                   </h3>
-                  <div className="text-gray-700 bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
+                  <div className="text-gray-700 bg-bg-brand/10 border border-indigo-100 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap">
                     {selectedJob.brief || 'No specific brief provided.'}
                   </div>
                 </div>

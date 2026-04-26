@@ -190,7 +190,7 @@ export default function OrderDetailPage() {
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <p className="text-gray-500">Order not found</p>
-            <Link href="/dashboard" className="mt-4 text-indigo-600 hover:text-indigo-700">
+            <Link href="/dashboard" className="mt-4 text-brand hover:text-brand-dark">
               Back to Dashboard
             </Link>
           </div>
@@ -206,7 +206,7 @@ export default function OrderDetailPage() {
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <p className="text-gray-500">Access denied</p>
-            <Link href="/dashboard" className="mt-4 text-indigo-600 hover:text-indigo-700">
+            <Link href="/dashboard" className="mt-4 text-brand hover:text-brand-dark">
               Back to Dashboard
             </Link>
           </div>
@@ -220,10 +220,10 @@ export default function OrderDetailPage() {
       OPEN: 'bg-gray-100 text-gray-800',
       APPLIED: 'bg-yellow-100 text-yellow-800',
       ASSIGNED: 'bg-blue-100 text-blue-800',
-      IN_PROGRESS: 'bg-purple-100 text-purple-800',
+      IN_PROGRESS: 'bg-brand/10 text-brand-dark',
       PREVIEW_SUBMITTED: 'bg-orange-100 text-orange-800',
       REVISION_REQUESTED: 'bg-red-100 text-red-800',
-      FINAL_SUBMITTED: 'bg-indigo-100 text-indigo-800',
+      FINAL_SUBMITTED: 'bg-brand text-white shadow-sm',
       PUBLISHED: 'bg-green-100 text-green-800',
       COMPLETED: 'bg-emerald-100 text-emerald-800',
       CANCELLED: 'bg-gray-100 text-gray-800',
@@ -246,7 +246,7 @@ export default function OrderDetailPage() {
                 </div>
               </div>
             )}
-            <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-700 text-sm mb-2 inline-block">
+            <Link href="/dashboard" className="text-brand hover:text-brand-dark text-sm mb-2 inline-block">
               ← Back to Dashboard
             </Link>
             <div className="flex justify-between items-start">
@@ -305,7 +305,7 @@ export default function OrderDetailPage() {
                         key={video.id}
                         onClick={() => setSelectedFileId(video.id)}
                         className={`w-full text-left px-3 py-2 rounded border ${selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
-                          ? 'border-indigo-500 bg-indigo-50'
+                          ? 'border-brand bg-bg-brand/10'
                           : 'border-gray-300 hover:bg-gray-50'
                           }`}
                       >
@@ -329,7 +329,7 @@ export default function OrderDetailPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               {/* Editor Profile Photo */}
-                              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <div className="w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center flex-shrink-0">
                                 {app.editor?.editorProfile?.avatarUrl ? (
                                   <img
                                     src={app.editor.editorProfile.avatarUrl}
@@ -337,7 +337,7 @@ export default function OrderDetailPage() {
                                     className="w-12 h-12 rounded-full object-cover"
                                   />
                                 ) : (
-                                  <span className="text-indigo-600 font-bold text-lg">
+                                  <span className="text-brand font-bold text-lg">
                                     {app.editor?.name?.charAt(0).toUpperCase() || 'E'}
                                   </span>
                                 )}
@@ -385,7 +385,7 @@ export default function OrderDetailPage() {
                                   disabled={approveEditorMutation.isPending}
                                   className={`px-3 py-2 rounded text-white text-sm transition-colors ${(app.editor as any)?.availability?.status === 'BUSY'
                                     ? 'bg-orange-600 hover:bg-orange-700'
-                                    : 'bg-indigo-600 hover:bg-indigo-700'
+                                    : 'bg-brand hover:bg-brand-dark'
                                     } disabled:opacity-50`}
                                 >
                                   {approveEditorMutation.isPending ? 'Approving...' :
@@ -548,7 +548,7 @@ export default function OrderDetailPage() {
                     {rawVideo && !isEditingRaw && (
                       <button
                         onClick={() => setIsEditingRaw(true)}
-                        className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                        className="text-xs text-brand hover:text-indigo-800 underline"
                       >
                         Change Link
                       </button>
@@ -580,7 +580,7 @@ export default function OrderDetailPage() {
                     </>
                   ) : (
                     <div className="bg-gray-50 p-3 rounded text-sm break-all">
-                      <a href={rawVideo.publicLink || '#'} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                      <a href={rawVideo.publicLink || '#'} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
                         {rawVideo.publicLink || 'View Video'}
                       </a>
                       <p className="text-xs text-gray-500 mt-1">Uploaded {new Date(rawVideo.createdAt).toLocaleDateString()}</p>
@@ -664,7 +664,7 @@ export default function OrderDetailPage() {
                               }
                             }}
                             disabled={completeMutation.isPending}
-                            className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center font-bold shadow-sm"
+                            className="w-full px-4 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors flex items-center justify-center font-bold shadow-sm"
                           >
                             {completeMutation.isPending ? (
                               'Processing...'
@@ -745,8 +745,8 @@ export default function OrderDetailPage() {
                 <div className="bg-white rounded-lg shadow p-4">
                   <h3 className="font-semibold mb-3">Editor Profile</h3>
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <span className="text-indigo-600 font-bold text-lg">
+                    <div className="w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center">
+                      <span className="text-brand font-bold text-lg">
                         {order.editor.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -762,7 +762,7 @@ export default function OrderDetailPage() {
 
                   <button
                     onClick={() => setShowProfileModal(order.editorId!)}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-brand bg-brand/10 hover:bg-brand/20 transition-colors"
                   >
                     View Full Profile
                   </button>
@@ -885,7 +885,7 @@ export default function OrderDetailPage() {
               </div>
 
               <p className="text-gray-600 mb-8 leading-relaxed">
-                To request more changes, a fee of <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
+                To request more changes, a fee of <span className="font-bold text-brand bg-bg-brand/10 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
               </p>
 
               <div className="flex flex-col sm:flex-row justify-end gap-3">
@@ -901,7 +901,7 @@ export default function OrderDetailPage() {
                     alert('Premium Revision Payment Integration Coming Soon!')
                     setShowRevisionLimitModal(false)
                   }}
-                  className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
+                  className="px-5 py-2.5 bg-gradient-to-r from-brand to-brand text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
                 >
                   Pay & Request (₹500)
                 </button>
