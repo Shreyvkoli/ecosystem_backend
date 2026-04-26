@@ -407,6 +407,60 @@ export class EdgeCaseService {
   }
 
   /**
+   * 7️⃣ Auto-Approve Orders
+   * If creator has not responded to FINAL_SUBMITTED in 48 hours, auto-approve
+   */
+  static async processAutoApprovals() {
+      console.log('Running auto-approval checks...');
+      const overdueApprovals = await prisma.order.findMany({
+          where: {
+              status: OrderStatus.FINAL_SUBMITTED,
+              autoApproveAt: { lt: new Date() }
+          },
+          include: { creator: true, editor: true }
+      });
+
+      const { updateOrderStatus } = await import('./orderService.js');
+
+      for (const order of overdueApprovals) {
+          try {
+              await updateOrderStatus({
+                  orderId: order.id,
+                  status: OrderStatus.COMPLETED,
+                  userId: 'SYSTEM',
+                  userRole: 'ADMIN'
+              });
+              console.log(`[Auto-Approve] Order ${order.id} completed via system timeout.`);
+          } catch (e) {
+              console.error(`[Auto-Approve] Failed for ${order.id}:`, e);
+          }
+      }
+  }
+
+  /**
+   * 8️⃣ Clear Balance Holdings
+   * Mark earnings as cleared after 48 hour fraud buffer
+   */
+  static async clearBalanceHoldings() {
+      console.log('Clearing old balance holdings...');
+      const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      
+      const res = await (prisma as any).walletTransaction.updateMany({
+          where: {
+              isCleared: false,
+              createdAt: { lt: cutoff },
+              type: { in: ['ORDER_PAYMENT', 'BONUS'] }
+          },
+          data: {
+              isCleared: true,
+              clearedAt: new Date()
+          }
+      });
+
+      console.log(`[Clear-Balance] Cleared ${res.count} transactions.`);
+  }
+
+  /**
    * Main function to run all edge case checks
    */
   static async runAllChecks() {
@@ -414,6 +468,8 @@ export class EdgeCaseService {
       await this.handleDepositTimeouts();
       await this.handleOrderTimeouts();
       await this.handleSelectionTimeouts();
+      await this.processAutoApprovals();
+      await this.clearBalanceHoldings();
       await this.cleanupOldFiles();
       await this.detectCommunicationGaps();
       await this.handleGhostUsers();

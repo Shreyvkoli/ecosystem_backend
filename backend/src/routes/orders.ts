@@ -4,6 +4,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest, requireCreator, requireRole } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import {
   createOrder,
   getUserOrders,
@@ -41,6 +42,7 @@ const APPLICATION_STATUS = {
 } as const;
 
 router.use(authenticate);
+router.use(idempotencyMiddleware);
 
 function computeDepositAmount(editingLevel?: string): number {
   switch (editingLevel) {
@@ -58,40 +60,36 @@ function computeDepositAmount(editingLevel?: string): number {
  * GET /api/orders
  * Get all orders for the authenticated user (filtered by role)
  */
+import { CacheService } from '../services/cacheService.js';
+
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId || !req.userRole) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    const { status: statusParam } = req.query;
+    const cacheKey = `user:${req.userId}:role:${req.userRole}:orders:${statusParam || 'all'}`;
+
+    // 1. Try Cache
+    const cached = await CacheService.get<any[]>(cacheKey);
+    if (cached) return res.json(cached);
+
+    // 2. Fetch from DB
     const orders = await getUserOrders(
       req.userId,
       req.userRole as 'CREATOR' | 'EDITOR' | 'ADMIN'
     );
 
-    // Apply status filter if present
-    const statusParam = req.query.status as string;
-    let filteredOrders = orders;
-
+    let result = orders;
     if (statusParam) {
-      filteredOrders = orders.filter((o: any) => o.status === statusParam);
+      result = orders.filter((o: any) => o.status === statusParam);
     }
 
-    if (filteredOrders.length > 0) {
-      console.log('--- GET /orders DEBUG ---');
-      const first = filteredOrders[0];
-      console.log('Sample Order ID:', first.id);
-      console.log('Sample Keys:', Object.keys(first));
-      console.log('=== DETAILED FIELD CHECK ===');
-      console.log('Deadline:', first.deadline);
-      console.log('Raw Footage Duration:', first.rawFootageDuration);
-      console.log('Expected Duration:', first.expectedDuration);
-      console.log('Reference Link:', first.referenceLink);
-      console.log('Editing Level:', first.editingLevel);
-      console.log('=== END FIELD CHECK ===');
-    }
+    // 3. Store in Cache (5 minutes)
+    await CacheService.set(cacheKey, result, 300);
 
-    return res.json(filteredOrders);
+    return res.json(result);
   } catch (error: any) {
     console.error('Get orders error:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -152,6 +150,22 @@ router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) =>
  */
 router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
+    // Anti-Abuse: Velocity Limit (Max 1 order per 30 mins for unverified users)
+    const [userRecord, lastOrder] = await Promise.all([
+      prisma.user.findUnique({ where: { id: req.userId! }, select: { isVerified: true } }),
+      prisma.order.findFirst({
+        where: { creatorId: req.userId! },
+        orderBy: { createdAt: 'desc' }
+      })
+    ]);
+
+    if (lastOrder && !(userRecord as any)?.isVerified) {
+      const diff = Date.now() - new Date(lastOrder.createdAt).getTime();
+      if (diff < 30 * 60 * 1000) {
+        return res.status(429).json({ error: 'Velocity limit exceeded. Please wait 30 minutes between orders.' });
+      }
+    }
+
     const schema = z.object({
       title: z.string().min(1, 'Title is required'),
       description: z.string().optional(),
@@ -176,6 +190,11 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
       creatorId: req.userId!
     });
     console.log('Created Order:', JSON.stringify(order, null, 2));
+
+    // Invalidate Cache for this user
+    import('../services/cacheService.js').then(({ CacheService }) => {
+      CacheService.invalidatePattern(`user:${req.userId}:*`);
+    }).catch(console.error);
 
     return res.status(201).json(order);
   } catch (error: any) {

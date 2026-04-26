@@ -31,21 +31,26 @@ export class NotificationService {
         message: string;
         link?: string;
     }): Promise<Notification> {
+        const idempotencyKey = crypto.randomUUID();
 
         // Save to DB
-        const notification = await prisma.notification.create({
+        const notification = await (prisma.notification as any).create({
             data: {
                 userId: data.userId,
                 type: data.type,
                 title: data.title,
                 message: data.message,
-                link: data.link
+                link: data.link,
+                idempotencyKey
             }
         });
 
-        // Emit real-time event
+        // Emit real-time event with stability metadata
         if (this.io) {
-            this.io.to(data.userId).emit('notification', notification);
+            this.io.to(data.userId).emit('notification', {
+                ...notification,
+                eventId: idempotencyKey // Redundant for frontend convenience
+            });
         }
 
         return notification;
@@ -56,7 +61,12 @@ export class NotificationService {
      */
     public async sendOrderEvent(orderId: string, event: string, payload: any) {
         if (this.io) {
-            this.io.to(`order:${orderId}`).emit(event, payload);
+            const enrichedPayload = {
+                ...payload,
+                eventId: crypto.randomUUID(),
+                emittedAt: new Date().toISOString()
+            };
+            this.io.to(`order:${orderId}`).emit(event, enrichedPayload);
         }
     }
     /**

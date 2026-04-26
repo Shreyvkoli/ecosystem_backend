@@ -12,8 +12,9 @@ import EditorToDoList from '@/components/EditorToDoList'
 import EditorDepositButton from '@/components/EditorDepositButton'
 import ChatRoom from '@/components/ChatRoom'
 import ReviewModal from '@/components/ReviewModal'
+import DisputeModal from '@/components/DisputeModal'
 import Link from 'next/link'
-import { Download, Calendar, Clock, ExternalLink, FileText, X } from 'lucide-react'
+import { Download, Calendar, Clock, ExternalLink, FileText, X, AlertTriangle, ShieldCheck } from 'lucide-react'
 
 export default function EditorJobDetailPage() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function EditorJobDetailPage() {
   const playerRef = useRef<OrderVideoPlayerRef>(null)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showDisputeModal, setShowDisputeModal] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +62,12 @@ export default function EditorJobDetailPage() {
       const downloadResponse = await ordersApi.getRawFileDownloadUrl(orderId, fileId)
       // Open download URL in new tab
       window.open(downloadResponse.data.downloadUrl, '_blank')
+      // Log activity
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/disputes/activity`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          body: JSON.stringify({ orderId, type: 'RAW_DOWNLOAD', metadata: { fileId } })
+      }).catch(console.error);
     } catch (error: any) {
       console.error('Failed to get download URL:', error)
       alert('Failed to download file: ' + (error.response?.data?.error || 'Unknown error'))
@@ -74,8 +82,21 @@ export default function EditorJobDetailPage() {
     },
   })
 
-  const handleStartWork = () => {
+  const handleStartWork = async () => {
     updateStatusMutation.mutate('IN_PROGRESS')
+    // Log activity
+    try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/disputes/activity`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ orderId, type: 'WORK_STARTED' })
+        })
+    } catch (e) {
+        console.error('Failed to log activity', e)
+    }
   }
 
   const handleSubmitPreview = () => {
@@ -276,8 +297,57 @@ export default function EditorJobDetailPage() {
                       <p className="text-gray-600 line-clamp-3">{order.description}</p>
                     </div>
                   )}
+
+                  {/* Accountability & Reliability */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <span className="text-gray-500 block text-xs mb-2">Accountability</span>
+                    <div className="space-y-2">
+                        {order.digitalContractUrl && (
+                            <a 
+                                href={order.digitalContractUrl} 
+                                target="_blank" 
+                                className="flex items-center text-xs text-blue-600 hover:underline font-medium"
+                            >
+                                <FileText className="w-3 h-3 mr-1" />
+                                View Digital Contract
+                            </a>
+                        )}
+                        {order.milestoneDeadline && (
+                            <div className="flex items-center text-xs text-orange-600 font-medium">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Milestone: {new Date(order.milestoneDeadline).toLocaleTimeString()}
+                            </div>
+                        )}
+                        {/* Penalty Info */}
+                        <div className="text-[10px] text-gray-400 italic">
+                            Late delivery results in 20% penalty. Abandonment results in 80% penalty.
+                        </div>
+                        
+                        {/* Dispute Logic */}
+                        {order.isDisputed ? (
+                            <div className="mt-2 p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-[10px] text-indigo-700 font-bold flex items-center gap-2">
+                                <ShieldCheck className="w-3 h-3" />
+                                DISPUTE UNDER REVIEW
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={() => setShowDisputeModal(true)}
+                                className="mt-2 text-[10px] font-bold text-red-500 hover:underline flex items-center gap-1"
+                            >
+                                <AlertTriangle className="w-3 h-3" />
+                                Challenge Penalty?
+                            </button>
+                        )}
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <DisputeModal 
+                isOpen={showDisputeModal} 
+                onClose={() => setShowDisputeModal(false)} 
+                orderId={orderId} 
+              />
 
               {/* Chat Room */}
               <ChatRoom

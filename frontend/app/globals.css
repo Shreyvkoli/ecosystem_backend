@@ -3,282 +3,80 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
+  --foreground-rgb: 24, 24, 24;
   --bg-a: 255, 255, 255;
-  --bg-b: 248, 250, 252;
-  --bg-c: 241, 245, 249;
-  /* Aurora Gradients */
-  --aurora-1: #6366f1;
-  /* Indigo */
-  --aurora-2: #a855f7;
-  /* Purple */
-  --aurora-3: #ec4899;
-  /* Pink */
-  --aurora-4: #3b82f6;
-  /* Blue */
+  --bg-b: 249, 249, 249;
+  --bg-c: 242, 242, 242;
+  
+  --primary: #108a00;
+  --primary-hover: #0d7600;
+  --charcoal: #181818;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: var(--bg-b);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(var(--foreground-rgb), 0.03) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+  background-color: #ffffff;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Aurora Background Effect */
-.aurora-bg {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  width: 200%;
-  height: 200%;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08), transparent 25%),
-    radial-gradient(circle at 0% 0%, rgba(168, 85, 247, 0.08), transparent 25%),
-    radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.08), transparent 25%);
-  filter: blur(60px);
-  z-index: -1;
-  animation: aurora-move 20s linear infinite alternate;
-  opacity: 0.6;
-}
-
-@keyframes aurora-move {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-
-  100% {
-    transform: translate(-10%, -10%) rotate(5deg);
-  }
-}
-
 /* Premium Utilities */
 @layer components {
+  .pro-card {
+    @apply bg-white border border-gray-200 shadow-sm rounded-2xl p-6 transition-all duration-300;
+  }
+
+  .pro-card:hover {
+    @apply shadow-md border-gray-300 -translate-y-0.5;
+  }
+
   .glass-morphism {
-    @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-xl shadow-indigo-500/5 rounded-2xl;
-  }
-
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-gray-100 shadow-lg shadow-gray-200/50 rounded-2xl transition-all duration-300;
-  }
-
-  .glass-card:hover {
-    @apply bg-white border-indigo-100 shadow-xl shadow-indigo-500/10 -translate-y-1;
+    @apply bg-white border border-gray-200 shadow-sm rounded-xl;
   }
 
   /* Buttons */
-  /* Premium Buttons with Wow Factor */
   .btn-base {
-    @apply relative overflow-hidden px-8 py-4 rounded-xl font-bold text-center flex items-center justify-center gap-2 transition-all duration-300 min-w-[200px];
+    @apply px-8 py-3.5 rounded-xl font-bold text-center flex items-center justify-center gap-2 transition-all duration-200 min-w-[200px];
   }
 
   .btn-primary {
-    @apply btn-base text-white hover:-translate-y-1 hover:shadow-xl active:translate-y-0 active:scale-95;
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
-  }
-
-  /* Shimmer overlay for primary */
-  .btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 100%);
-    transition: transform 0.5s;
-    transform: skewX(-20deg);
-  }
-
-  .btn-primary:hover::before {
-    transform: translateX(50%) skewX(-20deg);
+    @apply btn-base bg-brand text-white hover:bg-brand-dark active:scale-[0.98] shadow-sm;
   }
 
   .btn-secondary {
-    @apply btn-base bg-white/80 backdrop-blur-md text-gray-900 border-2 border-transparent hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-95;
-    background-clip: padding-box;
-    /* Create a gradient border effect */
+    @apply btn-base bg-white text-charcoal border-2 border-charcoal hover:bg-gray-50 active:scale-[0.98];
   }
 
-  .btn-secondary::after {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    left: -2px;
-    right: -2px;
-    background: linear-gradient(135deg, #a855f7, #6366f1);
-    content: '';
-    z-index: -1;
-    border-radius: 14px;
-    /* somewhat larger than parent radius */
-  }
-
-  /* Redefine premium-button to match btn-primary for consistency if used elsewhere */
+  /* Fallback/Legacy Compatibility */
   .premium-button {
     @apply btn-primary;
   }
 
   .premium-button-green {
-    @apply btn-base text-white hover:shadow-lg hover:shadow-green-500/25;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    @apply btn-primary;
   }
 
-  /* Shimmer Effect */
-  .shimmer-bg {
-    background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+  .glass-card {
+    @apply pro-card;
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-
-    100% {
-      background-position: -200% 0;
-    }
+  /* Text Gradients (Subtle & Professional) */
+  .text-gradient-primary {
+    @apply text-charcoal;
   }
 
-  /* Floating Animation */
+  .text-highlight {
+    @apply text-brand;
+  }
+
+  /* Floating Animation (Keep it subtle) */
   .float-slow {
     animation: float 6s ease-in-out infinite;
   }
 
-  .float-medium {
-    animation: float 5s ease-in-out infinite reverse;
-  }
-
-  .float-fast {
-    animation: float 4s ease-in-out infinite;
-  }
-
   @keyframes float {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-15px);
-    }
-  }
-
-  /* Text Gradients */
-  .text-gradient-primary {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600;
-  }
-
-  /* Premium Card Styles (from original) */
-  /* Premium Card Styles (Wow Factor Upgrade) */
-  .premium-card {
-    @apply bg-white backdrop-blur-md border border-gray-300/80 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
-
-  .premium-card:hover {
-    @apply -translate-y-2 shadow-2xl shadow-indigo-500/10 border-indigo-300 bg-white;
-  }
-
-  /* Shine effect on hover */
-  .premium-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(115deg,
-        transparent 20%,
-        rgba(255, 255, 255, 0.4) 40%,
-        transparent 60%);
-    transition: none;
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .premium-card:hover::before {
-    animation: shine-sweep 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-
-  @keyframes shine-sweep {
-    0% {
-      transform: translateX(0) skewX(-20deg);
-    }
-
-    100% {
-      transform: translateX(50%) skewX(-20deg);
-    }
-  }
-
-  /* Specific color themes for job cards (used in dashboards) */
-  .order-card-orange {
-    @apply border-orange-300 bg-gradient-to-br from-white to-orange-200;
-  }
-
-  .order-card-orange:hover {
-    @apply border-orange-500 shadow-orange-500/20;
-  }
-
-  .order-card-blue {
-    @apply border-blue-300 bg-gradient-to-br from-white to-blue-200;
-  }
-
-  .order-card-blue:hover {
-    @apply border-blue-500 shadow-blue-500/20;
-  }
-
-  .order-card-green {
-    @apply border-green-300 bg-gradient-to-br from-white to-green-200;
-  }
-
-  .order-card-green:hover {
-    @apply border-green-500 shadow-green-500/20;
-  }
-
-  /* Neon Effects */
-  .neon-glow {
-    @apply relative;
-  }
-
-  .neon-glow::after {
-    content: '';
-    @apply absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 blur-lg opacity-0 transition-opacity duration-300 -z-10;
-  }
-
-  .neon-glow:hover::after {
-    @apply opacity-100;
-  }
-
-  .neon-glow-green::after {
-    content: '';
-    @apply absolute inset-0 rounded-lg bg-gradient-to-r from-green-500/30 to-emerald-500/30 blur-lg opacity-0 transition-opacity duration-300 -z-10;
-  }
-
-  .neon-glow-green:hover::after {
-    @apply opacity-100;
-  }
-
-  .premium-button-no-shimmer {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25;
-  }
-
-  .premium-button-green-no-shimmer {
-    @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-green-500/25;
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 }
 
@@ -288,16 +86,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f9f9f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
+  background: #e0e0e0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
+  background: #d0d0d0;
 }
 
 /* Dark Mode Overrides (if applicable, though sticking to light/pro look mainly) */

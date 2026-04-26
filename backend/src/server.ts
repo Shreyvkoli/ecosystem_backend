@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { apiLimiter } from './middleware/rateLimit.js';
+import { apiLimiter, authLimiter } from './middleware/rateLimit.js';
+import { xssSanitizer } from './middleware/sanitize.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -45,6 +46,7 @@ import reviewRoutes from './routes/reviews.js';
 import videoRoutes from './routes/videos.js';
 import withdrawalRoutes from './routes/withdrawals.js';
 import invoiceRoutes from './routes/invoices.js';
+import disputeRoutes from './routes/disputes.js';
 import { SchedulerService } from './services/schedulerService.js';
 
 
@@ -99,8 +101,12 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/payments/stripe/webhook', express.raw({ type: 'application/json' }));
 
 app.use(helmet());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // Limit body size to prevent DoS
+app.use(xssSanitizer); // Sanitize all inputs for XSS
+
 app.use('/api', apiLimiter); // Apply global rate limit to all API routes
+app.use('/api/auth/login', authLimiter); // Specific stricter limit for login
+app.use('/api/auth/register', authLimiter); // Specific stricter limit for register
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
@@ -113,8 +119,11 @@ app.use('/api/youtube', youtubeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/videos', videoRoutes);
+import kycRoutes from './routes/kyc.js';
+app.use('/api/kyc', kycRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/disputes', disputeRoutes);
 app.get('/', (_req, res) => {
   res.status(200).json({ status: 'Backend is running' });
 });
@@ -124,24 +133,29 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+import { createAdapter } from '@socket.io/redis-adapter';
+import IORedis from 'ioredis';
+
 const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-
-      // Allow localhost
       if (allowedOrigins.has(origin)) return callback(null, true);
       if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return callback(null, true);
-
-      // Allow any Vercel deployment
       if (origin.endsWith('.vercel.app')) return callback(null, true);
-
       return callback(null, false);
     },
     credentials: true
   }
 });
+
+// Redis Adapter for Horizontal Scaling
+const pubClient = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: null
+});
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
 
 app.set('io', io);
 import { NotificationService } from './services/notificationService.js';
@@ -177,5 +191,14 @@ httpServer.listen(PORT, () => {
   if (process.env.ENABLE_SCHEDULER === 'true') {
     SchedulerService.getInstance().startAll();
   }
+
+  import('./jobs/escrowQueue.js').then(() => {
+    console.log('BullMQ Financial Timer Queue Initialized');
+  }).catch(err => console.error('Failed to init financial queue:', err));
+
+  import('./jobs/storageQueue.js').then(async (m) => {
+    await m.initStorageHeartbeat();
+    console.log('BullMQ Storage Heartbeat Queue Initialized');
+  }).catch(err => console.error('Failed to init storage queue:', err));
 });
 

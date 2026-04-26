@@ -2,6 +2,9 @@ import { PrismaClient } from '@prisma/client';
 import { OrderStatus, FileType } from '../utils/enums.js';
 import { sendEmail } from '../utils/email.js';
 import { NotificationService } from './notificationService.js';
+import { ReputationService } from './reputationService.js';
+import { escrowQueue } from '../jobs/escrowQueue.js';
+import { LedgerService, AccountType } from './ledgerService.js';
 
 const prisma = new PrismaClient();
 console.log('OrderService: Prisma Client Initialized (Check for new fields support)');
@@ -269,7 +272,11 @@ export async function getOrderById(
           }
           : undefined,
       files: {
-        orderBy: { createdAt: 'desc' }
+        orderBy: [
+          { type: 'asc' },
+          { version: 'desc' },
+          { createdAt: 'desc' }
+        ]
       },
       messages: {
         include: {
@@ -284,7 +291,8 @@ export async function getOrderById(
             select: {
               id: true,
               type: true,
-              fileName: true
+              fileName: true,
+              version: true
             }
           }
         },
@@ -301,9 +309,23 @@ export async function getOrderById(
   if (!order) return null;
 
   // Security: Filter out FINAL_VIDEO for Creator until COMPLETED
+  // But also mark which one is the "Latest" version for UI clarity
   if (userRole === 'CREATOR' && order.status !== OrderStatus.COMPLETED) {
     order.files = order.files.filter(f => f.type !== FileType.FINAL_VIDEO);
   }
+
+  // Inject a 'isLatest' flag for the UI (Versioning Logic)
+  const versionMap: Record<string, number> = {};
+  order.files.forEach(f => {
+    if (!versionMap[f.type] || f.version > versionMap[f.type]) {
+      versionMap[f.type] = f.version;
+    }
+  });
+
+  (order as any).files = order.files.map(f => ({
+    ...f,
+    isLatest: f.version === versionMap[f.type]
+  }));
 
   // Security: Filter out RAW_VIDEO for:
   // 1. Unassigned editors
@@ -377,6 +399,12 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     status: data.status
   };
 
+  // If Final Submission, set auto-approval timer (48h)
+  if (data.status === 'FINAL_SUBMITTED') {
+      updateData.autoApproveAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+      updateData.autoApproveAtSet = true;
+  }
+
   if (data.status === OrderStatus.COMPLETED) {
     updateData.completedAt = new Date();
 
@@ -440,42 +468,48 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
       // Check strict conditions: Payment must be PAID (Captured) and Editor must be assigned
       if (order.paymentStatus === 'PAID' && order.amount && order.editorId) {
 
-        let totalReleaseAmount = order.amount;
+        // For MVP, Platform takes 10% explicit cut via Ledger
+        const platformFee = Math.round(order.amount * 0.10);
+        const editorEarnings = order.amount - platformFee;
 
-        // A. Check for Deposit
+        // A. Transfer Earnings to Editor
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order.id,
+          to: AccountType.EDITOR_WALLET + order.editorId,
+          amount: editorEarnings,
+          transactionType: 'PAYOUT',
+          orderId: order.id,
+          idempotencyKey: `payout_earn_${order.id}`,
+          prismaTx: tx
+        });
+
+        // B. Transfer Fee to Platform
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order.id,
+          to: AccountType.PLATFORM_REVENUE,
+          amount: platformFee,
+          transactionType: 'FEE_COLLECTION',
+          orderId: order.id,
+          idempotencyKey: `payout_fee_${order.id}`,
+          prismaTx: tx
+        });
+
+        // C. Process Editor Deposit Refund
         const deposit = await tx.editorDeposit.findFirst({
           where: { orderId: order.id, editorId: order.editorId, status: 'PAID' }
         });
 
         if (deposit) {
-          totalReleaseAmount += deposit.amount;
-
-          // Log Deposit Refund Transaction
-          await tx.walletTransaction.create({
-            data: {
-              userId: order.editorId,
-              orderId: order.id,
-              type: 'DEPOSIT_REFUND',
-              amount: deposit.amount
-            }
+          await LedgerService.transfer({
+            from: AccountType.GATEWAY_EXTERNAL, // Moving deposit from gateway hold
+            to: AccountType.EDITOR_WALLET + order.editorId,
+            amount: deposit.amount,
+            transactionType: 'DEPOSIT_REFUND',
+            orderId: order.id,
+            idempotencyKey: `dep_refund_${deposit.id}`,
+            prismaTx: tx
           });
         }
-
-        // B. Credit Editor Wallet (Total = Earnings + Deposit)
-        await tx.user.update({
-          where: { id: order.editorId },
-          data: { walletBalance: { increment: totalReleaseAmount } }
-        });
-
-        // C. Create Transaction History for Earnings
-        await tx.walletTransaction.create({
-          data: {
-            userId: order.editorId,
-            orderId: order.id,
-            type: 'CREDIT', // Payout
-            amount: order.amount
-          }
-        });
 
         // D. Mark Gateway Payment as Released (Internal tracking)
         // Finds the Creator's payment for this order
@@ -503,6 +537,20 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
           }
         });
         notifications.push(paymentNotif);
+
+        // F. Update Reputation (On-Time Delivery Logic)
+        const onTime = new Date() <= new Date(order.deadline || Date.now());
+        import('./reputationService.js').then(({ ReputationService }) => {
+          ReputationService.handleOrderCompletion(order.editorId!, onTime);
+        }).catch(err => console.error('Reputation update failed:', err));
+
+        // G. Update Editor Profile Metrics
+        await (tx.editorProfile as any).update({
+          where: { userId: order.editorId },
+          data: {
+            completedOrders: { increment: 1 }
+          }
+        });
       }
 
       return { updatedOrder, notifications };
@@ -512,8 +560,13 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     const notifService = NotificationService.getInstance();
     notifications.forEach(n => notifService.notifyUser(n.userId, n));
 
-    return updatedOrder;
+    // Invalidate Cache
+    import('./cacheService.js').then(({ CacheService }) => {
+      CacheService.invalidatePattern(`user:${updatedOrder.creatorId}:*`);
+      if (updatedOrder.editorId) CacheService.invalidatePattern(`user:${updatedOrder.editorId}:*`);
+    }).catch(console.error);
 
+    return updatedOrder;
   }
 
   if (data.status === OrderStatus.CANCELLED) {
@@ -532,18 +585,15 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
       // 2. Refund Creator (if they paid)
       // Use order! to satisfy TS in strict callback scope
       if (order!.paymentStatus === 'PAID' && order!.amount) {
-        await tx.user.update({
-          where: { id: order!.creatorId },
-          data: { walletBalance: { increment: order!.amount } }
-        });
 
-        await tx.walletTransaction.create({
-          data: {
-            userId: order!.creatorId,
-            orderId: order!.id,
-            type: 'REFUND',
-            amount: order!.amount
-          }
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order!.id,
+          to: AccountType.CREATOR_WALLET + order!.creatorId,
+          amount: order!.amount,
+          transactionType: 'REFUND',
+          orderId: order!.id,
+          idempotencyKey: `ord_cancel_refund_${order!.id}`,
+          prismaTx: tx
         });
 
         await tx.payment.updateMany({
@@ -567,18 +617,14 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
         });
 
         if (deposit) {
-          await tx.user.update({
-            where: { id: order!.editorId },
-            data: { walletBalance: { increment: deposit.amount } }
-          });
-
-          await tx.walletTransaction.create({
-            data: {
-              userId: order!.editorId,
-              orderId: order!.id,
-              type: 'DEPOSIT_REFUND',
-              amount: deposit.amount
-            }
+          await LedgerService.transfer({
+            from: AccountType.GATEWAY_EXTERNAL,
+            to: AccountType.EDITOR_WALLET + order!.editorId,
+            amount: deposit.amount,
+            transactionType: 'DEPOSIT_REFUND',
+            orderId: order!.id,
+            idempotencyKey: `cancel_dep_refund_${deposit.id}`,
+            prismaTx: tx
           });
         }
       }
@@ -587,63 +633,195 @@ export async function updateOrderStatus(data: UpdateOrderStatusData) {
     });
   }
 
-  // --- Notification Logic for Non-Completion Status Updates ---
-  const notifService = NotificationService.getInstance();
-
-  // 1. Preview Approved (PREVIEW_SUBMITTED -> IN_PROGRESS by CREATOR)
-  if (order.status === 'PREVIEW_SUBMITTED' && data.status === 'IN_PROGRESS' && data.userRole === 'CREATOR' && order.editorId) {
-    await notifService.createAndSend({
-      userId: order!.editorId!,
-      type: 'SYSTEM',
-      title: 'Preview Approved! 🎥',
-      message: 'The creator has approved your preview. Please execute the final render and upload the Final Video.',
-      link: `/editor/jobs/${order.id}`
+  // Update order with Optimistic Locking
+  const updatedOrder = await prisma.$transaction(async (tx) => {
+    // Re-fetch within transaction to get latest version safely
+    const currentOrder = await (tx.order as any).findUnique({
+      where: { id: data.orderId },
+      select: { version: true, status: true }
     });
-  }
 
-  // 2. Revision Requested
-  if (data.status === 'REVISION_REQUESTED' && order.editorId) {
-    await notifService.createAndSend({
-      userId: order!.editorId!,
-      type: 'SYSTEM',
-      title: 'Revision Requested ✏️',
-      message: 'The creator has requested changes. Please check the feedback and upload a new version.',
-      link: `/editor/jobs/${order.id}`
-    });
-  }
-
-  // 3. Preview Submitted (Notify Creator)
-  if (data.status === 'PREVIEW_SUBMITTED' && order.creatorId) {
-    await notifService.createAndSend({
-      userId: order.creatorId,
-      type: 'SYSTEM',
-      title: 'Preview Submitted 🎬',
-      message: 'The editor has submitted a preview. Please review it.',
-      link: `/orders/${order.id}`
-    });
-  }
-
-  // 4. Final Video Submitted (Notify Creator)
-  if (data.status === 'FINAL_SUBMITTED' && order.creatorId) {
-    await notifService.createAndSend({
-      userId: order.creatorId,
-      type: 'SYSTEM',
-      title: 'Final Video Ready 🚀',
-      message: 'The editor has submitted the final video.',
-      link: `/orders/${order.id}`
-    });
-  }
-  // ------------------------------------------------------------
-  const updatedOrder = await prisma.order.update({
-    where: { id: data.orderId },
-    data: updateData,
-    include: {
-      creator: { select: { id: true, name: true, email: true } },
-      editor: { select: { id: true, name: true, email: true } }
+    if (!currentOrder) throw new Error('Order not found');
+    
+    // Concurrent update check
+    if (!canTransitionStatus(currentOrder.status as OrderStatus, data.status, data.userRole)) {
+      throw new Error(`Invalid status transition from ${currentOrder.status} to ${data.status}`);
     }
+
+    const { count } = await (tx.order as any).updateMany({
+      where: { 
+        id: data.orderId,
+        version: currentOrder.version
+      },
+      data: {
+        ...updateData,
+        version: { increment: 1 }
+      }
+    });
+
+    if (count === 0) {
+      throw new Error('Concurrency conflict: Order was updated by another request. Please retry.');
+    }
+
+    return await tx.order.findUnique({
+      where: { id: data.orderId },
+      include: {
+        creator: { select: { id: true, name: true, email: true } },
+        editor: { select: { id: true, name: true, email: true } }
+      }
+    });
   });
 
-  return updatedOrder;
+  return updatedOrder as any;
+}
+
+/**
+ * Handle dynamic penalties for late delivery or ghosting
+ */
+export async function handleGhostingPenalty(orderId: string, severity: 'MINOR' | 'MAJOR') {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: { editor: true }
+    });
+
+    if (!order || !order.editorId) return;
+
+    // Skip if already submitted or completed (Race condition check inside transaction)
+    const validStatuses = ['ASSIGNED', 'IN_PROGRESS', 'REVISION_REQUESTED'];
+    if (!validStatuses.includes(order.status as string)) {
+        console.log(`[Penalty] Order ${orderId} is already in state: ${order.status}. Aborting slash.`);
+        return;
+    }
+
+    // Find Editor Profile for Reputation & Strike Logic
+    const editorProfile = await tx.editorProfile.findUnique({ where: { userId: order.editorId! } });
+    
+    // 1. Activity Check (Avoid False Slash)
+    const recentActivity = await (tx as any).editorActivity.findFirst({
+      where: { 
+        orderId, 
+        createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } // Last 1 hour
+      }
+    });
+
+    if (recentActivity && severity === 'MINOR') {
+        console.log(`[Penalty] Active progress detected for ${orderId}. Extending grace period.`);
+        // Reschedule Minor Penalty by another 2 hours
+        await escrowQueue.add('deadline_slash_minor', { orderId }, { delay: 2 * 60 * 60 * 1000 });
+        return;
+    }
+
+    // 2. Find Editor Deposit
+    const deposit = await tx.editorDeposit.findFirst({
+      where: { orderId, editorId: order.editorId, status: 'PAID' }
+    });
+
+    if (!deposit) return;
+
+    // 3. Graduated Penalty Percent
+    let penaltyPercent = severity === 'MINOR' ? 0.20 : 0.80;
+    
+    // First offence discount (50% off penalty amount)
+    if (editorProfile && (editorProfile as any).strikeCount === 0) {
+        penaltyPercent = penaltyPercent * 0.5;
+        console.log(`[Penalty] Applying First-Time Grace (50% discount) for ${order.editorId}`);
+    }
+
+    let penaltyAmount = Math.round(deposit.amount * penaltyPercent);
+
+    // 4. Compensation Cap (Total Creator payout <= 120% of Order Value)
+    const maxCompensation = (order.amount || 0) * 0.20; // Max bonus is 20%
+    if (penaltyAmount > maxCompensation) {
+        penaltyAmount = Math.round(maxCompensation);
+    }
+
+    if (penaltyAmount > 0) {
+      const { LedgerService, AccountType } = await import('./ledgerService.js');
+
+      // Transfer Penalty (using transaction to prevent race conditions)
+      await LedgerService.transfer({
+        from: AccountType.GATEWAY_EXTERNAL,
+        to: AccountType.CREATOR_WALLET + order.creatorId,
+        amount: penaltyAmount,
+        transactionType: 'GHOSTING_PENALTY',
+        orderId,
+        idempotencyKey: `penalty_${severity}_${orderId}_v${Date.now()}`,
+        prismaTx: tx
+      });
+
+      // Update Editor Profile Metrics
+      await (tx as any).editorProfile.update({
+          where: { userId: order.editorId! },
+          data: {
+              strikeCount: { increment: 1 },
+              totalPenaltyPaid: { increment: penaltyAmount }
+          }
+      });
+
+      // Notify both parties
+      await tx.notification.create({
+        data: {
+          userId: order.creatorId,
+          type: 'SYSTEM',
+          title: `Compensation Received! 💰`,
+          message: `The editor is late. You have been credited ₹${penaltyAmount} as compensation.`,
+          link: `/orders/${orderId}`
+        }
+      });
+
+      await tx.notification.create({
+        data: {
+          userId: order.editorId,
+          type: 'SYSTEM',
+          title: `Penalty Applied ⚠️`,
+          message: `You missed the deadline for "${order.title}". ₹${penaltyAmount} has been deducted. Repeat offences will lead to higher penalties.`,
+          link: `/editor/jobs/${orderId}`
+        }
+      });
+    }
+
+    if (severity === 'MAJOR') {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELLED' }
+      });
+
+      // Refund the rest of the deposit to Editor
+      const remainingDeposit = deposit.amount - penaltyAmount;
+      if (remainingDeposit > 0) {
+        const { LedgerService, AccountType } = await import('./ledgerService.js');
+        await LedgerService.transfer({
+          from: AccountType.GATEWAY_EXTERNAL,
+          to: AccountType.EDITOR_WALLET + order.editorId,
+          amount: remainingDeposit,
+          transactionType: 'DEPOSIT_REFUND',
+          orderId,
+          idempotencyKey: `cancel_remaining_ref_${orderId}`,
+          prismaTx: tx
+        });
+      }
+
+      // Refund Creator's order amount
+      if (order.paymentStatus === 'PAID' && order.amount) {
+        const { LedgerService, AccountType } = await import('./ledgerService.js');
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order.id,
+          to: AccountType.CREATOR_WALLET + order.creatorId,
+          amount: order.amount,
+          transactionType: 'REFUND',
+          orderId,
+          idempotencyKey: `ghost_cancel_refund_${order.id}`,
+          prismaTx: tx
+        });
+      }
+
+      await ReputationService.updateScore(order.editorId!, -30, 'GHOSTING_MAJOR');
+
+    } else {
+        await ReputationService.updateScore(order.editorId!, -5, 'DELAY_MINOR');
+    }
+  });
 }
 
 /**
@@ -680,14 +858,26 @@ export async function assignEditor(
   }
 
   // Perform assignment and notifications in a transaction
-  const { updatedOrder, notification } = await prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
+    // Atomic Row Lock to prevent Race Conditions
+    const lockedOrders = await tx.$queryRawUnsafe<any[]>(
+      `SELECT id FROM "Order" WHERE id = $1 AND status IN ('OPEN', 'APPLIED') FOR UPDATE`,
+      orderId
+    );
+
+    if (!lockedOrders || lockedOrders.length === 0) {
+      throw new Error('Race condition prevented: Order is no longer available for assignment.');
+    }
+
     const updated = await tx.order.update({
       where: { id: orderId },
       data: {
         editorId,
         status: OrderStatus.ASSIGNED,
-        assignedAt: new Date()
-      },
+        assignedAt: new Date(),
+        // Set Milestone Deadline (30% of total duration as default)
+        milestoneDeadline: (order as any).deadline ? new Date(Date.now() + (new Date((order as any).deadline).getTime() - Date.now()) * 0.3) : undefined
+      } as any,
       include: {
         creator: {
           select: { name: true, email: true }
@@ -704,9 +894,30 @@ export async function assignEditor(
         orderId,
         userId: creatorId,
         type: 'SYSTEM',
-        content: `🎉 You have been hired! The project is assigned to @${updated.editor!.name}.`
+        content: `🎉 You have been hired! The project is assigned to @${(updated as any).editor!.name}.`
       }
     });
+
+    // Schedule Dynamic Penalties
+    if (updated.deadline) {
+      const deadlineTime = new Date(updated.deadline).getTime();
+      
+      // 1. Minor Penalty (Deadline + 2h)
+      const minorDelay = deadlineTime - Date.now() + (2 * 60 * 60 * 1000);
+      if (minorDelay > 0) {
+        await escrowQueue.add('deadline_slash_minor', { orderId }, { delay: minorDelay });
+      }
+
+      // 2. Major Penalty (Deadline + 12h)
+      const majorDelay = deadlineTime - Date.now() + (12 * 60 * 60 * 1000);
+      if (majorDelay > 0) {
+        await escrowQueue.add('deadline_slash_major', { orderId }, { delay: majorDelay });
+      }
+    }
+
+    // Generate Digital Contract
+    const { ContractService } = await import('./contractService.js');
+    await ContractService.generateForOrder(orderId);
 
     // Create Notification for Editor
     const notif = await tx.notification.create({
@@ -719,8 +930,10 @@ export async function assignEditor(
       }
     });
 
-    return { updatedOrder: updated, notification: notif };
+    return { updatedOrder: updated as any, notification: notif };
   });
+
+  const { updatedOrder, notification } = txResult;
 
   // Emit Socket Notification to Editor
   NotificationService.getInstance().notifyUser(editorId, notification);
@@ -737,12 +950,12 @@ export async function assignEditor(
       template: 'job-assigned',
       data: {
         orderTitle: updatedOrder.title,
-        creatorName: updatedOrder.creator.name,
+        creatorName: (updatedOrder as any).creator.name,
         amount: updatedOrder.amount,
         deadline: updatedOrder.deadline ? new Date(updatedOrder.deadline).toLocaleDateString() : 'N/A',
         dashboardUrl
       }
-    }).catch(console.error); // Log error but don't fail request
+    } as any).catch(console.error); // Log error but don't fail request
   }
 
   return updatedOrder;
@@ -902,3 +1115,20 @@ export async function deleteOrder(orderId: string, userId: string, userRole: 'CR
   });
 }
 
+/**
+ * Log Editor Activity to prevent false penalties
+ */
+export async function logEditorActivity(orderId: string, userId: string, type: string, metadata?: any) {
+    const profile = await prisma.editorProfile.findUnique({ where: { userId } });
+    if (!profile) return;
+
+    return await (prisma as any).editorActivity.create({
+        data: {
+            orderId,
+            userId,
+            profileId: profile.id,
+            type,
+            metadata: metadata ? JSON.stringify(metadata) : undefined
+        }
+    });
+}

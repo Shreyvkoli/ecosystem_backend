@@ -57,6 +57,10 @@ export interface Order {
   payoutStatus?: string;
   editorDepositRequired?: boolean;
   editorDepositStatus?: string;
+  milestoneDeadline?: string;
+  digitalContractUrl?: string;
+  isDisputed?: boolean;
+  disputeReason?: string;
   creatorId: string;
   editorId?: string;
   createdAt: string;
@@ -332,6 +336,10 @@ export const paymentsApi = {
     api.get<Payment>(`/payments/${id}`),
   adminList: (params?: { status?: string; released?: 'true' | 'false' }) =>
     api.get<any[]>(`/payments/admin/list`, { params }),
+  adminListDisputes: () =>
+    api.get<Order[]>(`/payments/admin/disputes`),
+  resolveDispute: (data: { orderId: string; creatorRefund: number; editorPayout: number; adminNote: string }) =>
+    api.post(`/payments/admin/resolve-dispute`, data),
   release: (paymentId: string, releaseNote?: string) =>
     api.post(`/payments/${paymentId}/release`, { releaseNote }),
 };
@@ -365,6 +373,22 @@ export const withdrawalApi = {
   getPending: () => api.get('/withdrawals/pending'),
   process: (id: string, data: { status: 'PROCESSED' | 'REJECTED'; adminNote?: string }) =>
     api.post(`/withdrawals/${id}/process`, data),
+};
+
+export const kycApi = {
+  submit: (data: { kycIdUrl: string; kycSelfieUrl: string }) => api.post('/kyc/submit', data),
+  status: () => api.get<{ kycStatus: string; kycIdUrl?: string; kycSelfieUrl?: string }>('/kyc/status'),
+  pending: () => api.get<any[]>('/kyc/pending'),
+  approve: (userId: string) => api.patch(`/kyc/${userId}/approve`),
+  reject: (userId: string, reason: string) => api.patch(`/kyc/${userId}/reject`, { reason }),
+};
+
+export const disputeApi = {
+  list: () => api.get<any[]>('/disputes/admin/list'),
+  resolve: (id: string, data: { resolution: 'FAVOR_EDITOR' | 'FAVOR_CREATOR'; note: string }) => 
+    api.post(`/disputes/${id}/resolve`, data),
+  raise: (data: { orderId: string; reason: string; proofUrl?: string }) => 
+    api.post('/disputes/raise', data),
 };
 
 // Add to Users API (Line 336 approx) or update existing block

@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { FileType, OrderStatus } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { escrowQueue } from '../jobs/escrowQueue.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -84,7 +85,13 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
     const version = await getNextVersion(orderId, fileType);
 
     const result = await prisma.$transaction(async (tx) => {
-      const file = await tx.file.create({
+      // Set all previous files of this type to NOT latest
+      await (tx.file as any).updateMany({
+        where: { orderId, type: fileType as any },
+        data: { isLatest: false }
+      });
+
+      const file = await (tx.file as any).create({
         data: {
           orderId,
           type: fileType,
@@ -93,6 +100,7 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
           publicLink,
           externalFileId: externalFileId || 'external',
           version,
+          isLatest: true,
           uploadStatus: 'completed',
           fileSize: fileSize || 0,
           mimeType: mimeType || 'application/octet-stream',
@@ -140,10 +148,27 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
             content: `Final Video submitted: [${fileName}]`
           }
         });
+
+        // Trigger 72-hour Auto-Approve Timer
+        try {
+          await escrowQueue.add(
+            'auto_approve',
+            { orderId },
+            { delay: 72 * 60 * 60 * 1000 }
+          );
+        } catch (e) { console.error('Queue error', e); }
       }
 
       return file;
     });
+
+    // Trigger immediate link verification
+    import('../jobs/storageQueue.js').then(({ storageQueue }) => {
+      storageQueue.add('link_verification', { fileId: result.id }, {
+        removeOnComplete: true,
+        removeOnFail: true
+      });
+    }).catch(console.error);
 
     return res.json(result);
   } catch (error: any) {
@@ -175,6 +200,19 @@ router.get('/:id/download-url', authenticate, async (req: AuthRequest, res: Resp
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Role-based raw footage protection (re-enforce from service)
+    if (req.userRole === 'EDITOR' && file.type === FileType.RAW_VIDEO) {
+      const isAssigned = file.order.editorId === req.userId!;
+      const isDepositPaid = (file.order as any).editorDepositStatus === 'PAID';
+      const isDepositRequired = (file.order as any).editorDepositRequired ?? true;
+      if (!isAssigned || (isDepositRequired && !isDepositPaid)) {
+        return res.status(403).json({ error: 'Access denied: Deposit required for raw footage' });
+      }
+    }
+
+    // Audit Logging: Track WHO accessed WHAT and WHEN
+    console.log(`[FileAudit] User ${req.userId} accessed ${file.type} (v${file.version}) for Order ${file.orderId}`);
+
     // For Zero Storage, simply return the public link
     const downloadUrl = file.publicLink;
 
@@ -184,12 +222,100 @@ router.get('/:id/download-url', authenticate, async (req: AuthRequest, res: Resp
 
     return res.json({
       downloadUrl,
-      expiresIn: 0, // 0 indicates it's a permanent/external link
+      expiresIn: 0,
       fileName: file.fileName,
-      contentType: file.mimeType || 'application/octet-stream'
+      contentType: file.mimeType || 'application/octet-stream',
+      version: file.version,
+      verificationStatus: (file as any).verificationStatus
     });
   } catch (error: any) {
     console.error('Download URL error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+/**
+ * PATCH /api/files/:id
+ * Update a file link (typically for recovery if a link breaks)
+ */
+router.patch('/:id', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const schema = z.object({
+      publicLink: z.string().url(),
+      fileName: z.string().optional()
+    });
+
+    const { publicLink, fileName } = schema.parse(req.body);
+
+    const file = await prisma.file.findUnique({
+      where: { id: req.params.id },
+      include: { order: true }
+    });
+
+    if (!file) return res.status(404).json({ error: 'File not found' });
+
+    // Permissions
+    if (file.order.creatorId !== req.userId && file.order.editorId !== req.userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const updated = await (prisma.file as any).update({
+      where: { id: file.id },
+      data: {
+        publicLink,
+        fileName: fileName || file.fileName,
+        verificationStatus: 'PENDING', // Re-verify immediately
+        lastError: null
+      }
+    });
+
+    // Trigger immediate re-verification
+    import('../jobs/storageQueue.js').then(({ storageQueue }) => {
+      storageQueue.add('link_verification', { fileId: updated.id }, {
+        removeOnComplete: true,
+        removeOnFail: true
+      });
+    }).catch(console.error);
+
+    return res.json(updated);
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/files/:id/set-latest
+ * Manually set a version as the 'Latest' (Rollback logic)
+ */
+router.patch('/:id/set-latest', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const file = await prisma.file.findUnique({
+      where: { id: req.params.id },
+      include: { order: true }
+    });
+
+    if (!file) return res.status(404).json({ error: 'File not found' });
+
+    // Only Admin or the Creator/Editor of the order can do this
+    if (file.order.creatorId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    await prisma.$transaction([
+      (prisma.file as any).updateMany({
+        where: { orderId: file.orderId, type: file.type },
+        data: { isLatest: false }
+      }),
+      (prisma.file as any).update({
+        where: { id: file.id },
+        data: { isLatest: true }
+      })
+    ]);
+
+    return res.json({ success: true, fileId: file.id });
+  } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

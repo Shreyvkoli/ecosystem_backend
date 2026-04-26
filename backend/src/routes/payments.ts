@@ -3,10 +3,13 @@ import { PrismaClient } from '@prisma/client';
 import { PaymentStatus } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest, requireCreator, requireAdmin } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { getRazorpay, verifyPaymentSignature, verifyWebhookSignature } from '../utils/razorpay.js';
 import { getStripe } from '../utils/stripe.js';
+import { LedgerService, AccountType } from '../services/ledgerService.js';
 
 const router = express.Router();
+router.use(idempotencyMiddleware);
 const prisma = new PrismaClient();
 
 function getGatewayFromCountryCode(countryCode?: string | null): 'RAZORPAY' | 'STRIPE' {
@@ -97,6 +100,7 @@ router.post('/create-order', authenticate, requireCreator, async (req: AuthReque
       const razorpayOrder = await razorpay.orders.create({
         amount: toMinorAmount(order.amount, 'INR'),
         currency: 'INR',
+        payment_capture: true,
         receipt: `ord_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
         notes: {
           orderId,
@@ -134,43 +138,7 @@ router.post('/create-order', authenticate, requireCreator, async (req: AuthReque
       });
     }
 
-    const stripe = getStripe();
-    const intent = await stripe.paymentIntents.create({
-      amount: toMinorAmount(order.amount, currency),
-      currency: currency.toLowerCase(),
-      automatic_payment_methods: { enabled: true },
-      metadata: {
-        orderId,
-        userId: req.userId!,
-        kind: 'CREATOR_PAYMENT'
-      }
-    });
-
-    const payment = await prisma.payment.create({
-      data: {
-        orderId,
-        userId: req.userId!,
-        amount: order.amount,
-        currency,
-        status: PaymentStatus.PROCESSING,
-        stripePaymentIntentId: intent.id,
-        gateway: 'STRIPE' as any,
-        kind: 'CREATOR_PAYMENT' as any
-      } as any
-    });
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { paymentGateway: 'STRIPE' as any, paymentStatus: 'PENDING' as any } as any
-    });
-
-    return res.json({
-      gateway: 'stripe',
-      paymentId: payment.id,
-      clientSecret: intent.client_secret,
-      currency,
-      amount: order.amount
-    });
+    return res.status(400).json({ error: 'Only Razorpay (INR) is supported at this time' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -283,6 +251,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
         const razorpayOrder = await razorpay.orders.create({
           amount: toMinorAmount(depositAmount, 'INR'),
           currency: 'INR',
+          payment_capture: true,
           // Receipt max length is 40. UUID is 36. So we must shorten it.
           // Using 'dep_' + first 10 of order + last 10 of timestamp
           receipt: `dep_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
@@ -332,42 +301,7 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
       });
     }
 
-    const stripe = getStripe();
-    const intent = await stripe.paymentIntents.create({
-      amount: toMinorAmount(depositAmount, depositCurrency),
-      currency: depositCurrency.toLowerCase(),
-      automatic_payment_methods: { enabled: true },
-      metadata: {
-        orderId,
-        userId: req.userId!,
-        kind: 'EDITOR_DEPOSIT'
-      }
-    });
-
-    const deposit = await (prisma as any).editorDeposit.create({
-      data: {
-        orderId,
-        editorId: req.userId!,
-        amount: depositAmount,
-        currency: depositCurrency,
-        gateway: 'STRIPE',
-        status: 'PENDING',
-        stripePaymentIntentId: intent.id
-      }
-    });
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { editorDepositStatus: 'PENDING' as any } as any
-    });
-
-    return res.json({
-      gateway: 'stripe',
-      editorDepositId: deposit.id,
-      clientSecret: intent.client_secret,
-      amount: depositAmount,
-      currency: depositCurrency
-    });
+    return res.status(400).json({ error: 'Only Razorpay (INR) is supported at this time' });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
@@ -437,22 +371,46 @@ router.post('/editor-deposit/verify', authenticate, async (req: AuthRequest, res
       }
     }
 
-    const updated = await (prisma as any).editorDeposit.update({
-      where: { id: deposit.id },
-      data: {
-        razorpayPaymentId,
-        razorpaySignature,
-        status: 'PAID',
-        processedAt: new Date()
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. Ledger Transfer
+        await LedgerService.transfer({
+          from: AccountType.GATEWAY_EXTERNAL,
+          to: AccountType.ESCROW_HOLDING + deposit.orderId,
+          amount: deposit.amount,
+          transactionType: 'EDITOR_DEPOSIT_LOCK',
+          orderId: deposit.orderId,
+          idempotencyKey: `ed_deposit_${deposit.id}`,
+          prismaTx: tx
+        });
+
+        // 2. Update Deposit
+        const updatedDeposit = await (tx as any).editorDeposit.update({
+          where: { id: deposit.id },
+          data: {
+            razorpayPaymentId,
+            razorpaySignature,
+            status: 'PAID',
+            processedAt: new Date()
+          }
+        });
+
+        // 3. Update Order
+        await tx.order.update({
+          where: { id: updatedDeposit.orderId },
+          data: { editorDepositStatus: 'PAID' as any } as any
+        });
+
+        return updatedDeposit;
+      });
+
+      return res.json({ success: true, deposit: result });
+    } catch (error: any) {
+      if (error.message?.includes('duplicate key')) {
+        return res.json({ success: true, message: 'Deposit already processed' });
       }
-    });
-
-    await prisma.order.update({
-      where: { id: updated.orderId },
-      data: { editorDepositStatus: 'PAID' as any } as any
-    });
-
-    return res.json({ success: true, deposit: updated });
+      throw error;
+    }
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
@@ -540,33 +498,52 @@ router.post('/verify', authenticate, requireCreator, async (req: AuthRequest, re
       }
     }
 
-    // Update payment record - mark as COMPLETED (paid but not released)
-    const updated = await prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        razorpayPaymentId,
-        razorpaySignature,
-        status: PaymentStatus.COMPLETED,
-        processedAt: new Date()
-      },
-      include: {
-        order: {
-          select: {
-            id: true,
-            title: true
+    // Update payment, order and ledger in one transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Ledger Transfer
+      await LedgerService.transfer({
+        from: AccountType.GATEWAY_EXTERNAL,
+        to: AccountType.ESCROW_HOLDING + payment.orderId,
+        amount: payment.amount,
+        transactionType: 'DEPOSIT',
+        orderId: payment.orderId,
+        idempotencyKey: `deposit_${payment.id}`,
+        prismaTx: tx
+      });
+
+      // 2. Update Payment
+      const updatedPayment = await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          razorpayPaymentId,
+          razorpaySignature,
+          status: PaymentStatus.COMPLETED,
+          processedAt: new Date()
+        },
+        include: {
+          order: {
+            select: {
+              id: true,
+              title: true
+            }
           }
         }
-      }
+      });
+
+      // 3. Update Order
+      await tx.order.update({
+        where: { id: payment.orderId },
+        data: {
+          paymentGateway: 'RAZORPAY' as any,
+          paymentStatus: 'PAID' as any,
+          payoutStatus: 'PENDING' as any
+        } as any
+      });
+
+      return updatedPayment;
     });
 
-    await prisma.order.update({
-      where: { id: payment.orderId },
-      data: {
-        paymentGateway: 'RAZORPAY' as any,
-        paymentStatus: 'PAID' as any,
-        payoutStatus: 'PENDING' as any
-      } as any
-    });
+    const updated = result;
 
     // --- Notification Logic ---
     const { NotificationService } = await import('../services/notificationService.js');
@@ -662,6 +639,17 @@ router.post('/webhook', async (req, res) => {
       });
 
       if (payment && payment.status === PaymentStatus.PENDING) {
+        try {
+          await LedgerService.transfer({
+            from: AccountType.GATEWAY_EXTERNAL,
+            to: AccountType.ESCROW_HOLDING + payment.orderId,
+            amount: payment.amount,
+            transactionType: 'DEPOSIT',
+            orderId: payment.orderId,
+            idempotencyKey: `deposit_${payment.id}`
+          });
+        } catch (e) { }
+
         await prisma.payment.update({
           where: { id: payment.id },
           data: {
@@ -684,6 +672,17 @@ router.post('/webhook', async (req, res) => {
         where: { razorpayOrderId: orderId }
       } as any);
       if (deposit && (deposit as any).status === 'PENDING') {
+        try {
+          await LedgerService.transfer({
+            from: AccountType.GATEWAY_EXTERNAL,
+            to: AccountType.ESCROW_HOLDING + (deposit as any).orderId,
+            amount: (deposit as any).amount,
+            transactionType: 'EDITOR_DEPOSIT_LOCK',
+            orderId: (deposit as any).orderId,
+            idempotencyKey: `ed_deposit_${(deposit as any).id}`
+          });
+        } catch (e) { }
+
         await (prisma as any).editorDeposit.update({
           where: { id: (deposit as any).id },
           data: {
@@ -1045,6 +1044,246 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Get payment error:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/payments/dispute
+ * Freeze an order when a dispute is raised
+ */
+router.post('/dispute', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const schema = z.object({
+      orderId: z.string().uuid(),
+      reason: z.string().min(5)
+    });
+    const { orderId, reason } = schema.parse(req.body);
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) return res.status(404).json({ error: 'Not found' });
+
+    if (order.creatorId !== req.userId && order.editorId !== req.userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if ((order as any).isDisputed) {
+      return res.status(400).json({ error: 'Order already disputed' });
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'DISPUTED' as any,
+        isDisputed: true,
+        disputeReason: reason,
+        disputeCreatedAt: new Date()
+      } as any
+    });
+
+    return res.json({ success: true, order: updated });
+  } catch (e) {
+    console.error("Dispute error:", e);
+    return res.status(500).json({ error: 'Server err' });
+  }
+});
+
+/**
+ * POST /api/payments/dispute/resolve
+ * Admin split payout execution
+ */
+router.post('/dispute/resolve', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const schema = z.object({
+      orderId: z.string().uuid(),
+      creatorPercentage: z.number().min(0).max(100),
+      editorPercentage: z.number().min(0).max(100)
+    });
+    const { orderId, creatorPercentage, editorPercentage } = schema.parse(req.body);
+
+    if (creatorPercentage + editorPercentage !== 100) {
+      return res.status(400).json({ error: 'Percentages must sum to 100' });
+    }
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.status !== 'DISPUTED') {
+      return res.status(400).json({ error: 'Order not found or not disputed' });
+    }
+
+    const totalPool = order.amount || 0;
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Admin split logic using immutable LedgerService
+      const creatorRefund = (totalPool * creatorPercentage) / 100;
+      const editorPayout = (totalPool * editorPercentage) / 100;
+
+      if (creatorRefund > 0) {
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + orderId,
+          to: AccountType.CREATOR_WALLET + order.creatorId,
+          amount: creatorRefund,
+          transactionType: 'DISPUTE_REFUND',
+          orderId: orderId,
+          idempotencyKey: `disp_ref_${orderId}`,
+          prismaTx: tx
+        });
+      }
+
+      if (editorPayout > 0 && order.editorId) {
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + orderId,
+          to: AccountType.EDITOR_WALLET + order.editorId,
+          amount: editorPayout,
+          transactionType: 'DISPUTE_PAYOUT',
+          orderId: orderId,
+          idempotencyKey: `disp_pay_${orderId}`,
+          prismaTx: tx
+        });
+      }
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'COMPLETED' as any,
+          completedAt: new Date()
+        } as any
+      });
+    });
+
+    return res.json({ success: true, order: result });
+  } catch (e: any) {
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+/**
+ * GET /api/payments/admin/disputes
+ * Admin fetches all orders currently in dispute
+ */
+router.get('/admin/disputes', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const disputes = await prisma.order.findMany({
+      where: { isDisputed: true },
+      include: {
+        creator: { select: { name: true, email: true } },
+        editor: { select: { name: true, email: true } }
+      }
+    });
+    return res.json(disputes);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to fetch disputes' });
+  }
+});
+
+/**
+ * POST /api/payments/admin/resolve-dispute
+ * Admin manually resolves an escrow dispute with a custom split
+ */
+router.post('/admin/resolve-dispute', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const schema = z.object({
+      orderId: z.string().uuid(),
+      creatorRefund: z.number().min(0),
+      editorPayout: z.number().min(0),
+      adminNote: z.string()
+    });
+
+    const { orderId, creatorRefund, editorPayout, adminNote } = schema.parse(req.body);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order || !order.isDisputed) {
+      return res.status(400).json({ error: 'Order not found or not in dispute' });
+    }
+
+    if (!order.amount || creatorRefund + editorPayout > order.amount) {
+      return res.status(400).json({ error: 'Total split exceeds order escrow amount' });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Creator Refund
+      if (creatorRefund > 0) {
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order.id,
+          to: AccountType.CREATOR_WALLET + order.creatorId,
+          amount: creatorRefund,
+          transactionType: 'DISPUTE_REFUND',
+          orderId: order.id,
+          idempotencyKey: `dispute_refund_${order.id}`,
+          prismaTx: tx
+        });
+      }
+
+      // 2. Editor Payout
+      if (editorPayout > 0 && order.editorId) {
+        await LedgerService.transfer({
+          from: AccountType.ESCROW_HOLDING + order.id,
+          to: AccountType.EDITOR_WALLET + order.editorId,
+          amount: editorPayout,
+          transactionType: 'DISPUTE_PAYOUT',
+          orderId: order.id,
+          idempotencyKey: `dispute_payout_${order.id}`,
+          prismaTx: tx
+        });
+      }
+
+      // 3. Close Order
+      const updatedOrder = await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: 'COMPLETED',
+          isDisputed: false,
+          disputeReason: `RESOLVED: ${adminNote}`
+        }
+      });
+
+      return updatedOrder;
+    });
+
+    return res.json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: error.errors });
+    console.error('Resolve Dispute Error:', error);
+    return res.status(500).json({ error: 'Resolution failed' });
+  }
+});
+
+/**
+ * GET /api/payments/admin/audit
+ * Admin liquidity audit to verify system-wide financial integrity
+ */
+router.get('/admin/audit', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const [wallets, locked, escrowEntries, platformRevenue] = await Promise.all([
+      prisma.user.aggregate({ _sum: { walletBalance: true } }),
+      prisma.user.aggregate({ _sum: { walletLocked: true } }),
+      (prisma as any).ledgerEntry.aggregate({
+        where: { accountTo: { startsWith: 'ESCROW_' } },
+        _sum: { amount: true }
+      }),
+      (prisma as any).ledgerEntry.aggregate({
+        where: { accountTo: 'PLATFORM_REVENUE' },
+        _sum: { amount: true }
+      })
+    ]);
+
+    const totalSystemLiquidity =
+      (wallets._sum.walletBalance || 0) +
+      (locked._sum.walletLocked || 0) +
+      (escrowEntries._sum.amount || 0);
+
+    return res.json({
+      walletsTotal: wallets._sum.walletBalance || 0,
+      lockedTotal: locked._sum.walletLocked || 0,
+      escrowTotal: escrowEntries._sum.amount || 0,
+      platformRevenue: platformRevenue._sum.amount || 0,
+      totalSystemLiquidity,
+      checkTimestamp: new Date()
+    });
+  } catch (error: any) {
+    console.error('Audit Error:', error);
+    return res.status(500).json({ error: 'Audit failed' });
   }
 });
 

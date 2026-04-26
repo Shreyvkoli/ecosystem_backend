@@ -18,9 +18,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Aurora Background */}
-      <div className="aurora-bg"></div>
+    <div className="relative min-h-screen bg-white">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         <header className="flex items-center justify-between">
@@ -32,22 +30,20 @@ export default function Home() {
               <Link
                 key={item}
                 href={`/${item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                className="text-gray-600 hover:text-indigo-600 transition-colors font-medium text-sm hover-lift"
+                className="text-gray-600 hover:text-brand transition-colors font-semibold text-sm"
               >
                 {item}
               </Link>
             ))}
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm hover:underline">
-              Login
+          <div className="flex items-center gap-6">
+            <Link href="/login" className="text-gray-600 hover:text-charcoal font-bold text-sm">
+              Log In
             </Link>
-            <Magnetic strength={0.25}>
-              <Link href="/register" className="glass-morphism px-5 py-2.5 text-gray-900 hover:text-indigo-600 border-gray-200 hover:border-indigo-200 text-sm font-semibold whitespace-nowrap transition-all shadow-sm hover:shadow-md">
-                Join Now
-              </Link>
-            </Magnetic>
+            <Link href="/register" className="btn-primary min-w-[120px] py-2 px-6 text-sm">
+              Sign Up
+            </Link>
           </div>
         </header>
 
@@ -63,17 +59,14 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/40 border border-indigo-100 backdrop-blur-md text-sm font-medium text-indigo-900 shadow-sm"
+              className="inline-flex items-center px-4 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-sm font-bold text-brand uppercase tracking-wider"
             >
-              <span className="w-2 h-2 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
-              India's Most Reliable Video Editing Marketplace
+              India's #1 Video Editing Marketplace
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
-              Hire vetted Indian editors.
-              <span className="block text-gradient-primary mt-2">
-                Review with Timestamp Feedback.
-              </span>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-charcoal leading-[1.05] tracking-tight">
+              Hire vetted <br />
+              <span className="text-brand">video editors.</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-600 max-w-xl leading-relaxed">
@@ -95,7 +88,7 @@ export default function Home() {
               {/* Apply as Editor Button */}
               <div className="flex flex-col w-full sm:w-auto">
                 <Magnetic strength={0.35} className="w-full sm:w-auto">
-                  <Link href="/register?role=EDITOR" className="btn-secondary w-full sm:w-auto text-lg hover:text-indigo-700">
+                  <Link href="/register?role=EDITOR" className="btn-secondary w-full sm:w-auto text-lg hover:text-brand-dark">
                     Apply as Editor
                   </Link>
                 </Magnetic>
@@ -136,11 +129,11 @@ export default function Home() {
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
                 key={i}
-                className="glass-card p-8 hover:bg-white/90"
+                className="pro-card hover:bg-gray-50/50"
               >
-                <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                <div className="text-4xl mb-6">{feature.icon}</div>
+                <h3 className="text-2xl font-bold text-charcoal mb-4">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-lg">{feature.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -148,32 +141,31 @@ export default function Home() {
 
         {/* CTA Section */}
         <div className="mt-32 mb-20">
-          <div className="glass-morphism p-10 md:p-16 rounded-3xl relative overflow-hidden text-center">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 z-0"></div>
-            <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900">Ready to streamline your video production?</h2>
-              <p className="text-xl text-gray-600">Join 100+ creators and editors shipping content daily.</p>
+          <div className="bg-charcoal p-10 md:p-20 rounded-[32px] relative overflow-hidden text-center shadow-2xl">
+            <div className="relative z-10 max-w-3xl mx-auto space-y-10">
+              <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">Ready to streamline your video production?</h2>
+              <p className="text-xl text-gray-300">Join 100+ creators and editors shipping content daily.</p>
 
               <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
                 <Link
                   href="/register?role=CREATOR"
-                  className="premium-button-green text-lg px-8 py-4 shadow-xl shadow-green-500/20"
+                  className="btn-primary text-xl px-12 py-5 shadow-xl shadow-brand/20"
                 >
                   Start Hiring Now
                 </Link>
               </div>
-              <p className="text-sm text-gray-400">No credit card required for signup</p>
+              <p className="text-sm text-gray-400 font-medium">No credit card required for signup</p>
             </div>
           </div>
         </div>
 
         {/* Footer Links */}
         <footer className="mt-20 border-t border-gray-200 py-10">
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500 font-medium">
-            <Link href="/legal/terms" className="hover:text-indigo-600 transition-colors">Terms of Service</Link>
-            <Link href="/legal/privacy" className="hover:text-indigo-600 transition-colors">Privacy Policy</Link>
-            <Link href="/legal/refund" className="hover:text-indigo-600 transition-colors">Refund Policy</Link>
-            <Link href="/contact" className="hover:text-indigo-600 transition-colors">Support</Link>
+          <div className="flex flex-wrap justify-center gap-10 text-sm text-gray-500 font-semibold">
+            <Link href="/legal/terms" className="hover:text-brand transition-colors">Terms of Service</Link>
+            <Link href="/legal/privacy" className="hover:text-brand transition-colors">Privacy Policy</Link>
+            <Link href="/legal/refund" className="hover:text-brand transition-colors">Refund Policy</Link>
+            <Link href="/contact" className="hover:text-brand transition-colors">Support</Link>
           </div>
           <div className="text-center text-xs text-gray-400 mt-8">
             © {new Date().getFullYear()} Cutflow. Built for the Indian Creator Economy.

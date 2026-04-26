@@ -74,4 +74,30 @@ router.patch('/read-all', async (req: AuthRequest, res) => {
     }
 });
 
+/**
+ * GET /api/notifications/sync
+ * Fetch all unread notifications since a specific date (Sync-on-Reconnect)
+ */
+router.get('/sync', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const since = req.query.since ? new Date(req.query.since as string) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        const missed = await prisma.notification.findMany({
+            where: {
+                userId: req.userId,
+                OR: [
+                    { isRead: false },
+                    { createdAt: { gt: since } }
+                ]
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
+
+        return res.json(missed);
+    } catch (e) {
+        return res.status(500).json({ error: 'Sync failed' });
+    }
+});
+
 export default router;

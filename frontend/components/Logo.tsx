@@ -24,14 +24,14 @@ export default function Logo({
   const gradId = `${id}-cutflow-grad`
 
   const content = (
-    <span className={className ?? 'inline-flex items-center gap-2'}>
-      <div className="bg-white shadow-md p-1.5 rounded-full flex items-center justify-center overflow-hidden">
+    <span className={className ?? 'inline-flex items-center gap-3'}>
+      <div className="flex items-center justify-center overflow-hidden">
         <img
-          src="/cutflow-logo.png"
+          src="/cutflow-logo-green.png"
           alt="Cutflow Logo"
-          width={size}
-          height={size}
-          className={`object-contain scale-125 mix-blend-multiply ${iconClassName || ''}`}
+          width={size + 8}
+          height={size + 8}
+          className={`object-contain ${iconClassName || ''}`}
         />
       </div>
 
@@ -39,7 +39,7 @@ export default function Logo({
         <span
           className={
             wordmarkClassName ??
-            'text-2xl font-extrabold text-gray-900 tracking-tight'
+            'text-2xl font-bold text-charcoal tracking-tight'
           }
         >
           Cutflow

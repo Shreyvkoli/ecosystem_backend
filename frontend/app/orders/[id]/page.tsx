@@ -22,6 +22,7 @@ import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import SaveEditorButton from '@/components/SaveEditorButton'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
+import { FileText, Clock, Calendar } from 'lucide-react'
 
 export default function OrderDetailPage() {
   const router = useRouter()
@@ -426,6 +427,34 @@ export default function OrderDetailPage() {
                   <p>Creator: {order.creator?.name}</p>
                   {order.editor && <p>Editor: {order.editor.name}</p>}
                 </div>
+
+                {/* Accountability Section for Creator */}
+                {(order.digitalContractUrl || order.milestoneDeadline) && (
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Accountability</h4>
+                    <div className="space-y-2">
+                        {order.digitalContractUrl && (
+                            <a 
+                                href={order.digitalContractUrl} 
+                                target="_blank" 
+                                className="flex items-center text-xs text-blue-600 hover:underline font-medium"
+                            >
+                                <FileText className="w-3 h-3 mr-1" />
+                                Signed Digital Contract
+                            </a>
+                        )}
+                        {order.milestoneDeadline && order.status === 'ASSIGNED' && (
+                            <div className="flex items-center text-xs text-orange-600 font-medium">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Next Milestone: {new Date(order.milestoneDeadline).toLocaleTimeString()}
+                            </div>
+                        )}
+                        <div className="text-[10px] text-gray-400 italic leading-tight">
+                            * Platform ensures editor accountability via 80% stake penalty for ghosting.
+                        </div>
+                    </div>
+                  </div>
+                )}
 
                 {user.role === 'CREATOR' && (order.status === 'OPEN' || order.status === 'APPLIED') && (
                   <div className="mt-4 pt-3 border-t border-gray-100">

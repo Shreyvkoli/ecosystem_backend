@@ -25,11 +25,29 @@ router.post('/request', authenticate, requireRole(['EDITOR']), async (req: AuthR
 
         // Check Balance using Transaction to ensure consistency
         const result = await prisma.$transaction(async (tx) => {
-            const user = await tx.user.findUnique({ where: { id: userId } });
+            const user = await tx.user.findUnique({ 
+                where: { id: userId },
+                include: { editorProfile: { select: { kycStatus: true } } }
+            });
             if (!user) throw new Error("User not found");
 
-            if (user.walletBalance < amount) {
-                throw new Error("Insufficient wallet balance");
+            // Calculate Cleared Balance (Anti-Fraud Buffer)
+            // Only funds older than 48 hours or marked as cleared are withdrawable
+            const transactions = await (tx as any).walletTransaction.findMany({
+                where: { 
+                    userId, 
+                    isCleared: true,
+                    type: { in: ['ORDER_PAYMENT', 'BONUS'] } 
+                }
+            });
+            const clearedAmount = transactions.reduce((acc: number, t: any) => acc + t.amount, 0);
+
+            // Also account for debits (penalties/withdrawals) which aren't "cleared" but reduce balance immediately
+            const totalBalance = user.walletBalance;
+            const withdrawableLimit = Math.min(totalBalance, clearedAmount);
+
+            if (withdrawableLimit < amount) {
+                throw new Error(`Insufficient withdrawable balance. (Cleared: ₹${withdrawableLimit}, Total: ₹${totalBalance}). Payouts have a 48h fraud-prevention lock.`);
             }
 
             // Deduct balance and Lock it
@@ -121,10 +139,17 @@ router.post('/:id/process', authenticate, requireRole(['ADMIN']), async (req: Au
             if (request.status !== 'PENDING') throw new Error("Request already processed");
 
             if (status === 'PROCESSED') {
-                // Funds already locked. Simply mark processed.
-                // Reset locked amount? No, 'walletLocked' represents funds currently in limbo OR funds withdrawn?
-                // Usually 'walletLocked' implies "Pending Withdrawal". Once processed, it leaves the system.
-                // So: walletLocked -= amount. 
+                // Deduct from Wallet Locked via Ledger
+                const { LedgerService, AccountType } = await import('../services/ledgerService.js');
+
+                await LedgerService.transfer({
+                    from: AccountType.GATEWAY_EXTERNAL, // Or Nodal account
+                    to: AccountType.PLATFORM_REVENUE, // Placeholder for disbursement
+                    amount: request.amount,
+                    transactionType: 'WITHDRAWAL',
+                    idempotencyKey: `withdraw_${request.id}`,
+                    prismaTx: tx
+                });
 
                 await tx.user.update({
                     where: { id: request.userId },
@@ -132,18 +157,6 @@ router.post('/:id/process', authenticate, requireRole(['ADMIN']), async (req: Au
                         walletLocked: { decrement: request.amount }
                     }
                 });
-
-                // Create WalletTransaction record of type 'WITHDRAWAL'
-                await tx.walletTransaction.create({
-                    data: {
-                        userId: request.userId,
-                        type: 'WITHDRAWAL',
-                        amount: -request.amount, // Negative or Positive? Usually tracking flow. 
-                        // Let's keep it negative to show outflow in history? Logic usually dictates 'Credit/Debit'. 
-                        // Let's use negative for outflow.
-                    }
-                });
-
             } else {
                 // REJECTED
                 // Refund: walletLocked -= amount, walletBalance += amount

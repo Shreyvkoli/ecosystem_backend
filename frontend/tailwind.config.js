@@ -7,7 +7,21 @@ module.exports = {
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          DEFAULT: '#108a00',
+          dark: '#0d7600',
+          light: '#d4f2d4',
+        },
+        charcoal: '#181818',
+        'soft-gray': '#f9f9f9',
+      },
+      borderRadius: {
+        'xl': '12px',
+        '2xl': '16px',
+      }
+    },
   },
   plugins: [],
 }

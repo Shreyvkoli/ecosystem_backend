@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { authenticate, AuthRequest, requireAdmin } from '../middleware/auth.js';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -47,10 +47,12 @@ router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
     }
 
     // Return public profile information
+    const isOwnerOrAdmin = req.userId === user.id || req.userRole === 'ADMIN';
+
     const profile = {
       id: user.id,
       name: user.name,
-      email: user.email,
+      email: isOwnerOrAdmin ? user.email : user.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Mask email for others
       role: user.role,
       ...(user.editorProfile && {
         bio: user.editorProfile.bio,
@@ -337,6 +339,74 @@ router.get('/:id/availability', async (req: AuthRequest, res: Response) => {
 
   } catch (error: any) {
     console.error('Get availability error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/users/kyc/verify-portfolio
+ * Editor submits portfolio for verification review
+ */
+router.post('/kyc/verify-portfolio', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || req.userRole !== 'EDITOR') {
+      return res.status(403).json({ error: 'Only Editors can submit for verification' });
+    }
+
+    const schema = z.object({
+      portfolioLinks: z.array(z.string().url()).min(1, "At least one portfolio link is required"),
+      description: z.string().min(20, "Please provide a brief description of your experience")
+    });
+
+    const { portfolioLinks, description } = schema.parse(req.body);
+
+    // Update Editor Profile with pending flag or similar
+    // For now, we'll just log it or add a internal note
+    await (prisma as any).editorProfile.update({
+      where: { userId: req.userId },
+      data: {
+        portfolio: portfolioLinks.join(','),
+        bio: `${description}`
+      }
+    });
+
+    // Notify Admins (Future: Add a Review Queue record)
+    console.log(`[KYC] User ${req.userId} submitted for verification.`);
+
+    return res.json({ message: 'Verification request submitted. Admin will review your portfolio.' });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: error.errors });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/users/:userId/verify
+ * Admin approves or rejects verification
+ */
+router.patch('/:userId/verify', requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+
+    const { userId } = req.params;
+    const { isVerified, reliabilityScore } = z.object({
+      isVerified: z.boolean(),
+      reliabilityScore: z.number().min(0).max(100).optional()
+    }).parse(req.body);
+
+    const updatedUser = await (prisma.user as any).update({
+      where: { id: userId },
+      data: {
+        isVerified,
+        reliabilityScore: reliabilityScore ?? undefined
+      }
+    });
+
+    return res.json({
+      message: `User verification updated to ${isVerified}`,
+      user: { id: updatedUser.id, isVerified: updatedUser.isVerified }
+    });
+  } catch (error: any) {
+    console.error('Verify user error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

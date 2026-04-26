@@ -33,6 +33,8 @@ model WalletTransaction {
   type      String
   amount    Float
   createdAt DateTime              @default(now())
+  isCleared Boolean               @default(false)
+  clearedAt DateTime?
   order     Order?                @relation("OrderWalletTransactions", fields: [orderId], references: [id], onDelete: Cascade)
   user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -48,6 +50,8 @@ model User {
   password           String
   name               String
   role               String
+  isVerified         Boolean             @default(false)
+  reliabilityScore   Int                 @default(100) // 0 to 100
   countryCode        String              @default("IN")
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -112,7 +116,23 @@ model EditorProfile {
   updatedAt DateTime @updatedAt
   available Boolean  @default(true)
   maxSlots  Int      @default(2)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Reputation & Performance
+  rating          Float    @default(0)
+  totalReviews    Int      @default(0)
+  completedOrders Int      @default(0)
+  strikeCount     Int      @default(0) // For graduated penalties
+  totalPenaltyPaid Float    @default(0)
+  monthlyDisputeCount Int     @default(0)
+  lastDisputeAt      DateTime?
+
+  // KYC Fields
+  kycStatus       String   @default("NOT_STARTED") // NOT_STARTED, PENDING, VERIFIED, REJECTED
+  kycIdUrl        String?
+  kycSelfieUrl    String?
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities      EditorActivity[]
 
   @@index([userId])
 }
@@ -123,6 +143,7 @@ model Order {
   description        String?
   brief              String?
   status             String              @default("OPEN")
+  riskLevel          String              @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
   amount             Float?
   currency           String              @default("INR")
   paymentGateway     String?
@@ -141,9 +162,13 @@ model Order {
   deadline           DateTime?
   assignedAt         DateTime?
   autoCancelAt       DateTime?
+  autoApproveAt      DateTime? // After delivery, creator has 48h to respond
+  autoApproveAtSet   Boolean   @default(false)
+  refundIdempotencyKey String?   @unique
   inProgressAt       DateTime?
   lastActivityAt     DateTime?
   revisionCount      Int                 @default(0)
+  version            Int                 @default(1)
 
   // New Detailed Fields
   rawFootageDuration Float?              // in minutes
@@ -158,12 +183,20 @@ model Order {
   payments           Payment[]
   editorDeposits     EditorDeposit[]
   walletTransactions WalletTransaction[] @relation("OrderWalletTransactions")
+  ledgerEntries      LedgerEntry[]
   reviews            Review[]
   
   // Dispute fields
   isDisputed         Boolean             @default(false)
   disputeReason      String?
   disputeCreatedAt   DateTime? 
+
+  // Accountability & Contracts
+  digitalContractUrl String?
+  milestoneDeadline  DateTime?
+  
+  disputes           Dispute[]
+  activities         EditorActivity[]
 
   @@index([creatorId])
   @@index([editorId])
@@ -204,7 +237,15 @@ model File {
   
   duration       Int?
   version        Int       @default(1)
+  isLatest       Boolean   @default(true) // Quick lookup for current active version
+  changelog      String?   // Brief description of what changed (v2, v3, etc)
   uploadStatus   String    @default("completed")
+  
+  // Verification metadata for Zero-Storage Reliability
+  verificationStatus String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  lastVerifiedAt     DateTime?
+  lastError          String?
+  
   metadata       String?   // SQLite does not support Json
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -215,6 +256,7 @@ model File {
   @@index([type])
   @@index([externalFileId])
   @@index([uploadStatus])
+  @@index([verificationStatus])
 }
 
 model Message {
@@ -299,19 +341,24 @@ model EditorDeposit {
 
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  type      String
-  title     String
-  message   String
-  link      String?
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  userId         String
+  type           String
+  title          String
+  message        String
+  link           String?
+  isRead         Boolean  @default(false)
+  
+  // Real-time reliability
+  idempotencyKey String?  // UUID for deduplication
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
-  @@index([createdAt])
+  @@index([idempotencyKey])
 }
 
 model Review {
@@ -347,4 +394,75 @@ model WithdrawalRequest {
 
   @@index([userId])
   @@index([status])
+}
+
+model LedgerEntry {
+  id              String   @id @default(uuid())
+  txHash          String   @unique
+  accountFrom     String
+  accountTo       String
+  amount          Float
+  currency        String   @default("INR")
+  transactionType String
+  orderId         String?
+  createdAt       DateTime @default(now())
+
+  order           Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model EditorActivity {
+  id        String   @id @default(uuid())
+  orderId   String
+  userId    String
+  profileId String
+  type      String   // UPLOAD_START, BRIEF_OPEN, CHAT_REPLY, PROGRESS_LOG
+  metadata  String?  // Any additional info
+  createdAt DateTime @default(now())
+
+  profile   EditorProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Dispute {
+  id              String    @id @default(uuid())
+  orderId         String
+  penaltyTxId     String?   // Link to the wallet transaction that was slashed
+  creatorId       String
+  editorId        String
+  reason          String
+  proofUrl        String?
+  status          String    @default("PENDING") // PENDING, RESOLVED_FAVOR_EDITOR, RESOLVED_FAVOR_CREATOR
+  resolutionNote  String?
+  adminId         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([editorId])
+  @@index([status])
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(uuid())
+  key            String
+  userId         String
+  requestPath    String
+  requestHash    String?
+  status         String   @default("STARTED") // STARTED, COMPLETED, FAILED
+  responseStatus Int?
+  responseBody   String?  // JSON stringified
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  expiresAt      DateTime
+
+  @@unique([key, userId])
+  @@index([expiresAt])
 }
