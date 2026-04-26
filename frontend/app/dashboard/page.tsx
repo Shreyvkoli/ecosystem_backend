@@ -19,6 +19,8 @@ export default function DashboardPage() {
   const [showProfileModal, setShowProfileModal] = useState<string | null>(null)
   const [showHandbookModal, setShowHandbookModal] = useState(false)
   const [activeTab, setActiveTab] = useState('active')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedSkill, setSelectedSkill] = useState('All')
   const queryClient = useQueryClient()
 
   const [mounted, setMounted] = useState(false)
@@ -35,8 +37,6 @@ export default function DashboardPage() {
     }
   }, [user, router])
 
-
-
   const { data: orders, isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
@@ -47,7 +47,7 @@ export default function DashboardPage() {
   })
 
   // Fetch Saved Editors
-  const { data: savedEditors, isLoading: isLoadingEditors } = useQuery({
+  const { data: savedEditors, isLoading: isLoadingSaved } = useQuery({
     queryKey: ['saved-editors'],
     queryFn: async () => {
       const response = await usersApi.listSavedEditors()
@@ -56,11 +56,36 @@ export default function DashboardPage() {
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'saved',
   })
 
-  // Unsave Editor Mutation
-  const unsaveMutation = useMutation({
+  // All editors list for browsing
+  const { data: allEditors, isLoading: isLoadingAllEditors } = useQuery({
+    queryKey: ['all-editors'],
+    queryFn: async () => {
+      const response = await usersApi.listEditors()
+      return response.data
+    },
+    enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
+  })
+
+  // Filtered Editors logic
+  const filteredEditors = allEditors?.filter((editor: any) => {
+    const matchesSearch =
+      editor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      editor.skills?.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      editor.bio?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesSkill = selectedSkill === 'All' || editor.skills?.includes(selectedSkill);
+
+    return matchesSearch && matchesSkill;
+  });
+
+  const popularSkills = ['All', 'Gaming', 'Vlog', 'Short-form', 'Podcast', 'Documentary', 'Corporate'];
+
+  // Save/Unsave Editor Mutation
+  const toggleSaveMutation = useMutation({
     mutationFn: (editorId: string) => usersApi.saveEditor(editorId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-editors'] })
+      queryClient.invalidateQueries({ queryKey: ['all-editors'] })
     }
   })
 
@@ -161,101 +186,160 @@ export default function DashboardPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
+          <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit overflow-x-auto no-scrollbar">
             {[
               { key: 'active', label: 'Active Orders' },
               { key: 'history', label: 'History' },
-              ...(user.role === 'CREATOR' ? [{ key: 'saved', label: 'Saved Editors' }] : [])
+              ...(user.role === 'CREATOR' ? [
+                { key: 'browse', label: 'Browse Editors' },
+                { key: 'saved', label: 'Saved' }
+              ] : [])
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-4 py-2 text-caption font-semibold rounded-lg transition-all duration-200 ${
-                  activeTab === tab.key
+                className={`px-4 py-2 text-caption font-semibold rounded-lg transition-all duration-200 ${activeTab === tab.key
                     ? 'bg-white text-charcoal shadow-sm'
                     : 'text-gray-400 hover:text-gray-600'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
 
-          {activeTab === 'saved' ? (
-            isLoadingEditors ? (
-              <div className="pro-card text-center py-12">
-                <p className="text-body text-gray-400">Loading saved editors...</p>
+          {/* Browse Editors Header (Search & Filters) */}
+          {activeTab === 'browse' && (
+            <div className="mb-8 space-y-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search editors by name, skills, or bio..."
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand sm:text-body shadow-sm transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-            ) : !savedEditors || savedEditors.length === 0 ? (
+              <div className="flex flex-wrap gap-2 overflow-x-auto no-scrollbar pb-1">
+                {popularSkills.map((skill) => (
+                  <button
+                    key={skill}
+                    onClick={() => setSelectedSkill(skill)}
+                    className={`px-4 py-1.5 rounded-full text-caption font-medium border transition-all duration-200 whitespace-nowrap ${selectedSkill === skill
+                      ? 'bg-brand text-white border-brand shadow-sm'
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'browse' || activeTab === 'saved' ? (
+            (activeTab === 'saved' ? isLoadingSaved : isLoadingAllEditors) ? (
+              <div className="pro-card text-center py-12">
+                <p className="text-body text-gray-400">Loading editors...</p>
+              </div>
+            ) : (activeTab === 'saved' ? !savedEditors || savedEditors.length === 0 : !filteredEditors || filteredEditors.length === 0) ? (
               <div className="pro-card text-center py-12">
                 <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                  {activeTab === 'saved' ? (
+                    <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                  ) : (
+                    <Users className="w-7 h-7 text-gray-300" />
+                  )}
                 </div>
-                <h3 className="text-heading-sm text-charcoal mb-1">No saved editors yet</h3>
-                <p className="text-body text-gray-400">Save editors from your past orders to easily find them again.</p>
+                <h3 className="text-heading-sm text-charcoal mb-1">
+                  {activeTab === 'saved' ? 'No saved editors yet' : (searchQuery || selectedSkill !== 'All') ? 'No matches found' : 'No editors found'}
+                </h3>
+                <p className="text-body text-gray-400">
+                  {activeTab === 'saved'
+                    ? 'Save editors to easily find them again for your next project.'
+                    : (searchQuery || selectedSkill !== 'All')
+                      ? 'Try adjusting your search or filters to find what you are looking for.'
+                      : 'Check back later for more amazing editors joining our platform.'}
+                </p>
               </div>
             ) : (
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                {savedEditors.map((editor: any) => (
-                  <div key={editor.id} className="premium-card group hover:shadow-card-hover">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-11 h-11 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0 border border-brand/10">
-                        {editor.avatarUrl ? (
-                          <img src={editor.avatarUrl} alt={editor.name} className="w-11 h-11 rounded-full object-cover" />
-                        ) : (
-                          <span className="text-brand font-bold text-body">{editor.name.charAt(0).toUpperCase()}</span>
+                {(activeTab === 'saved' ? savedEditors : filteredEditors).map((editor: any) => {
+                  const isSaved = savedEditors?.some((s: any) => s.id === editor.id);
+                  return (
+                    <div key={editor.id} className="premium-card group hover:shadow-card-hover flex flex-col h-full">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="relative">
+                          <div className="w-11 h-11 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0 border border-brand/10 overflow-hidden">
+                            {editor.avatarUrl ? (
+                              <img src={editor.avatarUrl} alt={editor.name} className="w-11 h-11 rounded-full object-cover" />
+                            ) : (
+                              <span className="text-brand font-bold text-body">{editor.name.charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${editor.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-caption font-bold text-charcoal truncate">{editor.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-micro text-gray-400">Verified Editor</span>
+                          </div>
+                        </div>
+                        {user.role === 'CREATOR' && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleSaveMutation.mutate(editor.id);
+                            }}
+                            className={`p-2 rounded-lg transition-all ${isSaved ? 'text-red-500 bg-red-50' : 'text-gray-300 hover:text-red-400 hover:bg-gray-50'}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isSaved ? 0 : 2}>
+                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                            </svg>
+                          </button>
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-caption font-bold text-charcoal truncate">{editor.name}</h3>
-                        <p className="text-micro text-gray-400 truncate">{editor.email}</p>
+
+                      {editor.bio && (
+                        <p className="text-micro text-gray-500 line-clamp-2 mb-4 italic italic">"{editor.bio}"</p>
+                      )}
+
+                      {editor.skills?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                          {editor.skills.slice(0, 3).map((skill: string) => (
+                            <span key={skill} className="px-2 py-0.5 bg-gray-50 text-gray-500 text-micro rounded-md border border-gray-100">
+                              {skill}
+                            </span>
+                          ))}
+                          {editor.skills.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-micro rounded-md">+{editor.skills.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 gap-2">
+                        <Link
+                          href={`/orders/new?editorId=${editor.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-brand text-white hover:bg-brand-dark py-2 rounded-lg text-caption font-bold transition-colors"
+                        >
+                          <Briefcase size={14} />
+                          Hire Directly
+                        </Link>
+                        <button
+                          onClick={() => setShowProfileModal(editor.id)}
+                          className="px-3 py-2 text-gray-500 hover:text-charcoal text-caption font-medium bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100"
+                        >
+                          Profile
+                        </button>
                       </div>
                     </div>
-
-                    {editor.skills?.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {editor.skills.slice(0, 3).map((skill: string) => (
-                          <span key={skill} className="px-2 py-0.5 bg-gray-50 text-gray-500 text-micro rounded-md border border-gray-100">
-                            {skill}
-                          </span>
-                        ))}
-                        {editor.skills.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-micro rounded-md">+{editor.skills.length - 3}</span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 gap-2">
-                      <Link
-                        href={`/orders/new?editorId=${editor.id}`}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-brand text-white hover:bg-brand-dark py-2 rounded-lg text-caption font-bold transition-colors"
-                      >
-                        <Briefcase size={14} />
-                        Direct Hire
-                      </Link>
-                      <button
-                        onClick={() => setShowProfileModal(editor.id)}
-                        className="px-3 py-2 text-gray-500 hover:text-charcoal text-caption font-medium bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Remove ${editor.name} from saved list?`)) {
-                            unsaveMutation.mutate(editor.id)
-                          }
-                        }}
-                        disabled={unsaveMutation.isPending}
-                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remove Editor"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )
           ) : (
