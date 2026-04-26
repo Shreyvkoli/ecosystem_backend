@@ -16,6 +16,15 @@ const nextConfig = {
     }
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/trust-safety',
+        destination: '/trust',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

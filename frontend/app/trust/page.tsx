@@ -11,10 +11,10 @@ export default function TrustPage() {
       <PublicNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-3xl">
-          <h1 className="text-5xl font-extrabold text-gray-900">
-            <span className="bg-gradient-to-r from-brand to-purple-400 bg-clip-text text-transparent">Trust & Safety</span>
+          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
+            <span className="text-brand">Trust</span> & <span className="text-charcoal opacity-80">Safety</span>
           </h1>
-          <p className="text-gray-600 mt-4 text-lg">
+          <p className="text-gray-600 mt-4 text-lg font-medium">
             Cutflow is designed to prevent ghosting and protect files with clear rules.
           </p>
         </div>
