@@ -194,6 +194,17 @@ function NewOrderContent() {
     enabled: !!user && user.role === 'CREATOR',
   })
 
+  // Fetch pre-selected editor's profile if direct hire
+  const editorIdParam = searchParams.get('editorId')
+  const { data: selectedEditorProfile } = useQuery({
+    queryKey: ['editor-profile', editorIdParam],
+    queryFn: async () => {
+      const response = await usersApi.loadProfile(editorIdParam!)
+      return response.data
+    },
+    enabled: !!editorIdParam,
+  })
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50/50">
@@ -231,28 +242,49 @@ function NewOrderContent() {
 
 
             {/* Preferred Editor Selection */}
-            {savedEditors && savedEditors.length > 0 && (
-              <div className="bg-brand-light/50 p-4 rounded-xl border border-brand/10">
-                <label htmlFor="editorId" className="block text-caption font-bold text-brand-dark mb-2">
-                  Directly Hire a Saved Editor (Optional)
-                </label>
-                <select
-                  id="editorId"
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
-                  value={formData.editorId}
-                  onChange={(e) => setFormData({ ...formData, editorId: e.target.value })}
-                >
-                  <option value="">-- Open for all editors --</option>
-                  {savedEditors.map((editor: any) => (
-                    <option key={editor.id} value={editor.id}>
-                      {editor.name} ({editor.email})
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1.5 text-micro text-brand-dark">
-                  Selecting an editor will assign this order directly to them.
-                </p>
+            {editorIdParam ? (
+              <div className="bg-brand-light/50 p-5 rounded-2xl border-2 border-brand/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-micro font-bold text-brand uppercase tracking-wider">Direct Hire Mode</span>
+                    <h3 className="text-body font-bold text-charcoal mt-1">
+                      {selectedEditorProfile ? `Assigning to: ${selectedEditorProfile.name}` : 'Loading editor details...'}
+                    </h3>
+                    <p className="text-micro text-gray-400 mt-0.5">This order will only be visible to this specific editor.</p>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, editorId: '' }));
+                      router.replace('/orders/new');
+                    }}
+                    className="text-micro font-bold text-gray-400 hover:text-red-500 underline"
+                  >
+                    Change
+                  </button>
+                </div>
               </div>
+            ) : (
+              savedEditors && savedEditors.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <label htmlFor="editorId" className="block text-micro text-gray-400 uppercase tracking-widest mb-2">
+                    Directly Hire a Saved Editor (Optional)
+                  </label>
+                  <select
+                    id="editorId"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-body"
+                    value={formData.editorId}
+                    onChange={(e) => setFormData({ ...formData, editorId: e.target.value })}
+                  >
+                    <option value="">-- Open for all editors (Public Job) --</option>
+                    {savedEditors.map((editor: any) => (
+                      <option key={editor.id} value={editor.id}>
+                        {editor.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )
             )}
 
             <div>

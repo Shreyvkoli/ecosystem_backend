@@ -53,7 +53,7 @@ export default function DashboardPage() {
       const response = await usersApi.listSavedEditors()
       return response.data
     },
-    enabled: !!user && user.role === 'CREATOR' && activeTab === 'saved',
+    enabled: !!user && user.role === 'CREATOR' && (activeTab === 'saved' || activeTab === 'browse'),
   })
 
   // All editors list for browsing
@@ -83,9 +83,34 @@ export default function DashboardPage() {
   // Save/Unsave Editor Mutation
   const toggleSaveMutation = useMutation({
     mutationFn: (editorId: string) => usersApi.saveEditor(editorId),
+    onMutate: async (editorId) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['saved-editors'] })
+      const previousSaved = queryClient.getQueryData<any[]>(['saved-editors'])
+      
+      if (previousSaved) {
+        const isCurrentlySaved = previousSaved.some(s => s.id === editorId);
+        let newSaved;
+        if (isCurrentlySaved) {
+          newSaved = previousSaved.filter(s => s.id !== editorId);
+        } else {
+          // We don't have the full editor object here easily in onMutate, 
+          // but we can just toggle the local check if we had it.
+          // For now, let's just use invalidation on success, but we can fake the list.
+          newSaved = [...previousSaved, { id: editorId }];
+        }
+        queryClient.setQueryData(['saved-editors'], newSaved);
+      }
+      
+      return { previousSaved }
+    },
+    onError: (err, editorId, context) => {
+      if (context?.previousSaved) {
+        queryClient.setQueryData(['saved-editors'], context.previousSaved)
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-editors'] })
-      queryClient.invalidateQueries({ queryKey: ['all-editors'] })
     }
   })
 
