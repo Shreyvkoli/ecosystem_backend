@@ -40,10 +40,26 @@ export default function HeroVisuals() {
                     <div className="text-[11px] text-gray-500 font-bold ml-2 tracking-wide uppercase">Final_Cut_v3.mp4</div>
                 </div>
 
-                {/* Video Area Placeholder */}
-                <div className="relative aspect-video bg-charcoal group cursor-pointer" onClick={() => setIsPlaying(!isPlaying)}>
-                    {/* Simulated Video Content */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-charcoal to-black flex items-center justify-center">
+                {/* Video Area */}
+                <div className="relative aspect-video bg-charcoal group overflow-hidden">
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105"
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                    >
+                        <source src="https://player.vimeo.com/external/370331493.sd.mp4?s=33d5964f697d028453443a7a9745ad7570ed364a&profile_id=139&oauth2_token_id=57447761" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+
+                    {/* Gradient Overlay for Text Legibility */}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-charcoal/90 to-transparent pointer-events-none" />
+
+                    {/* Play/Pause Overlay Pulse */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <motion.div
                             animate={{ opacity: isPlaying ? 0 : 1, scale: isPlaying ? 0.8 : 1 }}
                             className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20"
