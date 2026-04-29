@@ -122,7 +122,7 @@ export default function Home() {
                     muted
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                    src="https://cdn.coverr.co/videos/coverr-video-editor-at-work-2460/1080p.mp4"
+                    src="https://media.giphy.com/media/3o7TKr3nzbh5WgCFxe/giphy.mp4"
                   />
                   {/* Subtle overlays for aesthetic */}
                   <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent pointer-events-none" />
