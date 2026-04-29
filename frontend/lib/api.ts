@@ -355,7 +355,7 @@ export const youtubeApi = {
 export const usersApi = {
   loadProfile: (userId: string) => api.get(`/users/${userId}/profile`),
   listEditors: () => api.get('/users/editors/profiles'),
-  listCreators: () => api.get('/users/creators/profiles'),
+  listCreators: () => api.get('/users/creators/profiles?t=' + new Date().getTime()),
   saveEditor: (editorId: string) => api.post<{ saved: boolean }>(`/users/editors/${editorId}/save`),
   listSavedEditors: () => api.get<any[]>('/users/creators/saved-editors'),
   updateCreatorProfile: (data: { avatarUrl?: string; bio?: string }) => api.put('/users/creator/profile', data),
