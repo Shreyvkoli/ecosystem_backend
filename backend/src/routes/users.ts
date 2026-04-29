@@ -10,72 +10,6 @@ const prisma = new PrismaClient();
 
 router.use(authenticate);
 
-/**
- * GET /api/users/:userId/profile
- * Get user profile with editor details (if applicable)
- */
-// GET /api/users/:userId/profile
-router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.userId || !req.userRole) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { userId } = req.params;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        editorProfile: true,
-        creatorProfile: true,
-        reviewsReceived: {
-          include: {
-            reviewer: {
-              select: {
-                name: true,
-                creatorProfile: { select: { avatarUrl: true } }
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Return public profile information
-    const isOwnerOrAdmin = req.userId === user.id || req.userRole === 'ADMIN';
-
-    const profile = {
-      id: user.id,
-      name: user.name,
-      email: isOwnerOrAdmin ? user.email : user.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Mask email for others
-      role: user.role,
-      ...(user.editorProfile && {
-        bio: user.editorProfile.bio,
-        avatarUrl: user.editorProfile.avatarUrl,
-        rate: user.editorProfile.rate,
-        skills: user.editorProfile.skills ? user.editorProfile.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
-        portfolio: user.editorProfile.portfolio ? user.editorProfile.portfolio.split(',').map(s => s.trim()).filter(Boolean) : [],
-        available: user.editorProfile.available,
-      }),
-      ...(user.creatorProfile && {
-        bio: user.creatorProfile.bio,
-        avatarUrl: user.creatorProfile.avatarUrl,
-      }),
-      reviews: user.reviewsReceived || []
-    };
-
-    return res.json(profile);
-  } catch (error: any) {
-    console.error('Get profile error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // GET /api/users/editors/profiles
 router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
   try {
@@ -168,6 +102,74 @@ router.get('/creators/profiles', async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+/**
+ * GET /api/users/:userId/profile
+ * Get user profile with editor details (if applicable)
+ */
+// GET /api/users/:userId/profile
+router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || !req.userRole) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { userId } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        editorProfile: true,
+        creatorProfile: true,
+        reviewsReceived: {
+          include: {
+            reviewer: {
+              select: {
+                name: true,
+                creatorProfile: { select: { avatarUrl: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return public profile information
+    const isOwnerOrAdmin = req.userId === user.id || req.userRole === 'ADMIN';
+
+    const profile = {
+      id: user.id,
+      name: user.name,
+      email: isOwnerOrAdmin ? user.email : user.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Mask email for others
+      role: user.role,
+      ...(user.editorProfile && {
+        bio: user.editorProfile.bio,
+        avatarUrl: user.editorProfile.avatarUrl,
+        rate: user.editorProfile.rate,
+        skills: user.editorProfile.skills ? user.editorProfile.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
+        portfolio: user.editorProfile.portfolio ? user.editorProfile.portfolio.split(',').map(s => s.trim()).filter(Boolean) : [],
+        available: user.editorProfile.available,
+      }),
+      ...(user.creatorProfile && {
+        bio: user.creatorProfile.bio,
+        avatarUrl: user.creatorProfile.avatarUrl,
+      }),
+      reviews: user.reviewsReceived || []
+    };
+
+    return res.json(profile);
+  } catch (error: any) {
+    console.error('Get profile error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 // POST /api/users/creators/:creatorId/interest
 router.post('/creators/:creatorId/interest', async (req: AuthRequest, res: Response) => {
