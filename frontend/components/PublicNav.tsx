@@ -19,7 +19,7 @@ export default function PublicNav() {
             <Link
               key={item.label}
               href={item.href}
-              className="text-gray-500 hover:text-charcoal transition-colors text-caption"
+              className="text-charcoal/60 hover:text-charcoal transition-colors text-caption"
             >
               {item.label}
             </Link>
@@ -27,7 +27,7 @@ export default function PublicNav() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-gray-500 hover:text-charcoal font-medium text-caption">
+          <Link href="/login" className="text-charcoal/60 hover:text-charcoal font-medium text-caption">
             Login
           </Link>
           <Link href="/register" className="btn-primary !py-2 !px-5 !text-sm !rounded-lg">

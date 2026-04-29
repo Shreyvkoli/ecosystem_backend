@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Logo from '@/components/Logo'
 import HeroVisuals from '@/components/HeroVisuals'
+import { HeroIllustration, HandshakeIllustration, ShieldIllustration, ChatIllustration, WorkflowIllustration, GlobeIllustration } from '@/components/FreehandIllustrations'
 
 export default function Home() {
   return (
@@ -97,7 +98,7 @@ export default function Home() {
             className="hidden lg:block relative"
           >
             <div className="absolute -inset-16 bg-gradient-to-br from-brand/[0.08] via-transparent to-mint-dark/[0.1] blur-3xl rounded-full" />
-            <HeroVisuals />
+            <HeroIllustration className="w-full max-w-lg mx-auto drop-shadow-lg" />
           </motion.div>
         </main>
 
@@ -116,9 +117,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {[
-              { icon: "🤝", title: "No Ghosting", desc: "Editors pay a security deposit. They don't disappear — reliability is built in." },
-              { icon: "🛡️", title: "Locked Payments", desc: "Your money stays in Escrow. You pay only when you approve the final cut." },
-              { icon: "💬", title: "Timestamp Chat", desc: "Click on the video to leave notes. No more confusing emails or timestamp typing." }
+              { illustration: <HandshakeIllustration className="w-24 h-24" />, title: "No Ghosting", desc: "Editors pay a security deposit. They don't disappear — reliability is built in." },
+              { illustration: <ShieldIllustration className="w-24 h-24" />, title: "Locked Payments", desc: "Your money stays in Escrow. You pay only when you approve the final cut." },
+              { illustration: <ChatIllustration className="w-24 h-24" />, title: "Timestamp Chat", desc: "Click on the video to leave notes. No more confusing emails or timestamp typing." }
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -128,10 +129,10 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="group p-7 rounded-2xl bg-white/40 backdrop-blur-sm border border-charcoal/8 hover:border-charcoal/15 transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 hover:bg-white/60"
               >
-                <div className="w-12 h-12 bg-white/70 rounded-xl flex items-center justify-center text-2xl border border-charcoal/8 group-hover:scale-110 transition-transform duration-300">
-                  {item.icon}
+                <div className="group-hover:scale-105 transition-transform duration-300">
+                  {item.illustration}
                 </div>
-                <h3 className="text-heading-sm text-charcoal mt-5">{item.title}</h3>
+                <h3 className="text-heading-sm text-charcoal mt-4">{item.title}</h3>
                 <p className="text-body text-charcoal/60 mt-2 leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
@@ -143,6 +144,9 @@ export default function Home() {
           <div className="max-w-5xl mx-auto text-center">
             <span className="text-micro text-brand uppercase tracking-widest">Simple steps</span>
             <h2 className="text-display-sm text-white mt-3 tracking-tight">How it works</h2>
+            <div className="mt-8 flex justify-center">
+              <WorkflowIllustration className="w-full max-w-md opacity-80" />
+            </div>
 
             <div className="grid md:grid-cols-3 gap-8 lg:gap-14 mt-14">
               {[
@@ -198,27 +202,12 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="relative h-[400px]"
+              className="flex justify-center"
             >
-              <div className="absolute top-0 right-0 z-10 w-[280px] rounded-2xl overflow-hidden border border-charcoal/10 shadow-elevated transform hover:scale-[1.02] transition-all duration-500">
-                <div className="bg-gradient-to-br from-mint-light to-brand/20 aspect-square flex items-center justify-center">
-                  <span className="text-7xl">🇮🇳</span>
-                </div>
-                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm">
-                  <p className="text-caption font-bold text-charcoal">Rohit V.</p>
-                  <p className="text-micro text-charcoal/50">Motion Designer</p>
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 z-20 w-[220px] rounded-2xl overflow-hidden border border-charcoal/10 shadow-elevated transform -rotate-2 hover:rotate-0 transition-all duration-500">
-                <div className="bg-gradient-to-br from-white/50 to-mint-dark/30 aspect-square flex items-center justify-center">
-                  <span className="text-7xl">🌍</span>
-                </div>
-                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm">
-                  <p className="text-caption font-bold text-charcoal">Clara M.</p>
-                  <p className="text-micro text-charcoal/50">Content Creator</p>
-                </div>
-              </div>
+              <GlobeIllustration className="w-64 h-64 drop-shadow-lg" />
             </motion.div>
+
+
           </div>
         </section>
 
