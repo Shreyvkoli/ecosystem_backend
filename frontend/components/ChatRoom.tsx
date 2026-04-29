@@ -27,12 +27,22 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
     }
 
     useEffect(() => {
-        // Load initial messages
-        messagesApi.listByOrder(orderId).then(res => {
-            setMessages(res.data)
-            // Scroll to bottom after state update
-            setTimeout(scrollToBottom, 100)
-        }).catch(err => console.error("Failed to load messages", err))
+        // Load initial messages and set up polling
+        const fetchMessages = () => {
+            messagesApi.listByOrder(orderId).then(res => {
+                setMessages(prev => {
+                    // Only scroll if new messages arrived
+                    if (prev.length !== res.data.length) {
+                        setTimeout(scrollToBottom, 100);
+                        return res.data;
+                    }
+                    return prev; // keep existing state to avoid re-renders
+                });
+            }).catch(err => console.error("Failed to load messages", err))
+        };
+
+        fetchMessages();
+        const pollInterval = setInterval(fetchMessages, 3000);
 
         // Socket listener
         const socket = connectSocket(currentUser.id)
@@ -50,6 +60,7 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
         socket.on('chat_message', handleNewMessage)
 
         return () => {
+            clearInterval(pollInterval);
             socket.off('chat_message', handleNewMessage)
         }
     }, [orderId, currentUser.id])

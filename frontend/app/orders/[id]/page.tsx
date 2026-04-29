@@ -268,13 +268,30 @@ export default function OrderDetailPage() {
             {/* Main video area */}
             <div id="main-video-player" className="lg:col-span-2 space-y-6">
               {displayFile ? (
-                <OrderVideoPlayer
-                  fileId={displayFile.id}
-                  orderId={orderId}
-                  fileName={displayFile.fileName}
-                  publicLink={displayFile.publicLink}
-                  provider={displayFile.provider}
-                />
+                user.role === 'CREATOR' && order.paymentStatus !== 'PAID' && displayFile.type === 'PREVIEW_VIDEO' ? (
+                  <div className="bg-black aspect-video flex flex-col items-center justify-center text-white rounded-lg p-6 text-center shadow-inner">
+                    <svg className="w-16 h-16 mx-auto text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    <h3 className="text-2xl font-bold mb-2">Preview Locked</h3>
+                    <p className="text-gray-300 max-w-md mx-auto mb-6">
+                      The editor has submitted the preview. To view it and proceed, please deposit the order amount. Your funds are kept safe in escrow.
+                    </p>
+                    <PaymentButton
+                      orderId={orderId}
+                      amount={order.amount!}
+                      onSuccess={() => {
+                        queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <OrderVideoPlayer
+                    fileId={displayFile.id}
+                    orderId={orderId}
+                    fileName={displayFile.fileName}
+                    publicLink={displayFile.publicLink}
+                    provider={displayFile.provider}
+                  />
+                )
               ) : (
                 <div className="bg-black aspect-video flex flex-col items-center justify-center text-white rounded-lg p-6 text-center">
                   {user.role === 'EDITOR' && order.editorDepositRequired && order.editorDepositStatus !== 'PAID' ? (

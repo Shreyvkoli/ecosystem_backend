@@ -123,13 +123,18 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
           }
         });
 
-        // Notify Creator
+        // Notify Creator with payment instruction if not paid
+        let content = `New Preview (v${version}) submitted: [${fileName}]`;
+        if (order.paymentStatus !== 'PAID') {
+          content += `\n\n🔒 Please pay the escrow deposit to unlock and view the preview.`;
+        }
+
         await tx.message.create({
           data: {
             orderId,
             userId: req.userId!,
             type: 'SYSTEM',
-            content: `New Preview (v${version}) submitted: [${fileName}]`
+            content
           }
         });
       }
