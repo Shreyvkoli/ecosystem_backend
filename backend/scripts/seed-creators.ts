@@ -4,27 +4,23 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding creators...');
+  console.log('Seeding specific creators c1-c20...');
   
-  const creatorNames = [
-    'Technical Guruji', 'CarryMinati', 'Flying Beast', 'Mumbiker Vlogs', 'MostlySane',
-    'Bhuvan Bam', 'Ashish Chanchlani', 'Amit Bhadana', 'Sandip Maheshwari', 'Dr. Vivek Bindra',
-    'Ranveer Allahbadia', 'Ankur Warikoo', 'Raj Shamani', 'Dhruv Rathee', 'Abhi and Niyu',
-    'Physics Wallah', 'Khan Sir', 'Aman Dhattarwal', 'Triggered Insaan', 'Fukra Insaan',
-    'Sourav Joshi Vlogs', 'Nishant Jindal', 'Ishan Sharma', 'Harkirat Singh', 'Striver',
-    'Love Babbar', 'Apna College', 'CodeWithHarry', 'Telusko', 'Thapa Technical'
-  ];
+  const password = '123456789';
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const creators = [];
 
-  for (let i = 0; i < creatorNames.length; i++) {
-    const name = creatorNames[i];
-    const email = `creator${i + 1}@example.com`;
-    const hashedPassword = await bcrypt.hash('password123', 10);
+  for (let i = 1; i <= 20; i++) {
+    const email = `c${i}@gmail.com`;
+    const name = `Creator ${i}`;
 
     const user = await prisma.user.upsert({
       where: { email },
-      update: {},
+      update: {
+        role: 'CREATOR',
+        password: hashedPassword
+      },
       create: {
         email,
         name,
@@ -32,16 +28,29 @@ async function main() {
         role: 'CREATOR',
         creatorProfile: {
           create: {
-            bio: `Official account of ${name}. Looking for talented editors for my upcoming projects.`,
+            bio: `Official test account for ${name}. I am looking for pro editors.`,
             avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`
           }
         }
       }
     });
+
+    // Ensure they have a profile if they already existed without one
+    const profile = await prisma.creatorProfile.findUnique({ where: { userId: user.id } });
+    if (!profile) {
+      await prisma.creatorProfile.create({
+        data: {
+          userId: user.id,
+          bio: `Official test account for ${name}. I am looking for pro editors.`,
+          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`
+        }
+      });
+    }
+
     creators.push(user);
   }
 
-  console.log(`Successfully seeded ${creators.length} creators with profiles.`);
+  console.log(`Successfully seeded/updated ${creators.length} creators (c1-c20) with password: ${password}`);
 }
 
 main()
