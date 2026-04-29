@@ -1,6 +1,13 @@
 import IORedis from 'ioredis';
 
-const redis = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379');
+const redis = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: 1,
+  enableOfflineQueue: false,
+  retryStrategy(times) {
+    if (times > 3) return null; // stop retrying after 3 times
+    return Math.min(times * 50, 2000);
+  }
+});
 
 export class CacheService {
     /**
