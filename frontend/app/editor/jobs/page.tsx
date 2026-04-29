@@ -15,7 +15,7 @@ export default function EditorJobsPage() {
   const user = getUser()
   const queryClient = useQueryClient()
 
-  const [tab, setTab] = useState<'available' | 'active' | 'history' | 'profile'>('available')
+  const [tab, setTab] = useState<'available' | 'active' | 'history' | 'creators' | 'profile'>('available')
   const [topupAmount, setTopupAmount] = useState<number>(5000)
   const [profileForm, setProfileForm] = useState({
     bio: '',
@@ -62,6 +62,12 @@ export default function EditorJobsPage() {
     enabled: !!user && user.role === 'EDITOR',
   })
 
+  const { data: creators, isLoading: creatorsLoading } = useQuery({
+    queryKey: ['creators'],
+    queryFn: async () => (await usersApi.listCreators()).data,
+    enabled: !!user && user.role === 'EDITOR' && tab === 'creators',
+  })
+
   const { data: activeJobData, isLoading: activeJobLoading } = useQuery({
     queryKey: ['activeJobCount'],
     queryFn: async () => (await ordersApi.getActiveJobCount()).data,
@@ -104,6 +110,16 @@ export default function EditorJobsPage() {
     },
     onError: (err: any) => {
       alert(err?.response?.data?.error || 'Failed to start job')
+    }
+  })
+
+  const interestMutation = useMutation({
+    mutationFn: (creatorId: string) => usersApi.expressInterest(creatorId),
+    onSuccess: () => {
+      alert('Interest expressed successfully! The creator will be notified.')
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.error || 'Failed to express interest')
     }
   })
 
@@ -324,6 +340,15 @@ export default function EditorJobsPage() {
                 History
               </button>
               <button
+                onClick={() => setTab('creators')}
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 ${tab === 'creators'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
+                  }`}
+              >
+                Browse Creators
+              </button>
+              <button
                 onClick={() => setTab('profile')}
                 className={`flex-shrink-0 whitespace-nowrap px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 ${tab === 'profile'
                   ? 'bg-white text-charcoal shadow-sm'
@@ -452,6 +477,54 @@ export default function EditorJobsPage() {
                               : order.status.replace('_', ' ')}
                         </div>
                       )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'creators' && (
+            <div className="space-y-8">
+              {creatorsLoading ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600">Loading creators...</p>
+                </div>
+              ) : !creators || creators.length === 0 ? (
+                <div className="glass-morphism p-12 text-center">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No creators found</h3>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {creators.map((creator: any) => (
+                    <div key={creator.id} className="premium-card group md:hover:scale-105 transition-all duration-300 relative bg-white border border-gray-200 hover:shadow-lg">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0">
+                          {creator.avatarUrl ? (
+                            <img src={creator.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-brand-dark bg-brand/10">
+                              {creator.name?.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-gray-900 leading-tight">{creator.name}</h3>
+                          <p className="text-xs text-brand font-medium">Content Creator</p>
+                        </div>
+                      </div>
+                      
+                      {creator.bio && (
+                        <p className="text-sm text-gray-600 mb-6 line-clamp-2 italic">"{creator.bio}"</p>
+                      )}
+
+                      <button 
+                        onClick={() => interestMutation.mutate(creator.id)}
+                        disabled={interestMutation.isPending}
+                        className="w-full py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal/90 transition-colors"
+                      >
+                        {interestMutation.isPending ? 'Sending...' : 'Interested'}
+                      </button>
                     </div>
                   ))}
                 </div>

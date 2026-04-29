@@ -133,6 +133,71 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// GET /api/users/creators/profiles
+router.get('/creators/profiles', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || !req.userRole) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (req.userRole !== 'EDITOR' && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const creators = await prisma.user.findMany({
+      where: { role: 'CREATOR' },
+      include: {
+        creatorProfile: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    const profiles = creators.map(creator => ({
+      id: creator.id,
+      name: creator.name,
+      ...(creator.creatorProfile && {
+        bio: creator.creatorProfile.bio,
+        avatarUrl: creator.creatorProfile.avatarUrl,
+      })
+    }));
+
+    return res.json(profiles);
+  } catch (error: any) {
+    console.error('Get creator profiles error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/users/creators/:creatorId/interest
+router.post('/creators/:creatorId/interest', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || req.userRole !== 'EDITOR') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const editor = await prisma.user.findUnique({
+      where: { id: req.userId }
+    });
+
+    // Create a notification for the creator
+    await (prisma as any).notification.create({
+      data: {
+        userId: req.params.creatorId,
+        type: 'EDITOR_INTEREST',
+        title: 'An editor is interested in working with you',
+        message: `${editor?.name} has expressed interest in your future projects.`,
+        link: `/dashboard?tab=browse` 
+      }
+    });
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('Express interest error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // POST /api/users/editors/:editorId/save
 router.post('/editors/:editorId/save', async (req: AuthRequest, res: Response) => {

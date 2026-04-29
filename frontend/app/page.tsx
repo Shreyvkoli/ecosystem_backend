@@ -8,9 +8,11 @@ import { HeroIllustration, HandshakeIllustration, ShieldIllustration, ChatIllust
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-mint">
+    <div className="relative min-h-screen bg-mint overflow-hidden">
+      {/* Background patterns for texture */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
       {/* Subtle top gradient accent */}
-      <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-mint-light via-mint to-mint pointer-events-none -z-0" />
+      <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-mint-light via-mint/50 to-transparent pointer-events-none -z-0" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* ─── NAV ─── */}
@@ -98,7 +100,12 @@ export default function Home() {
             className="hidden lg:block relative"
           >
             <div className="absolute -inset-16 bg-gradient-to-br from-brand/[0.08] via-transparent to-mint-dark/[0.1] blur-3xl rounded-full" />
-            <HeroIllustration className="w-full max-w-lg mx-auto drop-shadow-lg" />
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+            >
+              <HeroIllustration className="w-full max-w-lg mx-auto drop-shadow-lg" />
+            </motion.div>
           </motion.div>
         </main>
 
