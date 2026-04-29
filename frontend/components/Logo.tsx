@@ -27,11 +27,11 @@ export default function Logo({
     <span className={className ?? 'inline-flex items-center gap-3'}>
       <div className="flex items-center justify-center overflow-hidden">
         <img
-          src="/cutflow-logo-green.png"
-          alt="Cutflow Logo"
+          src="/lumahive-logo.png"
+          alt="LumaHive Logo"
           width={size + 8}
           height={size + 8}
-          className={`object-contain ${iconClassName || ''}`}
+          className={`object-contain rounded-md shadow-sm ${iconClassName || ''}`}
         />
       </div>
 
@@ -39,10 +39,10 @@ export default function Logo({
         <span
           className={
             wordmarkClassName ??
-            'text-2xl font-bold text-charcoal tracking-tight'
+            'text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 tracking-tight'
           }
         >
-          Cutflow
+          LumaHive
         </span>
       ) : null}
     </span>
