@@ -10,9 +10,14 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#108a00',
-          dark: '#0d7600',
+          DEFAULT: '#00ed64',
+          dark: '#00c853',
           light: '#e8f5e8',
+        },
+        mint: {
+          DEFAULT: '#c4ede0',
+          light: '#d4f5e9',
+          dark: '#a8e0cf',
         },
         charcoal: '#181818',
         'soft-gray': '#fafafa',
@@ -37,8 +42,8 @@ module.exports = {
         'card': '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
         'card-hover': '0 8px 24px rgba(0,0,0,0.08)',
         'elevated': '0 12px 40px rgba(0,0,0,0.08)',
-        'brand': '0 4px 16px rgba(16, 138, 0, 0.25)',
-        'brand-lg': '0 8px 32px rgba(16, 138, 0, 0.3)',
+        'brand': '0 4px 16px rgba(0, 237, 100, 0.3)',
+        'brand-lg': '0 8px 32px rgba(0, 237, 100, 0.35)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

@@ -4,12 +4,12 @@
 
 :root {
   --foreground-rgb: 24, 24, 24;
-  --bg-a: 255, 255, 255;
-  --bg-b: 249, 249, 249;
-  --bg-c: 242, 242, 242;
+  --bg-a: 196, 237, 224;
+  --bg-b: 212, 245, 233;
+  --bg-c: 168, 224, 207;
   
-  --primary: #108a00;
-  --primary-hover: #0d7600;
+  --primary: #00ed64;
+  --primary-hover: #00c853;
   --charcoal: #181818;
   --accent-warm: #f59e0b;
 }
@@ -30,8 +30,8 @@ body {
 
 /* Selection Color */
 ::selection {
-  background: rgba(16, 138, 0, 0.15);
-  color: #0d7600;
+  background: rgba(0, 237, 100, 0.2);
+  color: #00c853;
 }
 
 /* Premium Utilities */
@@ -66,15 +66,15 @@ body {
   }
 
   .btn-primary {
-    @apply btn-base bg-brand text-white hover:bg-brand-dark active:scale-[0.98];
-    box-shadow: 0 2px 8px rgba(16, 138, 0, 0.2);
+    @apply btn-base bg-brand text-charcoal font-black hover:bg-brand-dark active:scale-[0.98];
+    box-shadow: 0 2px 8px rgba(0, 237, 100, 0.25);
   }
   .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(16, 138, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 237, 100, 0.35);
     transform: translateY(-1px);
   }
   .btn-primary:active {
-    box-shadow: 0 1px 4px rgba(16, 138, 0, 0.15);
+    box-shadow: 0 1px 4px rgba(0, 237, 100, 0.2);
   }
 
   .btn-secondary {
