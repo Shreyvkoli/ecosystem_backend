@@ -148,9 +148,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {[
-              { icon: "🛡️", title: "No Ghosting", desc: "Editors pay a security deposit. They don't disappear — reliability is built directly into the protocol." },
-              { icon: "🔒", title: "Escrow Payments", desc: "Your funds are securely locked in escrow. You only release payment when the final cut is approved." },
-              { icon: "⚡", title: "Zero Storage Hassle", desc: "Share Google Drive or Dropbox links directly. We handle the workflow without eating your bandwidth." }
+              { illustration: <HandshakeIllustration className="w-20 h-20 text-brand opacity-90 group-hover:scale-105 transition-transform duration-300" />, title: "No Ghosting", desc: "Editors pay a security deposit. They don't disappear — reliability is built directly into the protocol." },
+              { illustration: <ShieldIllustration className="w-20 h-20 text-brand opacity-90 group-hover:scale-105 transition-transform duration-300" />, title: "Escrow Payments", desc: "Your funds are securely locked in escrow. You only release payment when the final cut is approved." },
+              { illustration: <ChatIllustration className="w-20 h-20 text-brand opacity-90 group-hover:scale-105 transition-transform duration-300" />, title: "Timestamp Chat", desc: "Click on the video to leave notes. No more confusing emails or timestamp typing." }
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -160,8 +160,8 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="group p-8 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-brand/30 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.05]"
               >
-                <div className="text-4xl mb-6 bg-white/5 w-16 h-16 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-brand/40 group-hover:bg-brand/10 transition-colors">
-                  {item.icon}
+                <div className="mb-6 flex items-center justify-center w-24 h-24 rounded-2xl bg-white/5 border border-white/10 group-hover:border-brand/40 group-hover:bg-brand/5 transition-colors">
+                  {item.illustration}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
                 <p className="text-white/60 leading-relaxed">{item.desc}</p>
