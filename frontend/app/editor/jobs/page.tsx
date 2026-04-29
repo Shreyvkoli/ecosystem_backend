@@ -17,6 +17,7 @@ export default function EditorJobsPage() {
 
   const [tab, setTab] = useState<'available' | 'active' | 'history' | 'creators' | 'profile'>('available')
   const [topupAmount, setTopupAmount] = useState<number>(5000)
+  const [sentInterests, setSentInterests] = useState<Set<string>>(new Set())
   const [profileForm, setProfileForm] = useState({
     bio: '',
     rate: '',
@@ -115,7 +116,8 @@ export default function EditorJobsPage() {
 
   const interestMutation = useMutation({
     mutationFn: (creatorId: string) => usersApi.expressInterest(creatorId),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      setSentInterests(prev => new Set(prev).add(variables))
       alert('Interest expressed successfully! The creator will be notified.')
     },
     onError: (err: any) => {
@@ -518,13 +520,19 @@ export default function EditorJobsPage() {
                         <p className="text-sm text-gray-600 mb-6 line-clamp-2 italic">"{creator.bio}"</p>
                       )}
 
-                      <button 
-                        onClick={() => interestMutation.mutate(creator.id)}
-                        disabled={interestMutation.isPending}
-                        className="w-full py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal/90 transition-colors"
-                      >
-                        {interestMutation.isPending ? 'Sending...' : 'Interested'}
-                      </button>
+                      {sentInterests.has(creator.id) ? (
+                        <div className="w-full py-2 bg-green-50 text-green-700 rounded-lg text-sm font-semibold text-center border border-green-200">
+                          Interest Sent
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => interestMutation.mutate(creator.id)}
+                          disabled={interestMutation.isPending && interestMutation.variables === creator.id}
+                          className="w-full py-2 bg-charcoal text-white rounded-lg text-sm font-semibold hover:bg-charcoal/90 transition-colors disabled:opacity-50"
+                        >
+                          {interestMutation.isPending && interestMutation.variables === creator.id ? 'Sending...' : 'Interested'}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
