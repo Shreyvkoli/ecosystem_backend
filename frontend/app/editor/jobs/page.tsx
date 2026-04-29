@@ -277,7 +277,7 @@ export default function EditorJobsPage() {
   const sortedOpenOrders = useMemo(() => sortOrders(openOrders || []), [openOrders, sortBy])
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-mint">
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
@@ -286,7 +286,7 @@ export default function EditorJobsPage() {
               <h1 className="text-heading text-charcoal">
                 Editor Dashboard
               </h1>
-              <p className="text-body text-gray-400 mt-1">Find and manage video editing jobs</p>
+              <p className="text-body text-charcoal/60 mt-1">Find and manage video editing jobs</p>
             </div>
             <div className="flex bg-gray-100 p-1 rounded-xl gap-1 overflow-x-auto no-scrollbar">
               <button

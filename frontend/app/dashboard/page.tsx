@@ -158,7 +158,7 @@ export default function DashboardPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-mint">
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               <h1 className="text-heading text-charcoal">
                 Creator Dashboard
               </h1>
-              <p className="text-body text-gray-400 mt-1">Manage your video editing orders</p>
+              <p className="text-body text-charcoal/60 mt-1">Manage your video editing orders</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {user.role === 'CREATOR' && (

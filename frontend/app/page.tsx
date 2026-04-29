@@ -12,7 +12,7 @@ export default function Home() {
       {/* Subtle top gradient accent */}
       <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-mint-light via-mint to-mint pointer-events-none -z-0" />
 
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6 relative z-10">
+      <div className="max-w-6xl mx-auto px-8 sm:px-12 lg:px-16 py-6 relative z-10">
         {/* ─── NAV ─── */}
         <header className="flex items-center justify-between py-2">
           <Link href="/" className="flex items-center">
