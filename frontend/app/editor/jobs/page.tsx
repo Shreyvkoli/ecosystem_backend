@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { editorApi, ordersApi } from '@/lib/api'
+import { editorApi, ordersApi, usersApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import EditorTimeline from '@/components/EditorTimeline'
