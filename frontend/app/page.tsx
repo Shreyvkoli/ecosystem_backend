@@ -7,9 +7,9 @@ import HeroVisuals from '@/components/HeroVisuals'
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-[#f0f7ff]">
       {/* Subtle top gradient accent */}
-      <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-brand-light/40 via-white to-white pointer-events-none -z-0" />
+      <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-brand-light/40 via-[#f0f7ff] to-[#f0f7ff] pointer-events-none -z-0" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* ─── NAV ─── */}
