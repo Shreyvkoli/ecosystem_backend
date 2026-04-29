@@ -37,7 +37,77 @@ export default function OrderDetailPage() {
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
   const [showRevisionLimitModal, setShowRevisionLimitModal] = useState(false)
+  const [isProcessingRevisionFee, setIsProcessingRevisionFee] = useState(false)
   const [isEditingRaw, setIsEditingRaw] = useState(false)
+
+  // Calculate Revision Fee
+  const revisionFee = Math.max(Math.round((order?.amount || 0) * 0.05), 100);
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
+  const handleRevisionPayment = async () => {
+    setIsProcessingRevisionFee(true)
+    try {
+      // Create payment order
+      const orderResponse = await paymentsApi.createRevisionFee(orderId)
+
+      // Load Razorpay SDK
+      const loaded = await loadRazorpay()
+      if (!loaded) {
+        alert('Failed to load payment gateway')
+        setIsProcessingRevisionFee(false)
+        return
+      }
+
+      const { razorpayOrderId, keyId, amount: feeAmount, currency } = orderResponse.data
+
+      // Initialize Razorpay
+      const options = {
+        key: keyId,
+        amount: feeAmount * 100, // Convert to paise
+        currency: currency,
+        name: 'Video Editing Marketplace',
+        description: 'Revision Fee Payment',
+        order_id: razorpayOrderId,
+        handler: async function (response: any) {
+          try {
+            await paymentsApi.verifyRevisionFee(
+              response.razorpay_order_id,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            )
+            setShowRevisionLimitModal(false)
+            queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+            queryClient.invalidateQueries({ queryKey: ['orders'] })
+          } catch (err: any) {
+            alert(err.response?.data?.error || 'Payment verification failed')
+          }
+        },
+        theme: {
+          color: '#4F46E5',
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessingRevisionFee(false)
+          },
+        },
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Payment initiation failed')
+      setIsProcessingRevisionFee(false)
+    }
+  }
 
   useEffect(() => {
     if (!user) {
@@ -902,25 +972,33 @@ export default function OrderDetailPage() {
               </div>
 
               <p className="text-gray-600 mb-8 leading-relaxed">
-                To request more changes, a fee of <span className="font-bold text-brand bg-bg-brand/10 px-1 rounded">₹500</span> will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
+                To request more changes, a fee of <span className="font-bold text-brand bg-bg-brand/10 px-1 rounded">₹{revisionFee.toLocaleString()}</span> (5% of order cost) will be charged. This amount goes <span className="font-semibold underline decoration-indigo-300 decoration-2 underline-offset-2">directly to the editor</span> for their extra time.
               </p>
 
               <div className="flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   onClick={() => setShowRevisionLimitModal(false)}
-                  className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+                  disabled={isProcessingRevisionFee}
+                  className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // Placeholder for payment logic
-                    alert('Premium Revision Payment Integration Coming Soon!')
-                    setShowRevisionLimitModal(false)
-                  }}
-                  className="px-5 py-2.5 bg-gradient-to-r from-brand to-brand text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center"
+                  onClick={handleRevisionPayment}
+                  disabled={isProcessingRevisionFee}
+                  className="px-5 py-2.5 bg-gradient-to-r from-brand to-brand text-white rounded-lg hover:shadow-lg hover:opacity-90 font-medium transition-all flex items-center justify-center disabled:opacity-50"
                 >
-                  Pay & Request (₹500)
+                  {isProcessingRevisionFee ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay ₹${revisionFee.toLocaleString()} & Request`
+                  )}
                 </button>
               </div>
             </div>

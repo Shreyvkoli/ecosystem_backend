@@ -599,6 +599,155 @@ router.post('/verify', authenticate, requireCreator, async (req: AuthRequest, re
 });
 
 /**
+ * POST /api/payments/revision-fee/create
+ * Create Razorpay order for paid revision (5% of order cost)
+ */
+router.post('/revision-fee/create', authenticate, requireCreator, async (req: AuthRequest, res) => {
+  try {
+    const schema = z.object({ orderId: z.string().uuid() });
+    const { orderId } = schema.parse(req.body);
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.creatorId !== req.userId!) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.revisionCount < 2) {
+      return res.status(400).json({ error: 'Free revisions still available' });
+    }
+
+    const feeAmount = Math.max(Math.round((order.amount || 0) * 0.05), 100); // 5% or minimum 100 INR
+
+    const razorpay = getRazorpay();
+    const razorpayOrder = await razorpay.orders.create({
+      amount: toMinorAmount(feeAmount, 'INR'),
+      currency: 'INR',
+      payment_capture: true,
+      receipt: `rev_${orderId.slice(0, 8)}_${Date.now().toString().slice(-10)}`,
+      notes: { orderId, userId: req.userId!, kind: 'REVISION_FEE' }
+    });
+
+    const payment = await prisma.payment.create({
+      data: {
+        orderId,
+        userId: req.userId!,
+        amount: feeAmount,
+        currency: 'INR',
+        gateway: 'RAZORPAY',
+        kind: 'REVISION_FEE',
+        status: PaymentStatus.PENDING,
+        razorpayOrderId: razorpayOrder.id
+      }
+    });
+
+    return res.json({
+      gateway: 'razorpay',
+      paymentId: payment.id,
+      razorpayOrderId: razorpayOrder.id,
+      amount: feeAmount,
+      currency: 'INR',
+      keyId: process.env.RAZORPAY_KEY_ID
+    });
+  } catch (error: any) {
+    console.error('Create revision fee error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/payments/revision-fee/verify
+ * Verify revision fee and update order
+ */
+router.post('/revision-fee/verify', authenticate, requireCreator, async (req: AuthRequest, res) => {
+  try {
+    const schema = z.object({
+      razorpayOrderId: z.string(),
+      razorpayPaymentId: z.string(),
+      razorpaySignature: z.string()
+    });
+
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = schema.parse(req.body);
+
+    const payment = await prisma.payment.findFirst({
+      where: { razorpayOrderId, userId: req.userId! },
+      include: { order: true }
+    });
+
+    if (!payment || !payment.order.editorId) {
+      return res.status(404).json({ error: 'Payment or editor not found' });
+    }
+
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+    if (isDev && razorpaySignature === 'dummy_signature_dev_mode') {
+      console.log('⚠️ DEV MODE: Bypassing Razorpay Signature for Revision Fee');
+    } else {
+      const secret = process.env.RAZORPAY_KEY_SECRET;
+      if (!secret) return res.status(500).json({ error: 'RAZORPAY_KEY_SECRET not configured' });
+
+      const isValid = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature, secret);
+      if (!isValid) return res.status(400).json({ error: 'Invalid payment signature' });
+
+      const razorpay = getRazorpay();
+      const razorpayPayment = await razorpay.payments.fetch(razorpayPaymentId);
+      if (razorpayPayment.status !== 'captured' && razorpayPayment.status !== 'authorized') {
+        return res.status(400).json({ error: `Payment not successful. Status: ${razorpayPayment.status}` });
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Transfer fee directly to editor
+      await LedgerService.transfer({
+        from: AccountType.GATEWAY_EXTERNAL,
+        to: AccountType.EDITOR_WALLET + payment.order.editorId,
+        amount: payment.amount,
+        transactionType: 'BONUS', // Using BONUS or similar for extra fee
+        orderId: payment.orderId,
+        idempotencyKey: `rev_fee_${payment.id}`,
+        prismaTx: tx
+      });
+
+      // 2. Update Payment
+      const updatedPayment = await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          razorpayPaymentId,
+          razorpaySignature,
+          status: PaymentStatus.COMPLETED,
+          processedAt: new Date()
+        }
+      });
+
+      // 3. Update Order to Revision Requested
+      await tx.order.update({
+        where: { id: payment.orderId },
+        data: {
+          status: 'REVISION_REQUESTED',
+          revisionCount: { increment: 1 },
+          lastActivityAt: new Date()
+        }
+      });
+
+      // 4. System Message
+      await tx.message.create({
+        data: {
+          orderId: payment.orderId,
+          userId: req.userId!,
+          type: 'SYSTEM',
+          content: `Paid Revision Requested! 💰 (Fee: ₹${payment.amount} transferred to Editor)`
+        }
+      });
+
+      return updatedPayment;
+    });
+
+    return res.json({ success: true, payment: result });
+  } catch (error: any) {
+    console.error('Verify revision fee error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
  * POST /api/payments/webhook
  * Razorpay webhook handler (no auth required - uses signature verification)
  * Handles payment events from Razorpay

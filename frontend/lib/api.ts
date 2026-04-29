@@ -333,6 +333,12 @@ export const paymentsApi = {
     >('/payments/editor-deposit/create', { orderId }),
   verifyEditorDeposit: (razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string) =>
     api.post('/payments/editor-deposit/verify', { razorpayOrderId, razorpayPaymentId, razorpaySignature }),
+  createRevisionFee: (orderId: string) =>
+    api.post<
+      { gateway: 'razorpay'; paymentId: string; razorpayOrderId: string; amount: number; currency: string; keyId: string }
+    >('/payments/revision-fee/create', { orderId }),
+  verifyRevisionFee: (razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string) =>
+    api.post('/payments/revision-fee/verify', { razorpayOrderId, razorpayPaymentId, razorpaySignature }),
   list: (orderId: string) =>
     api.get<Payment[]>(`/payments/order/${orderId}`),
   get: (id: string) =>
