@@ -178,6 +178,31 @@ router.post('/creators/:creatorId/interest', async (req: AuthRequest, res: Respo
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    const { creatorId } = req.params;
+
+    // Check if already expressed interest
+    const existing = await (prisma as any).editorInterest.findUnique({
+      where: {
+        creatorId_editorId: {
+          creatorId,
+          editorId: req.userId
+        }
+      }
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'You have already expressed interest in this creator.' });
+    }
+
+    // Create Interest record
+    await (prisma as any).editorInterest.create({
+      data: {
+        creatorId,
+        editorId: req.userId,
+        status: 'PENDING'
+      }
+    });
+
     const editor = await prisma.user.findUnique({
       where: { id: req.userId }
     });
@@ -185,17 +210,84 @@ router.post('/creators/:creatorId/interest', async (req: AuthRequest, res: Respo
     // Create a notification for the creator
     await (prisma as any).notification.create({
       data: {
-        userId: req.params.creatorId,
+        userId: creatorId,
         type: 'EDITOR_INTEREST',
         title: 'An editor is interested in working with you',
         message: `${editor?.name} has expressed interest in your future projects.`,
-        link: `/dashboard?tab=browse` 
+        link: `/dashboard?tab=interests` 
       }
     });
 
     return res.json({ success: true });
   } catch (error: any) {
     console.error('Express interest error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/users/creators/interests
+// Get list of editors interested in the current creator
+router.get('/creators/interests', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || req.userRole !== 'CREATOR') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const interests = await (prisma as any).editorInterest.findMany({
+      where: {
+        creatorId: req.userId
+      },
+      include: {
+        editor: {
+          include: {
+            editorProfile: true,
+            reviewsReceived: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    return res.json(interests);
+  } catch (error: any) {
+    console.error('Get creator interests error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /api/users/interests/:id/status
+router.patch('/interests/:id/status', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId || req.userRole !== 'CREATOR') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+    const { status } = z.object({
+      status: z.enum(['ACCEPTED', 'REJECTED'])
+    }).parse(req.body);
+
+    const interest = await (prisma as any).editorInterest.update({
+      where: { id, creatorId: req.userId },
+      data: { status }
+    });
+
+    // Notify editor
+    await (prisma as any).notification.create({
+      data: {
+        userId: interest.editorId,
+        type: 'INTEREST_UPDATE',
+        title: `A creator has ${status.toLowerCase()} your interest`,
+        message: `A creator you were interested in has ${status.toLowerCase()} your request.`,
+        link: `/editor/jobs`
+      }
+    });
+
+    return res.json(interest);
+  } catch (error: any) {
+    console.error('Update interest status error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

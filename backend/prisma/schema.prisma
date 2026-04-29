@@ -73,6 +73,8 @@ model User {
   withdrawalRequests WithdrawalRequest[]
   savedEditors       SavedEditor[]       @relation("SavedByCreator")
   savedBy            SavedEditor[]       @relation("SavedEditor")
+  interestsSent      EditorInterest[]    @relation("EditorInterest")
+  interestsReceived  EditorInterest[]    @relation("CreatorInterest")
 
   @@index([email])
   @@index([role])
@@ -86,6 +88,22 @@ model SavedEditor {
 
   creator   User     @relation("SavedByCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   editor    User     @relation("SavedEditor", fields: [editorId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, editorId])
+  @@index([creatorId])
+  @@index([editorId])
+}
+
+model EditorInterest {
+  id        String   @id @default(uuid())
+  creatorId String
+  editorId  String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator   User     @relation("CreatorInterest", fields: [creatorId], references: [id], onDelete: Cascade)
+  editor    User     @relation("EditorInterest", fields: [editorId], references: [id], onDelete: Cascade)
 
   @@unique([creatorId, editorId])
   @@index([creatorId])

@@ -56,6 +56,16 @@ export default function DashboardPage() {
     enabled: !!user && user.role === 'CREATOR' && (activeTab === 'saved' || activeTab === 'browse'),
   })
 
+  // Fetch Editor Interests
+  const { data: interests, isLoading: isLoadingInterests } = useQuery({
+    queryKey: ['editor-interests'],
+    queryFn: async () => {
+      const response = await usersApi.listInterests()
+      return response.data
+    },
+    enabled: !!user && user.role === 'CREATOR' && activeTab === 'interests',
+  })
+
   // All editors list for browsing
   const { data: allEditors, isLoading: isLoadingAllEditors } = useQuery({
     queryKey: ['all-editors'],
@@ -111,6 +121,15 @@ export default function DashboardPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-editors'] })
+    }
+  })
+
+  const updateInterestMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string, status: 'ACCEPTED' | 'REJECTED' }) => 
+      usersApi.updateInterestStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-interests'] })
+      alert('Status updated successfully!')
     }
   })
 
@@ -210,11 +229,85 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {activeTab === 'interests' && (
+            <div className="space-y-6">
+              {isLoadingInterests ? (
+                <div className="glass-morphism p-12 text-center">
+                  <p className="text-gray-600 font-medium">Loading interest requests...</p>
+                </div>
+              ) : !interests || interests.length === 0 ? (
+                <div className="glass-morphism p-12 text-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-charcoal mb-2">No interest requests yet</h3>
+                  <p className="text-body text-gray-400 max-w-sm mx-auto">
+                    When editors express interest in working with you, they'll appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {interests.map((item: any) => (
+                    <div key={item.id} className="premium-card group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full border border-gray-200 overflow-hidden bg-gray-50 flex-shrink-0">
+                          {item.editor.editorProfile?.avatarUrl ? (
+                            <img src={item.editor.editorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-brand-dark bg-brand/10">
+                              {item.editor.name?.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-charcoal leading-tight">{item.editor.name}</h3>
+                          <p className="text-xs text-brand font-semibold">Video Editor</p>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-6 line-clamp-2 italic">
+                        {item.editor.editorProfile?.bio || "No bio provided."}
+                      </p>
+
+                      <div className="flex gap-2">
+                        {item.status === 'PENDING' ? (
+                          <>
+                            <button
+                              onClick={() => updateInterestMutation.mutate({ id: item.id, status: 'ACCEPTED' })}
+                              disabled={updateInterestMutation.isPending}
+                              className="flex-1 py-2 bg-charcoal text-white rounded-lg text-sm font-bold hover:bg-charcoal/90 transition-all active:scale-[0.98] disabled:opacity-50"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => updateInterestMutation.mutate({ id: item.id, status: 'REJECTED' })}
+                              disabled={updateInterestMutation.isPending}
+                              className="flex-1 py-2 bg-white text-gray-400 rounded-lg text-sm font-bold border border-gray-100 hover:bg-gray-50 hover:text-red-500 transition-all active:scale-[0.98] disabled:opacity-50"
+                            >
+                              Decline
+                            </button>
+                          </>
+                        ) : (
+                          <div className={`w-full py-2 text-center rounded-lg text-sm font-bold ${
+                            item.status === 'ACCEPTED' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                          }`}>
+                            {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit overflow-x-auto no-scrollbar">
             {[
               ...(user.role === 'CREATOR' ? [
                 { key: 'browse', label: 'Browse Editors' },
+                { key: 'interests', label: 'Interests' },
                 { key: 'active', label: 'Active Orders' },
                 { key: 'history', label: 'History' },
                 { key: 'saved', label: 'Saved' }

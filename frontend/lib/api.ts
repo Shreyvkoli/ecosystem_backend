@@ -360,6 +360,9 @@ export const usersApi = {
   listSavedEditors: () => api.get<any[]>('/users/creators/saved-editors'),
   updateCreatorProfile: (data: { avatarUrl?: string; bio?: string }) => api.put('/users/creator/profile', data),
   expressInterest: (creatorId: string) => api.post(`/users/creators/${creatorId}/interest`),
+  listInterests: () => api.get<any[]>('/users/creators/interests'),
+  updateInterestStatus: (interestId: string, status: 'ACCEPTED' | 'REJECTED') => 
+    api.patch(`/users/interests/${interestId}/status`, { status }),
 };
 
 export const notificationsApi = {
