@@ -104,29 +104,29 @@ export default function Home() {
               transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
               className="relative z-10"
             >
-              {/* Replace illustration with a sleek dark card mockup */}
-              <div className="w-full max-w-lg mx-auto bg-charcoal border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-blue-500" />
-                <div className="flex items-center justify-between mb-8">
+              {/* Sleek dark card mockup holding an exciting video */}
+              <div className="w-full max-w-lg mx-auto bg-charcoal border border-white/10 rounded-2xl p-4 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-blue-500 z-20" />
+                <div className="flex items-center justify-between mb-4 relative z-20">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500/80" />
                     <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                     <div className="w-3 h-3 rounded-full bg-green-500/80" />
                   </div>
-                  <div className="text-xs text-white/40 font-mono">LumaHive Workspace</div>
+                  <div className="text-xs text-white/40 font-mono">LumaHive Pro Editor</div>
                 </div>
-                <div className="space-y-4">
-                  <div className="h-32 bg-white/5 rounded-xl border border-white/5 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-brand/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="h-10 flex-1 bg-white/5 rounded-lg border border-white/5" />
-                    <div className="h-10 w-24 bg-brand/20 rounded-lg border border-brand/30" />
-                  </div>
-                  <div className="space-y-2 pt-4">
-                    <div className="h-2 w-3/4 bg-white/10 rounded-full" />
-                    <div className="h-2 w-1/2 bg-white/5 rounded-full" />
-                  </div>
+                <div className="relative rounded-xl overflow-hidden bg-black/50 border border-white/5 aspect-video flex items-center justify-center shadow-inner">
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                    src="https://cdn.coverr.co/videos/coverr-video-editor-at-work-2460/1080p.mp4"
+                  />
+                  {/* Subtle overlays for aesthetic */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl pointer-events-none" />
                 </div>
               </div>
             </motion.div>
