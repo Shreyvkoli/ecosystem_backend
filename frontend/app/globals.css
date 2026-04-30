@@ -66,15 +66,16 @@ body {
   }
 
   .btn-primary {
-    @apply btn-base bg-brand text-charcoal font-black hover:bg-brand-dark active:scale-[0.98];
-    box-shadow: 0 2px 8px rgba(0, 237, 100, 0.25);
+    @apply btn-base bg-brand text-charcoal font-black hover:bg-[#00d95a] active:scale-[0.98] border-2 border-charcoal !rounded-lg;
+    box-shadow: 0 2px 0px rgba(15, 17, 21, 0.8);
   }
   .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(0, 237, 100, 0.35);
+    box-shadow: 0 3px 0px rgba(15, 17, 21, 0.9);
     transform: translateY(-1px);
   }
   .btn-primary:active {
-    box-shadow: 0 1px 4px rgba(0, 237, 100, 0.2);
+    box-shadow: 0 0px 0px rgba(15, 17, 21, 1);
+    transform: translateY(1px);
   }
 
   .btn-secondary {
