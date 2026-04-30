@@ -25,18 +25,14 @@ export default function Logo({
 
   const content = (
     <span className={className ?? 'inline-flex items-center gap-3'}>
-      <div className="flex items-center justify-center text-brand">
-        <svg 
-          width={size + 8} 
-          height={size + 8} 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg" 
-          className={iconClassName || ''}
-        >
-          <path d="M12 2L2 7.77V16.22L12 22L22 16.22V7.77L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M10 8.5L16 12L10 15.5V8.5Z" fill="currentColor" />
-        </svg>
+      <div className="flex items-center justify-center overflow-hidden">
+        <img
+          src="/cutflow-logo-green.png"
+          alt="Cutflow Logo"
+          width={size + 8}
+          height={size + 8}
+          className={`object-contain ${iconClassName || ''}`}
+        />
       </div>
 
       {showWordmark ? (
@@ -46,7 +42,7 @@ export default function Logo({
             'text-2xl font-bold text-charcoal tracking-tight'
           }
         >
-          LumaHive
+          Cutflow
         </span>
       ) : null}
     </span>

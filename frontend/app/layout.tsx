@@ -8,7 +8,7 @@ import InstallPWA from '@/components/InstallPWA'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'LumaHive - Premium Video Editing Marketplace',
+  title: 'Cutflow - Premium Video Editing Marketplace',
   description: 'Connect creators with professional video editors in a seamless, premium experience',
   manifest: '/manifest.json',
   icons: {
