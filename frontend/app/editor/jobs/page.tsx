@@ -95,7 +95,6 @@ export default function EditorJobsPage() {
       queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
       queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
       queryClient.invalidateQueries({ queryKey: ['activeJobCount'] })
-      alert('Applied successfully')
     },
     onError: (err: any) => {
       alert(err?.response?.data?.error || 'Failed to apply')
@@ -107,7 +106,6 @@ export default function EditorJobsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
       queryClient.invalidateQueries({ queryKey: ['activeJobCount'] })
-      alert('Job started!')
     },
     onError: (err: any) => {
       alert(err?.response?.data?.error || 'Failed to start job')

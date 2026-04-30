@@ -16,6 +16,7 @@ import {
 } from '../services/orderService.js';
 import { sendEmail } from '../utils/email.js';
 import { uploadVideoToYouTube } from '../utils/youtube.js';
+import { CacheService } from '../services/cacheService.js';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -44,6 +45,21 @@ const APPLICATION_STATUS = {
 router.use(authenticate);
 router.use(idempotencyMiddleware);
 
+/**
+ * Helper to invalidate order-related caches
+ */
+async function invalidateOrdersCache(userId?: string) {
+  try {
+    if (userId) {
+      await CacheService.invalidatePattern(`user:${userId}:role:*:orders:*`);
+    }
+    await CacheService.invalidatePattern(`user:*:role:EDITOR:orders:*`);
+    await CacheService.invalidatePattern(`user:*:role:ADMIN:orders:*`);
+  } catch (e) {
+    console.error('Cache invalidation error:', e);
+  }
+}
+
 function computeDepositAmount(editingLevel?: string): number {
   switch (editingLevel) {
     case 'PREMIUM':
@@ -60,8 +76,6 @@ function computeDepositAmount(editingLevel?: string): number {
  * GET /api/orders
  * Get all orders for the authenticated user (filtered by role)
  */
-import { CacheService } from '../services/cacheService.js';
-
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId || !req.userRole) {
@@ -136,6 +150,7 @@ router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) =>
       req.userId!,
       req.userRole as 'CREATOR' | 'ADMIN'
     );
+    await invalidateOrdersCache(req.userId);
     return res.status(204).send();
   } catch (error: any) {
     const message = error instanceof Error ? error.message : 'Failed to delete order';
@@ -150,14 +165,12 @@ router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) =>
  */
 router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
-    // Velocity limit removed as per request
-
     const schema = z.object({
       title: z.string().min(1, 'Title is required'),
       description: z.string().optional(),
       brief: z.string().optional(),
       amount: z.number().positive().optional(),
-      editorId: z.string().uuid().optional(), // Allow creator to optionally set editorId directly
+      editorId: z.string().uuid().optional(),
       rawFootageDuration: z.number().min(0, "Duration must be positive").optional(),
       expectedDuration: z.number().min(0, "Duration must be positive").optional(),
       editingLevel: z.enum(['BASIC', 'PROFESSIONAL', 'PREMIUM']).optional(),
@@ -165,22 +178,14 @@ router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
       deadline: z.string().datetime().optional()
     });
 
-    console.log('--- CREATE ORDER REQUEST ---');
-    console.log('Raw Payload:', JSON.stringify(req.body, null, 2));
-
     const data = schema.parse(req.body);
-    console.log('Parsed Data:', JSON.stringify(data, null, 2));
 
     const order = await createOrder({
       ...data,
       creatorId: req.userId!
     });
-    console.log('Created Order:', JSON.stringify(order, null, 2));
 
-    // Invalidate Cache for this user
-    import('../services/cacheService.js').then(({ CacheService }) => {
-      CacheService.invalidatePattern(`user:${req.userId}:*`);
-    }).catch(console.error);
+    await invalidateOrdersCache(req.userId);
 
     return res.status(201).json(order);
   } catch (error: any) {
@@ -212,6 +217,9 @@ router.patch('/:id/assign', requireCreator, async (req: AuthRequest, res: Respon
       editorId,
       req.userId!
     );
+    
+    await invalidateOrdersCache(req.userId);
+    await invalidateOrdersCache(editorId);
 
     return res.json(order);
   } catch (error: any) {
@@ -274,21 +282,17 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
       return res.status(400).json({ error: 'Final video file not found' });
     }
 
-    // Verify if file has S3 keys (Legacy) or is External
-    // Verify if file has S3 keys (Legacy) or is External
     if (!finalFile.publicLink) {
       return res.status(400).json({ error: 'Final file has no public link to download.' });
     }
 
     console.log(`Fetching stream from: ${finalFile.publicLink}`);
 
-    // Fetch the file stream
     const fileResponse = await fetch(finalFile.publicLink);
     if (!fileResponse.ok || !fileResponse.body) {
       throw new Error(`Failed to fetch file from public link: ${fileResponse.statusText}`);
     }
 
-    // Convert Web Stream to Node Stream for googleapis
     const { Readable } = await import('stream');
     // @ts-ignore
     const nodeStream = Readable.fromWeb(fileResponse.body);
@@ -313,6 +317,8 @@ router.post('/:id/youtube/upload', requireCreator, async (req: AuthRequest, res:
         lastActivityAt: new Date()
       }
     });
+    
+    await invalidateOrdersCache(req.userId);
 
     return res.json({
       order: updated,
@@ -352,6 +358,10 @@ router.patch('/:id/status', async (req: AuthRequest, res: Response) => {
       userId: req.userId,
       userRole: req.userRole as 'CREATOR' | 'EDITOR' | 'ADMIN'
     });
+
+    await invalidateOrdersCache(req.userId);
+    if (order.editorId) await invalidateOrdersCache(order.editorId);
+    if (order.creatorId) await invalidateOrdersCache(order.creatorId);
 
     return res.json(order);
   } catch (error: any) {
@@ -394,6 +404,9 @@ router.post('/:id/approve', requireCreator, async (req: AuthRequest, res: Respon
         content: `Preview Approved! Please confirm the version and upload the Final Video (Clean Link).`
       }
     });
+
+    await invalidateOrdersCache(req.userId);
+    if (order.editorId) await invalidateOrdersCache(order.editorId);
 
     return res.json(order);
   } catch (error: any) {
@@ -449,6 +462,9 @@ router.post('/:id/request-revision', requireCreator, async (req: AuthRequest, re
 
       return result;
     });
+
+    await invalidateOrdersCache(req.userId);
+    if (updatedOrder.editorId) await invalidateOrdersCache(updatedOrder.editorId);
 
     return res.json(updatedOrder);
   } catch (error: any) {
@@ -725,6 +741,8 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
     } catch (notifError) {
       console.error('Failed to send notification:', notifError);
     }
+
+    await invalidateOrdersCache(userId);
 
     return res.status(201).json(application);
   } catch (error: any) {
