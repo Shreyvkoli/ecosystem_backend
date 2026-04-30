@@ -9,8 +9,6 @@ import { HeroIllustration, HandshakeIllustration, ShieldIllustration, ChatIllust
 export default function Home() {
   return (
     <div className="relative min-h-screen bg-mint overflow-hidden">
-      {/* Background patterns for texture */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
       {/* Subtle top gradient accent */}
       <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-mint-light via-mint/50 to-transparent pointer-events-none -z-0" />
 
