@@ -206,8 +206,8 @@ export default function OrderDetailPage() {
   // Sort files to get LATEST raw video
   const rawVideo = order?.files
     ?.filter((f) => f.type === 'RAW_VIDEO' && f.uploadStatus === 'completed')
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-  const previewVideos = submissions?.filter((f) => f.type === 'PREVIEW_VIDEO').sort((a, b) => b.version - a.version)
+    ?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())?.[0]
+  const previewVideos = submissions?.filter((f) => f.type === 'PREVIEW_VIDEO')?.sort((a, b) => b.version - a.version)
   const latestPreview = previewVideos?.[0]
   const finalVideo = submissions?.find((f) => f.type === 'FINAL_VIDEO')
 
