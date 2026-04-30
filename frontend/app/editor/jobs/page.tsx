@@ -467,8 +467,12 @@ export default function EditorJobsPage() {
                           app.editorId === user?.id && app.status === 'APPLIED'
                         )) &&
                         order.editorId !== user?.id ? (
-                        <button onClick={() => applyMutation.mutate(order.id)} disabled={applyMutation.isPending} className="premium-button w-full neon-glow">
-                          {applyMutation.isPending ? 'Applying...' : 'Apply to Job'}
+                        <button 
+                          onClick={() => applyMutation.mutate(order.id)} 
+                          disabled={applyMutation.isPending && applyMutation.variables === order.id} 
+                          className="premium-button w-full neon-glow"
+                        >
+                          {applyMutation.isPending && applyMutation.variables === order.id ? 'Applying...' : 'Apply to Job'}
                         </button>
                       ) : (
                         <div className="text-center font-medium text-gray-700 py-2 bg-gray-50 rounded-lg">
@@ -587,13 +591,13 @@ export default function EditorJobsPage() {
                               </Link>
                               <button
                                 onClick={() => startJobMutation.mutate(order.id)}
-                                disabled={!activeJobData?.canApply || startJobMutation.isPending}
-                                className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!activeJobData?.canApply
+                                disabled={!activeJobData?.canApply || (startJobMutation.isPending && startJobMutation.variables === order.id)}
+                                className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!activeJobData?.canApply || (startJobMutation.isPending && startJobMutation.variables === order.id)
                                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                   : 'bg-blue-600 text-white hover:bg-blue-700'
                                   }`}
                               >
-                                {startJobMutation.isPending ? 'Starting...' : 'Start Job'}
+                                {startJobMutation.isPending && startJobMutation.variables === order.id ? 'Starting...' : 'Start Job'}
                                 <ArrowRight className="w-3 h-3 ml-1.5" />
                               </button>
                             </div>
