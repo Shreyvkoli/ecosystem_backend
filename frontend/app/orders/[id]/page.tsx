@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ordersApi, youtubeApi } from '@/lib/api'
+import { ordersApi, youtubeApi, paymentsApi } from '@/lib/api'
 import { getUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import OrderVideoPlayer from '@/components/OrderVideoPlayer'
@@ -40,8 +40,7 @@ export default function OrderDetailPage() {
   const [isProcessingRevisionFee, setIsProcessingRevisionFee] = useState(false)
   const [isEditingRaw, setIsEditingRaw] = useState(false)
 
-  // Calculate Revision Fee
-  const revisionFee = Math.max(Math.round((order?.amount || 0) * 0.05), 100);
+
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -129,6 +128,9 @@ export default function OrderDetailPage() {
     enabled: !!orderId && !!user,
     refetchInterval: 5000,
   })
+
+  // Calculate Revision Fee
+  const revisionFee = Math.max(Math.round((order?.amount || 0) * 0.05), 100);
 
   const approveMutation = useMutation({
     mutationFn: () => ordersApi.approve(orderId),

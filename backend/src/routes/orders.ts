@@ -150,21 +150,7 @@ router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) =>
  */
 router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
   try {
-    // Anti-Abuse: Velocity Limit (Max 1 order per 30 mins for unverified users)
-    const [userRecord, lastOrder] = await Promise.all([
-      prisma.user.findUnique({ where: { id: req.userId! }, select: { isVerified: true } }),
-      prisma.order.findFirst({
-        where: { creatorId: req.userId! },
-        orderBy: { createdAt: 'desc' }
-      })
-    ]);
-
-    if (lastOrder && !(userRecord as any)?.isVerified) {
-      const diff = Date.now() - new Date(lastOrder.createdAt).getTime();
-      if (diff < 30 * 60 * 1000) {
-        return res.status(429).json({ error: 'Velocity limit exceeded. Please wait 30 minutes between orders.' });
-      }
-    }
+    // Velocity limit removed as per request
 
     const schema = z.object({
       title: z.string().min(1, 'Title is required'),
