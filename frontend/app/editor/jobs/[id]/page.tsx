@@ -235,22 +235,64 @@ export default function EditorJobDetailPage() {
               )}
 
               {/* Video selection */}
-              {previewVideos && previewVideos.length > 1 && (
+              {(rawVideo || (previewVideos && previewVideos.length > 0)) && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-2">Preview Versions</h3>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    Video Versions
+                  </h3>
                   <div className="space-y-2">
-                    {previewVideos.map((video) => (
+                    {/* Raw Video Option */}
+                    {rawVideo && (
+                      <button
+                        onClick={() => setSelectedFileId(rawVideo.id)}
+                        className={`w-full text-left px-3 py-2 rounded border flex items-center justify-between ${selectedFileId === rawVideo.id || (!selectedFileId && !latestPreview && !finalVideo && rawVideo.id)
+                          ? 'border-brand bg-bg-brand/10 text-brand-dark font-bold'
+                          : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                          }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                          <span>Original Raw Footage</span>
+                        </div>
+                        <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 uppercase">Original</span>
+                      </button>
+                    )}
+
+                    {/* Preview Versions */}
+                    {previewVideos?.map((video) => (
                       <button
                         key={video.id}
                         onClick={() => setSelectedFileId(video.id)}
-                        className={`w-full text-left px-3 py-2 rounded border ${selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
-                          ? 'border-brand bg-bg-brand/10'
-                          : 'border-gray-300 hover:bg-gray-50'
+                        className={`w-full text-left px-3 py-2 rounded border flex items-center justify-between ${selectedFileId === video.id || (!selectedFileId && video.id === latestPreview?.id)
+                          ? 'border-brand bg-bg-brand/10 text-brand-dark font-bold'
+                          : 'border-gray-300 hover:bg-gray-50 text-gray-700'
                           }`}
                       >
-                        Preview v{video.version} - {new Date(video.createdAt).toLocaleDateString()}
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-brand"></span>
+                          <span>Preview Draft v{video.version}</span>
+                        </div>
+                        <span className="text-[10px] text-gray-400">{new Date(video.createdAt).toLocaleDateString()}</span>
                       </button>
                     ))}
+
+                    {/* Final Video Option */}
+                    {finalVideo && (
+                      <button
+                        onClick={() => setSelectedFileId(finalVideo.id)}
+                        className={`w-full text-left px-3 py-2 rounded border flex items-center justify-between ${selectedFileId === finalVideo.id
+                          ? 'border-brand bg-bg-brand/10 text-brand-dark font-bold'
+                          : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                          }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          <span>Final Delivered Video</span>
+                        </div>
+                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase font-bold">Final</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

@@ -122,6 +122,14 @@ export default function ChatRoom({ orderId, currentUser, recipientName }: ChatRo
                                     : 'bg-gray-100 text-gray-800 rounded-bl-none'}
                             `}>
                                 <p>{msg.content}</p>
+                                {msg.timestamp !== undefined && msg.timestamp !== null && (
+                                    <div className="mt-1 flex items-center">
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isMe ? 'bg-white/20 text-white' : 'bg-brand/10 text-brand-dark'}`}>
+                                            {Math.floor(msg.timestamp / 60)}:{(msg.timestamp % 60).toString().padStart(2, '0')}
+                                        </span>
+                                        <span className="text-[10px] ml-1 opacity-50 italic">Timestamp Comment</span>
+                                    </div>
+                                )}
                                 <span className={`text-[10px] block mt-1 opacity-70 ${isMe ? 'text-indigo-100' : 'text-gray-400'}`}>
                                     {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
                                 </span>
