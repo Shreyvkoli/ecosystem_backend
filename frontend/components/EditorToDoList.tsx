@@ -27,15 +27,16 @@ export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }
     })
 
     // Filter only TIMESTAMP_COMMENT types as actionable tasks
-    const taskMessages = messages.filter(m => m.type === 'TIMESTAMP_COMMENT')
+    const messages: Message[] = allMessages || []
+    const taskMessages = messages.filter((m: Message) => m.type === 'TIMESTAMP_COMMENT')
     
-    const currentFileTasks = taskMessages.filter(m => m.fileId === fileId)
-    const otherFileTasks = taskMessages.filter(m => m.fileId && m.fileId !== fileId)
+    const currentFileTasks = taskMessages.filter((m: Message) => m.fileId === fileId)
+    const otherFileTasks = taskMessages.filter((m: Message) => m.fileId && m.fileId !== fileId)
     
-    const resolvedTasks = currentFileTasks.filter(m => m.resolved)
-    const pendingTasks = currentFileTasks.filter(m => !m.resolved)
+    const resolvedTasks = currentFileTasks.filter((m: Message) => m.resolved)
+    const pendingTasks = currentFileTasks.filter((m: Message) => !m.resolved)
     
-    const otherPendingTasks = otherFileTasks.filter(m => !m.resolved)
+    const otherPendingTasks = otherFileTasks.filter((m: Message) => !m.resolved)
 
     const total = currentFileTasks.length
     const completed = resolvedTasks.length
@@ -123,7 +124,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            {pendingTasks.map(task => <TaskItem key={task.id} task={task} />)}
+                            {pendingTasks.map((task: Message) => <TaskItem key={task.id} task={task} />)}
                         </div>
                     )}
                 </div>
@@ -136,7 +137,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }
                             Tasks from Other Versions ({otherPendingTasks.length})
                         </h4>
                         <div className="space-y-3">
-                            {otherPendingTasks.map(task => (
+                            {otherPendingTasks.map((task: Message) => (
                                 <div key={task.id} className="p-3 bg-orange-50/50 border border-orange-100 rounded-lg">
                                     <div className="flex justify-between items-start gap-2">
                                         <p className="text-sm text-gray-800 flex-1">{task.content}</p>
@@ -164,7 +165,7 @@ export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }
                     <div className="pt-4 border-t border-gray-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
                         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Completed ({resolvedTasks.length})</h4>
                         <div className="space-y-2">
-                            {resolvedTasks.map(task => <TaskItem key={task.id} task={task} />)}
+                            {resolvedTasks.map((task: Message) => <TaskItem key={task.id} task={task} />)}
                         </div>
                     </div>
                 )}
