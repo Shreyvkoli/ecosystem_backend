@@ -1,5 +1,6 @@
 'use client'
 
+// Order Video Player Component for Cutflow Platform
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import dynamic from 'next/dynamic'
 import { filesApi, messagesApi, Message } from '@/lib/api'
