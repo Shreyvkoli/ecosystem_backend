@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { filesApi } from '@/lib/api'
+import { filesApi, messagesApi } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { AlertTriangle } from 'lucide-react'
 
 interface LinkSubmissionProps {
     orderId: string
@@ -13,6 +15,19 @@ export default function LinkSubmission({ orderId, fileType, onSuccess }: LinkSub
     const [link, setLink] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Check for unresolved tasks before allowing submission
+    const { data: messages } = useQuery({
+        queryKey: ['messages', orderId, 'all'],
+        queryFn: async () => {
+            const response = await messagesApi.listByOrder(orderId)
+            return response.data
+        },
+        enabled: !!orderId,
+    })
+
+    const pendingTasks = messages?.filter(m => !m.resolved) || []
+    const hasPendingTasks = pendingTasks.length > 0
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -95,12 +110,25 @@ export default function LinkSubmission({ orderId, fileType, onSuccess }: LinkSub
                     </div>
                 )}
 
+                {hasPendingTasks && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-xs font-bold text-yellow-800 uppercase">Pending Tasks</p>
+                            <p className="text-xs text-yellow-700">
+                                You have {pendingTasks.length} unresolved comment{pendingTasks.length > 1 ? 's' : ''}. 
+                                Please complete all tasks in the to-do list before submitting.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <button
                     type="submit"
-                    disabled={loading || !link}
+                    disabled={loading || !link || hasPendingTasks}
                     className="w-full px-4 py-2 bg-brand text-white font-medium rounded-lg hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                    {loading ? 'Submitting...' : 'Submit Link'}
+                    {loading ? 'Submitting...' : hasPendingTasks ? 'Resolve Tasks to Submit' : 'Submit Link'}
                 </button>
             </form>
         </div>
