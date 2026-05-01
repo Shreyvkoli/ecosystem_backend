@@ -19,10 +19,11 @@ interface OrderVideoPlayerProps {
   fileName: string
   publicLink?: string
   provider?: string
+  hideComments?: boolean
 }
 
 const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
-  ({ fileId, orderId, fileName, publicLink, provider }, ref) => {
+  ({ fileId, orderId, fileName, publicLink, provider, hideComments = false }, ref) => {
     // Always use Backend Proxy for consistency and CORS handling (Zero Storage "Permanent Fix")
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -161,7 +162,8 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        {!hideComments && (
+          <div className="bg-white rounded-lg shadow p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Comments</h3>
             <button
@@ -251,7 +253,7 @@ const OrderVideoPlayer = forwardRef<OrderVideoPlayerRef, OrderVideoPlayerProps>(
               <p className="text-sm text-gray-500 text-center py-4">No comments yet</p>
             )}
           </div>
-        </div>
+        )}
       </div>
     )
   }

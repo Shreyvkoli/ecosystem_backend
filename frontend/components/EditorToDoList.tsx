@@ -8,27 +8,36 @@ interface EditorToDoListProps {
     orderId: string
     fileId: string
     onSeek: (seconds: number) => void
+    onSwitchFile?: (id: string) => void
 }
 
-export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoListProps) {
+export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }: EditorToDoListProps) {
     const queryClient = useQueryClient()
 
     // Fetch with same key as Player to dedupe request
-    const { data: messages } = useQuery({
-        queryKey: ['messages', orderId, fileId],
+    // Fetch ALL messages for the order to ensure no pending tasks are missed
+    const { data: allMessages } = useQuery({
+        queryKey: ['messages', orderId, 'all'],
         queryFn: async () => {
-            const response = await messagesApi.listByFile(fileId)
+            const response = await messagesApi.listByOrder(orderId)
             return response.data
         },
-        enabled: !!fileId && !!orderId,
+        enabled: !!orderId,
+        refetchInterval: 5000,
     })
 
-    // Filter tasks
-    const allTasks = messages || []
-    const resolvedTasks = allTasks.filter(m => m.resolved)
-    const pendingTasks = allTasks.filter(m => !m.resolved)
+    const messages = allMessages || []
+    
+    // Group tasks
+    const currentFileTasks = messages.filter(m => m.fileId === fileId)
+    const otherFileTasks = messages.filter(m => m.fileId && m.fileId !== fileId)
+    
+    const resolvedTasks = currentFileTasks.filter(m => m.resolved)
+    const pendingTasks = currentFileTasks.filter(m => !m.resolved)
+    
+    const otherPendingTasks = otherFileTasks.filter(m => !m.resolved)
 
-    const total = allTasks.length
+    const total = currentFileTasks.length
     const completed = resolvedTasks.length
     const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0
 
@@ -101,12 +110,17 @@ export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoLi
                 />
             </div>
 
-            <div className="p-4 max-h-[500px] overflow-y-auto space-y-4">
-                {/* Pending List */}
+            <div className="p-4 max-h-[500px] overflow-y-auto space-y-6">
+                {/* Pending List for Current Version */}
                 <div>
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">To Do ({pendingTasks.length})</h4>
+                    <h4 className="text-xs font-bold text-brand uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                        Current Version Tasks ({pendingTasks.length})
+                    </h4>
                     {pendingTasks.length === 0 ? (
-                        <p className="text-sm text-gray-400 italic">No pending tasks. Great job!</p>
+                        <div className="p-4 border-2 border-dashed border-gray-100 rounded-lg text-center">
+                            <p className="text-sm text-gray-400 italic">No pending tasks for this version.</p>
+                        </div>
                     ) : (
                         <div className="space-y-2">
                             {pendingTasks.map(task => <TaskItem key={task.id} task={task} />)}
@@ -114,11 +128,42 @@ export default function EditorToDoList({ orderId, fileId, onSeek }: EditorToDoLi
                     )}
                 </div>
 
+                {/* Pending List for Other Versions */}
+                {otherPendingTasks.length > 0 && (
+                    <div className="pt-4 border-t border-gray-100">
+                        <h4 className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            Tasks from Other Versions ({otherPendingTasks.length})
+                        </h4>
+                        <div className="space-y-3">
+                            {otherPendingTasks.map(task => (
+                                <div key={task.id} className="p-3 bg-orange-50/50 border border-orange-100 rounded-lg">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <p className="text-sm text-gray-800 flex-1">{task.content}</p>
+                                        <button 
+                                            onClick={() => onSwitchFile?.(task.fileId!)}
+                                            className="text-[10px] font-bold text-orange-600 hover:underline flex items-center gap-1 whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm border border-orange-100"
+                                        >
+                                            Switch to {task.file?.type === 'RAW_VIDEO' ? 'Raw' : `v${task.file?.version || '?'}`}
+                                        </button>
+                                    </div>
+                                    <div className="mt-2 flex items-center justify-between text-[10px] text-orange-400">
+                                        <span>{task.file?.fileName || 'Unknown File'}</span>
+                                        {task.timestamp !== null && (
+                                            <span className="font-bold">@{formatTime(task.timestamp!)}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Resolved List */}
                 {resolvedTasks.length > 0 && (
-                    <div className="pt-4 border-t border-gray-100 gap-2">
+                    <div className="pt-4 border-t border-gray-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
                         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Completed ({resolvedTasks.length})</h4>
-                        <div className="space-y-2 opacity-75">
+                        <div className="space-y-2">
                             {resolvedTasks.map(task => <TaskItem key={task.id} task={task} />)}
                         </div>
                     </div>

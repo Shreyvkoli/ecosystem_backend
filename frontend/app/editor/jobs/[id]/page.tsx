@@ -217,6 +217,7 @@ export default function EditorJobDetailPage() {
                     orderId={orderId}
                     fileName={displayFile.fileName}
                     publicLink={displayFile.publicLink}
+                    hideComments={true}
                   />
 
                   {/* Editor To-Do List */}
@@ -225,6 +226,7 @@ export default function EditorJobDetailPage() {
                       orderId={orderId}
                       fileId={displayFile.id}
                       onSeek={(time: number) => playerRef.current?.seekTo(time)}
+                      onSwitchFile={(id: string) => setSelectedFileId(id)}
                     />
                   )}
                 </>
