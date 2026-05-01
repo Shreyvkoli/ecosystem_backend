@@ -26,11 +26,11 @@ export default function EditorToDoList({ orderId, fileId, onSeek, onSwitchFile }
         refetchInterval: 5000,
     })
 
-    const messages = allMessages || []
+    // Filter only TIMESTAMP_COMMENT types as actionable tasks
+    const taskMessages = messages.filter(m => m.type === 'TIMESTAMP_COMMENT')
     
-    // Group tasks
-    const currentFileTasks = messages.filter(m => m.fileId === fileId)
-    const otherFileTasks = messages.filter(m => m.fileId && m.fileId !== fileId)
+    const currentFileTasks = taskMessages.filter(m => m.fileId === fileId)
+    const otherFileTasks = taskMessages.filter(m => m.fileId && m.fileId !== fileId)
     
     const resolvedTasks = currentFileTasks.filter(m => m.resolved)
     const pendingTasks = currentFileTasks.filter(m => !m.resolved)

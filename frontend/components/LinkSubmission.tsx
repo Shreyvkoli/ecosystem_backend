@@ -24,9 +24,10 @@ export default function LinkSubmission({ orderId, fileType, onSuccess }: LinkSub
             return response.data
         },
         enabled: !!orderId,
+        refetchInterval: 3000, // Poll more frequently for submission sync
     })
 
-    const pendingTasks = messages?.filter(m => !m.resolved) || []
+    const pendingTasks = messages?.filter(m => m.type === 'TIMESTAMP_COMMENT' && !m.resolved) || []
     const hasPendingTasks = pendingTasks.length > 0
 
     const handleSubmit = async (e: React.FormEvent) => {
