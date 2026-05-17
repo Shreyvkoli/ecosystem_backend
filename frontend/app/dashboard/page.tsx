@@ -47,8 +47,8 @@ export default function DashboardPage() {
 
   // Filters State Values
   const [selectedBadges, setSelectedBadges] = useState<string[]>([])
-  const [minRate, setMinRate] = useState<number>(0)
-  const [maxRate, setMaxRate] = useState<number>(100)
+  const [minRate, setMinRate] = useState<number | string>('')
+  const [maxRate, setMaxRate] = useState<number | string>('')
   const [selectedLocation, setSelectedLocation] = useState<string>('')
   const [selectedTalentType, setSelectedTalentType] = useState<string>('all')
   const [selectedJobSuccess, setSelectedJobSuccess] = useState<number>(0)
@@ -109,7 +109,8 @@ export default function DashboardPage() {
   // Filtered Editors logic
   // Helper to generate simulated/deterministic data for display if missing
   const getEditorDisplayData = (editor: any) => {
-    const seed = editor.id.charCodeAt(0) + (editor.id.charCodeAt(editor.id.length - 1) || 0);
+    const editorIdString = String(editor?.id || editor?._id || 'default');
+    const seed = editorIdString.charCodeAt(0) + (editorIdString.charCodeAt(editorIdString.length - 1) || 0);
     
     // Deterministic rating (e.g. 4.8 to 5.0)
     const rating = (4.8 + (seed % 3) * 0.1).toFixed(1);
@@ -117,8 +118,14 @@ export default function DashboardPage() {
     // Deterministic Job Success (e.g. 92% to 100%)
     const jobSuccess = 90 + (seed % 11);
     
-    // Hourly rate: fallback if not editor.rate
-    const rate = editor.rate || (15 + (seed % 26)); // e.g. $15 to $40
+    // Normalize rate: if it's in INR or very high, scale it down for USD hourly display
+    let rawRate = Number(editor.rate) || 0;
+    if (rawRate > 1000) {
+      rawRate = Math.round(rawRate / 100);
+    } else if (rawRate > 500) {
+      rawRate = Math.round(rawRate / 10);
+    }
+    const rate = rawRate || (15 + (seed % 26)); // e.g. $15 to $40
     
     // Deterministic Title/Headline
     const titles = [
@@ -165,25 +172,33 @@ export default function DashboardPage() {
 
   // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
+    if (!editor) return false;
     const display = getEditorDisplayData(editor);
 
-    const matchesSearch =
-      editor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      editor.skills?.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      editor.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      display.headline.toLowerCase().includes(searchQuery.toLowerCase());
+    // Search matches
+    const searchLow = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery ||
+      (editor.name && editor.name.toLowerCase().includes(searchLow)) ||
+      (Array.isArray(editor.skills) && editor.skills.some((s: string) => s.toLowerCase().includes(searchLow))) ||
+      (editor.bio && editor.bio.toLowerCase().includes(searchLow)) ||
+      (display.headline && display.headline.toLowerCase().includes(searchLow));
 
-    const matchesSkill = selectedSkill === 'All' || editor.skills?.includes(selectedSkill);
+    // Skill matches case insensitively & safely
+    const matchesSkill = selectedSkill === 'All' || 
+      (Array.isArray(editor.skills) && editor.skills.some((s: string) => s.toLowerCase() === selectedSkill.toLowerCase())) ||
+      (typeof editor.skills === 'string' && editor.skills.toLowerCase().includes(selectedSkill.toLowerCase()));
 
     // Filter by badge
     const matchesBadge = selectedBadges.length === 0 || selectedBadges.includes(display.badge);
 
     // Filter by rate
-    const matchesRate = display.rate >= minRate && display.rate <= maxRate;
+    const matchesMinRate = minRate === '' || display.rate >= Number(minRate);
+    const matchesMaxRate = maxRate === '' || display.rate <= Number(maxRate);
+    const matchesRate = matchesMinRate && matchesMaxRate;
 
     // Filter by location
     const matchesLocation = !selectedLocation || 
-      display.location.toLowerCase().includes(selectedLocation.toLowerCase());
+      (display.location && display.location.toLowerCase().includes(selectedLocation.toLowerCase()));
 
     // Filter by job success
     const matchesJobSuccess = display.jobSuccess >= selectedJobSuccess;
