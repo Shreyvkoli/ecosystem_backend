@@ -505,7 +505,7 @@ export default function DashboardPage() {
                         <div className="flex items-end justify-between h-14 px-2 mb-4 bg-gray-50/50 rounded-lg pt-4 border border-gray-100">
                           {[10, 25, 45, 80, 55, 30, 20, 15, 8, 4, 3, 2].map((height, i) => {
                             const bucketRate = i * 8;
-                            const isActive = bucketRate >= minRate && bucketRate <= maxRate;
+                            const isActive = (minRate === '' || bucketRate >= Number(minRate)) && (maxRate === '' || bucketRate <= Number(maxRate));
                             return (
                               <div 
                                 key={i} 
