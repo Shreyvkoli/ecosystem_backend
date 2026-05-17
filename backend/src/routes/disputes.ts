@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticate, AuthRequest, requireRole } from '../middleware/auth.js';
 import { NotificationService } from '../services/notificationService.js';
+import { attemptAutoResolution, executeResolution, type DisputeResolution } from '../services/disputeResolutionService.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -68,16 +69,24 @@ router.post('/raise', authenticate, requireRole(['EDITOR']), async (req: AuthReq
             }
         });
 
+        // ===== AUTO-RESOLUTION ATTEMPT =====
+        // Run evidence analysis asynchronously (don't block the response)
+        attemptAutoResolution(dispute.id).then(result => {
+            console.log(`[Dispute] Auto-analysis for ${dispute.id}:`, result.resolution, result.confidence);
+        }).catch(err => {
+            console.error(`[Dispute] Auto-analysis failed for ${dispute.id}:`, err);
+        });
+
         // Notify Creator
         await NotificationService.getInstance().createAndSend({
             userId: order.creatorId,
             type: 'SYSTEM',
             title: 'Dispute Raised by Editor ⚖️',
-            message: `The editor has challenged a penalty on order "${order.title}". Manual review required.`,
+            message: `The editor has challenged a penalty on order "${order.title}". The system is analyzing evidence for auto-resolution.`,
             link: `/admin/dashboard` 
         });
 
-        return res.json({ message: 'Dispute raised successfully. Admin will review within 12-24 hours.', dispute });
+        return res.json({ message: 'Dispute raised successfully. Evidence is being analyzed automatically.', dispute });
 
     } catch (error: any) {
         if (error instanceof z.ZodError) return res.status(400).json({ error: error.errors });
@@ -109,58 +118,134 @@ router.post('/activity', authenticate, requireRole(['EDITOR']), async (req: Auth
 
 /**
  * GET /api/disputes/admin/list
- * Admin lists all pending disputes
+ * Admin lists all disputes (with auto-analysis data)
  */
 router.get('/admin/list', authenticate, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
     try {
+        const { status } = req.query;
+        const where: any = {};
+        
+        if (status) {
+            where.status = status as string;
+        }
+
         const disputes = await (prisma as any).dispute.findMany({
-            where: { status: 'PENDING' },
+            where,
             include: {
-                order: { select: { title: true, amount: true } }
-            }
+                order: { select: { title: true, amount: true, revisionCount: true, deadline: true, status: true } }
+            },
+            orderBy: { createdAt: 'desc' }
         });
-        return res.json(disputes);
+
+        // Parse autoAnalysis JSON for each dispute
+        const enriched = disputes.map((d: any) => ({
+            ...d,
+            autoAnalysis: d.autoAnalysis ? JSON.parse(d.autoAnalysis) : null
+        }));
+
+        return res.json(enriched);
     } catch (error) {
         return res.status(500).json({ error: 'Failed' });
     }
 });
 
 /**
+ * GET /api/disputes/:id/evidence
+ * Admin gets detailed evidence for a dispute
+ */
+router.get('/:id/evidence', authenticate, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+    try {
+        const dispute = await (prisma as any).dispute.findUnique({
+            where: { id: req.params.id },
+            include: {
+                order: {
+                    include: {
+                        files: {
+                            select: { id: true, type: true, version: true, fileName: true, createdAt: true }
+                        },
+                        messages: {
+                            select: { 
+                                id: true, type: true, content: true, 
+                                userId: true, timestamp: true, resolved: true, createdAt: true,
+                                user: { select: { name: true, role: true } }
+                            },
+                            orderBy: { createdAt: 'asc' }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!dispute) {
+            return res.status(404).json({ error: 'Dispute not found' });
+        }
+
+        // Parse auto-analysis if present
+        const autoAnalysis = dispute.autoAnalysis ? JSON.parse(dispute.autoAnalysis) : null;
+
+        return res.json({
+            dispute: {
+                id: dispute.id,
+                reason: dispute.reason,
+                proofUrl: dispute.proofUrl,
+                status: dispute.status,
+                createdAt: dispute.createdAt
+            },
+            autoAnalysis,
+            order: {
+                id: dispute.order.id,
+                title: dispute.order.title,
+                amount: dispute.order.amount,
+                revisionCount: dispute.order.revisionCount,
+                deadline: dispute.order.deadline,
+                status: dispute.order.status
+            },
+            files: dispute.order.files,
+            messages: dispute.order.messages
+        });
+    } catch (error) {
+        console.error('Evidence fetch error:', error);
+        return res.status(500).json({ error: 'Failed to fetch evidence' });
+    }
+});
+
+/**
  * POST /api/disputes/:id/resolve
- * Admin resolves a dispute
+ * Admin resolves a dispute (with expanded options)
  */
 router.post('/:id/resolve', authenticate, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
     try {
         const { resolution, note } = z.object({
-            resolution: z.enum(['FAVOR_EDITOR', 'FAVOR_CREATOR']),
+            resolution: z.enum(['FAVOR_EDITOR', 'FAVOR_CREATOR', 'SPLIT_50_50']),
             note: z.string()
         }).parse(req.body);
 
         const disputeId = req.params.id;
 
-        const result = await prisma.$transaction(async (tx) => {
-            const dispute = await (tx as any).dispute.findUnique({ where: { id: disputeId } });
-            if (!dispute) throw new Error("Dispute not found");
+        // Verify dispute exists and is pending
+        const dispute = await (prisma as any).dispute.findUnique({ where: { id: disputeId } });
+        if (!dispute) {
+            return res.status(404).json({ error: 'Dispute not found' });
+        }
+        if (dispute.status !== 'PENDING') {
+            return res.status(400).json({ error: `Dispute already resolved: ${dispute.status}` });
+        }
 
-            if (resolution === 'FAVOR_EDITOR') {
-                // TODO: In a real system, this would reverse the Ledger transaction.
-                // For MVP, we mark as resolved and Admin manually handles repayment if needed, 
-                // OR we can automate the wallet transfer back.
-            }
+        // Execute the resolution with full fund distribution
+        const result = await executeResolution(
+            disputeId,
+            resolution as DisputeResolution,
+            note,
+            req.userId!
+        );
 
-            return await (tx as any).dispute.update({
-                where: { id: disputeId },
-                data: {
-                    status: resolution === 'FAVOR_EDITOR' ? 'RESOLVED_FAVOR_EDITOR' : 'RESOLVED_FAVOR_CREATOR',
-                    resolutionNote: note,
-                    adminId: req.userId!
-                }
-            });
+        return res.json({ 
+            message: `Dispute resolved: ${resolution}`,
+            dispute: result 
         });
-
-        return res.json(result);
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to resolve' });
+    } catch (error: any) {
+        console.error('Dispute resolution error:', error);
+        return res.status(500).json({ error: error.message || 'Failed to resolve dispute' });
     }
 });
 

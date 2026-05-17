@@ -7,7 +7,7 @@ import { WorkflowIllustration } from '@/components/FreehandIllustrations'
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-mint">
+    <div className="min-h-screen bg-white">
       <PublicNav />
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
         <div className="max-w-2xl mb-8">

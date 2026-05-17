@@ -60,7 +60,22 @@ async function invalidateOrdersCache(userId?: string) {
   }
 }
 
-function computeDepositAmount(editingLevel?: string): number {
+/**
+ * Percentage-based deposit calculation.
+ * Deposit = 10% of order amount (min ₹199, max ₹10,000)
+ * Falls back to editing-level tiers only when order amount is unknown.
+ */
+function computeDepositAmount(editingLevel?: string, orderAmount?: number | null): number {
+  // If order amount is available, use percentage-based scaling
+  if (orderAmount && orderAmount > 0) {
+    const MIN_DEPOSIT = 199;
+    const MAX_DEPOSIT = 10000;
+    const DEPOSIT_PERCENT = 0.10; // 10%
+    const calculated = Math.round(orderAmount * DEPOSIT_PERCENT);
+    return Math.max(MIN_DEPOSIT, Math.min(MAX_DEPOSIT, calculated));
+  }
+
+  // Fallback: editing-level tiers (when amount not yet set)
   switch (editingLevel) {
     case 'PREMIUM':
       return 1499;
@@ -701,7 +716,7 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
         orderId,
         editorId: userId,
         status: 'APPLIED',
-        depositAmount: computeDepositAmount(order.editingLevel || 'BASIC')
+        depositAmount: computeDepositAmount(order.editingLevel || 'BASIC', order.amount)
       },
       include: {
         editor: {

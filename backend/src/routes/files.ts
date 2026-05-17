@@ -173,6 +173,21 @@ router.post('/register', authenticate, async (req: AuthRequest, res: Response) =
         removeOnComplete: true,
         removeOnFail: true
       });
+
+      // ===== WATERMARK PROCESSING (Preview Videos Only) =====
+      if (fileType === FileType.PREVIEW_VIDEO) {
+        storageQueue.add('watermark_preview', {
+          fileId: result.id,
+          publicLink,
+          orderId
+        }, {
+          removeOnComplete: true,
+          removeOnFail: true,
+          attempts: 2,
+          backoff: { type: 'fixed', delay: 5000 }
+        });
+        console.log(`[Files] Watermark job queued for preview: ${result.id}`);
+      }
     }).catch(console.error);
 
     return res.json(result);
@@ -218,8 +233,30 @@ router.get('/:id/download-url', authenticate, async (req: AuthRequest, res: Resp
     // Audit Logging: Track WHO accessed WHAT and WHEN
     console.log(`[FileAudit] User ${req.userId} accessed ${file.type} (v${file.version}) for Order ${file.orderId}`);
 
-    // For Zero Storage, simply return the public link
-    const downloadUrl = file.publicLink;
+    // ===== WATERMARK PROTECTION (Preview Videos) =====
+    // Creators get the watermarked version of previews, NOT the original link.
+    // Original link is only unlocked after order is COMPLETED or FINAL_SUBMITTED.
+    let downloadUrl = file.publicLink;
+    let isWatermarked = false;
+
+    if (file.type === FileType.PREVIEW_VIDEO && req.userRole === 'CREATOR') {
+      const completedStatuses = ['COMPLETED', 'FINAL_SUBMITTED', 'PUBLISHED'];
+      const isOrderCompleted = completedStatuses.includes(file.order.status);
+
+      if (!isOrderCompleted) {
+        // Check for watermarked version in metadata
+        try {
+          const metadata = file.metadata ? JSON.parse(file.metadata as string) : {};
+          if (metadata.watermarked && metadata.watermarkedPath) {
+            // Serve watermarked file via streaming endpoint
+            downloadUrl = `/api/files/${file.id}/stream-watermarked`;
+            isWatermarked = true;
+          }
+        } catch (e) {
+          // Metadata parse failed, fall through to original link
+        }
+      }
+    }
 
     if (!downloadUrl) {
       return res.status(404).json({ error: 'File link not found' });
@@ -231,7 +268,8 @@ router.get('/:id/download-url', authenticate, async (req: AuthRequest, res: Resp
       fileName: file.fileName,
       contentType: file.mimeType || 'application/octet-stream',
       version: file.version,
-      verificationStatus: (file as any).verificationStatus
+      verificationStatus: (file as any).verificationStatus,
+      isWatermarked
     });
   } catch (error: any) {
     console.error('Download URL error:', error);
@@ -325,5 +363,69 @@ router.patch('/:id/set-latest', authenticate, async (req: AuthRequest, res: Resp
   }
 });
 
-export default router;
+/**
+ * GET /api/files/:id/stream-watermarked
+ * Stream the watermarked preview video securely.
+ */
+router.get('/:id/stream-watermarked', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const file = await prisma.file.findUnique({
+      where: { id: req.params.id },
+      include: { order: true }
+    });
 
+    if (!file) return res.status(404).json({ error: 'File not found' });
+
+    // Verify access
+    if (file.order.creatorId !== req.userId && file.order.editorId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const metadata = file.metadata ? JSON.parse(file.metadata as string) : {};
+    if (!metadata.watermarked || !metadata.watermarkedPath) {
+      return res.status(404).json({ error: 'Watermarked version not available' });
+    }
+
+    const videoPath = metadata.watermarkedPath;
+    
+    // Fallback: If temp file is deleted, we can't serve it.
+    const fs = await import('fs');
+    if (!fs.existsSync(videoPath)) {
+       return res.status(404).json({ error: 'Watermarked video expired or deleted. Please contact support.' });
+    }
+
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunksize = (end - start) + 1;
+      const fileStream = fs.createReadStream(videoPath, { start, end });
+      const head = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4',
+      };
+      res.writeHead(206, head);
+      fileStream.pipe(res);
+      return;
+    } else {
+      const head = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+      };
+      res.writeHead(200, head);
+      fs.createReadStream(videoPath).pipe(res);
+      return;
+    }
+  } catch (e) {
+    console.error('Streaming error:', e);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+export default router;

@@ -7,7 +7,7 @@ import { PricingIllustration } from '@/components/FreehandIllustrations'
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-mint">
+    <div className="min-h-screen bg-white">
       <PublicNav />
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-10 items-center mb-12">

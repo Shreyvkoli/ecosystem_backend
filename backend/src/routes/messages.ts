@@ -4,6 +4,7 @@ import { MessageType } from '../utils/enums.js';
 import { z } from 'zod';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { NotificationService } from '../services/notificationService.js';
+import { filterChatContent } from '../services/chatFilterService.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -205,6 +206,17 @@ router.post('/', async (req: AuthRequest, res) => {
       if (!file) {
         return res.status(400).json({ error: 'File not found in order' });
       }
+    }
+
+    // ===== CHAT CONTENT FILTER (Anti-Bypass Layer 1) =====
+    const filterResult = filterChatContent(data.content);
+    if (filterResult.blocked) {
+      console.warn(`[ChatFilter] BLOCKED message from User ${req.userId} in Order ${data.orderId}:`, filterResult.detectedPatterns);
+      return res.status(403).json({
+        error: filterResult.reason,
+        code: 'CONTENT_POLICY_VIOLATION',
+        detectedPatterns: filterResult.detectedPatterns
+      });
     }
 
     // Determine message type

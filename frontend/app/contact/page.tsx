@@ -17,7 +17,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-mint">
+    <div className="min-h-screen bg-white">
       <PublicNav />
       <div className="max-w-2xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col items-center text-center mb-10">

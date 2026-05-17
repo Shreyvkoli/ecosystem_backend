@@ -8,7 +8,7 @@ import { HeroIllustration, HandshakeIllustration, ShieldIllustration, ChatIllust
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-mint overflow-hidden">
+    <div className="relative min-h-screen bg-white overflow-hidden">
       {/* Subtle top gradient accent */}
       <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-mint-light via-mint/50 to-transparent pointer-events-none -z-0" />
 

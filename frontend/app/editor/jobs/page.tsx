@@ -293,7 +293,7 @@ export default function EditorJobsPage() {
   const sortedOpenOrders = useMemo(() => sortOrders(openOrders || []), [openOrders, sortBy])
 
   return (
-    <div className="min-h-screen bg-mint">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">

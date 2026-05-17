@@ -212,7 +212,27 @@ router.post('/editor-deposit/create', authenticate, async (req: AuthRequest, res
     }
     */
 
-    const depositAmount = gateway === 'RAZORPAY' ? 500 : 10;
+    // Dynamic deposit: Use application's deposit amount, or calculate 10% of order value
+    const application = await prisma.orderApplication.findFirst({
+      where: { orderId, editorId: req.userId! },
+      select: { depositAmount: true }
+    });
+
+    const MIN_DEPOSIT = 199;
+    const MAX_DEPOSIT = 10000;
+    const DEPOSIT_PERCENT = 0.10;
+
+    let depositAmount: number;
+    if (application?.depositAmount && application.depositAmount > 0) {
+      // Use pre-calculated amount from application (already scaled)
+      depositAmount = application.depositAmount;
+    } else if (order.amount && order.amount > 0) {
+      // Calculate 10% of order value with min/max bounds
+      depositAmount = Math.max(MIN_DEPOSIT, Math.min(MAX_DEPOSIT, Math.round(order.amount * DEPOSIT_PERCENT)));
+    } else {
+      // Absolute fallback
+      depositAmount = MIN_DEPOSIT;
+    }
     const depositCurrency = gateway === 'RAZORPAY' ? 'INR' : 'USD';
 
     const existingDeposit = await prisma.editorDeposit.findFirst({
