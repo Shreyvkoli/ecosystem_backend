@@ -40,18 +40,11 @@ export default function DashboardPage() {
   const queryClient = useQueryClient()
 
   // Collapsible Filters State
-  const [talentBadgeOpen, setTalentBadgeOpen] = useState(true)
   const [hourlyRateOpen, setHourlyRateOpen] = useState(true)
-  const [locationOpen, setLocationOpen] = useState(true)
-  const [jobSuccessOpen, setJobSuccessOpen] = useState(true)
 
   // Filters State Values
-  const [selectedBadges, setSelectedBadges] = useState<string[]>([])
   const [minRate, setMinRate] = useState<number | string>('')
   const [maxRate, setMaxRate] = useState<number | string>('')
-  const [selectedLocation, setSelectedLocation] = useState<string>('')
-  const [selectedTalentType, setSelectedTalentType] = useState<string>('all')
-  const [selectedJobSuccess, setSelectedJobSuccess] = useState<number>(0)
 
   const [mounted, setMounted] = useState(false)
 
@@ -107,103 +100,27 @@ export default function DashboardPage() {
   })
 
   // Filtered Editors logic
-  // Helper to generate simulated/deterministic data for display if missing
-  const getEditorDisplayData = (editor: any) => {
-    const editorIdString = String(editor?.id || editor?._id || 'default');
-    const seed = editorIdString.charCodeAt(0) + (editorIdString.charCodeAt(editorIdString.length - 1) || 0);
-    
-    // Deterministic rating (e.g. 4.8 to 5.0)
-    const rating = (4.8 + (seed % 3) * 0.1).toFixed(1);
-    
-    // Deterministic Job Success (e.g. 92% to 100%)
-    const jobSuccess = 90 + (seed % 11);
-    
-    // Normalize rate: if it's in INR or very high, scale it down for USD hourly display
-    let rawRate = Number(editor.rate) || 0;
-    if (rawRate > 1000) {
-      rawRate = Math.round(rawRate / 100);
-    } else if (rawRate > 500) {
-      rawRate = Math.round(rawRate / 10);
-    }
-    const rate = rawRate || (15 + (seed % 26)); // e.g. $15 to $40
-    
-    // Deterministic Title/Headline
-    const titles = [
-      "Expert YouTube Video Editor | Motion Graphics Artist",
-      "Creative Storyteller & Video Editor | Reels & Shorts Specialist",
-      "Cinematic Video Editor | Premiere Pro & After Effects Expert",
-      "Full-Time Video Editor | Podcast & Long-Form Video Expert",
-      "Professional Post-Production Specialist | Colorist"
-    ];
-    const headline = titles[seed % titles.length];
-    
-    // Deterministic location (fallback to India)
-    const location = "India";
-    
-    // Deterministic Earned
-    const earned = `$${(seed % 5) * 5 + 5}K+ earned`;
-    
-    // Boosted
-    const boosted = seed % 3 === 0;
-    
-    // Badges
-    const badge = seed % 3 === 0 ? "Top Rated Plus" : seed % 3 === 1 ? "Top Rated" : "Rising Talent";
-    
-    // Insights
-    const insights = [
-      `Consistently delivers high-retention video edits. Clients praise the editing pace and sound design.`,
-      `Outstanding attention to detail and storytelling. Revisions are rarely needed.`,
-      `Exceptional communication and speed. Always meets tight YouTube upload schedules.`
-    ];
-    const insight = insights[seed % insights.length];
-
-    return {
-      rating,
-      jobSuccess,
-      rate,
-      headline,
-      location,
-      earned,
-      boosted,
-      badge,
-      insight
-    };
-  };
-
-  // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
     if (!editor) return false;
-    const display = getEditorDisplayData(editor);
 
     // Search matches
     const searchLow = searchQuery.toLowerCase();
     const matchesSearch = !searchQuery ||
       (editor.name && editor.name.toLowerCase().includes(searchLow)) ||
       (Array.isArray(editor.skills) && editor.skills.some((s: string) => s.toLowerCase().includes(searchLow))) ||
-      (editor.bio && editor.bio.toLowerCase().includes(searchLow)) ||
-      (display.headline && display.headline.toLowerCase().includes(searchLow));
+      (editor.bio && editor.bio.toLowerCase().includes(searchLow));
 
     // Skill matches case insensitively & safely
     const matchesSkill = selectedSkill === 'All' || 
       (Array.isArray(editor.skills) && editor.skills.some((s: string) => s.toLowerCase() === selectedSkill.toLowerCase())) ||
       (typeof editor.skills === 'string' && editor.skills.toLowerCase().includes(selectedSkill.toLowerCase()));
 
-    // Filter by badge
-    const matchesBadge = selectedBadges.length === 0 || selectedBadges.includes(display.badge);
-
     // Filter by rate
-    const matchesMinRate = minRate === '' || display.rate >= Number(minRate);
-    const matchesMaxRate = maxRate === '' || display.rate <= Number(maxRate);
+    const matchesMinRate = minRate === '' || (editor.rate && editor.rate >= Number(minRate));
+    const matchesMaxRate = maxRate === '' || (editor.rate && editor.rate <= Number(maxRate));
     const matchesRate = matchesMinRate && matchesMaxRate;
 
-    // Filter by location
-    const matchesLocation = !selectedLocation || 
-      (display.location && display.location.toLowerCase().includes(selectedLocation.toLowerCase()));
-
-    // Filter by job success
-    const matchesJobSuccess = display.jobSuccess >= selectedJobSuccess;
-
-    return matchesSearch && matchesSkill && matchesBadge && matchesRate && matchesLocation && matchesJobSuccess;
+    return matchesSearch && matchesSkill && matchesRate;
   });
 
   const popularSkills = ['All', 'Gaming', 'Vlog', 'Short-form', 'Podcast', 'Documentary', 'Corporate'];
@@ -545,61 +462,6 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Location Accordion */}
-                  <div className="border-b border-gray-100 pb-5">
-                    <button 
-                      onClick={() => setLocationOpen(!locationOpen)}
-                      className="w-full flex items-center justify-between font-bold text-sm text-gray-800 focus:outline-none"
-                    >
-                      <span>Location</span>
-                      {locationOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-                    </button>
-                    {locationOpen && (
-                      <div className="mt-4">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                          <input 
-                            type="text" 
-                            placeholder="City, country or region" 
-                            value={selectedLocation}
-                            onChange={(e) => setSelectedLocation(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:ring-green-500 focus:border-green-500"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Job Success Accordion */}
-                  <div className="pb-2">
-                    <button 
-                      onClick={() => setJobSuccessOpen(!jobSuccessOpen)}
-                      className="w-full flex items-center justify-between font-bold text-sm text-gray-800 focus:outline-none"
-                    >
-                      <span>Job success</span>
-                      {jobSuccessOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-                    </button>
-                    {jobSuccessOpen && (
-                      <div className="mt-4 space-y-3 pl-1">
-                        {[
-                          { label: "Any job success", value: 0 },
-                          { label: "90% & above", value: 90 },
-                          { label: "80% & above", value: 80 }
-                        ].map((option) => (
-                          <label key={option.value} className="flex items-center gap-3 cursor-pointer text-sm text-gray-700">
-                            <input 
-                              type="radio" 
-                              name="jobSuccessRadio"
-                              className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
-                              checked={selectedJobSuccess === option.value}
-                              onChange={() => setSelectedJobSuccess(option.value)}
-                            />
-                            <span>{option.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -617,12 +479,6 @@ export default function DashboardPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <button 
-                    onClick={() => alert("Advanced search filters are fully interactive in the left sidebar!")}
-                    className="text-green-600 hover:text-green-700 font-bold text-sm whitespace-nowrap hover:underline"
-                  >
-                    Advanced search
-                  </button>
                 </div>
 
                 {/* Popular skills pills */}
@@ -662,17 +518,8 @@ export default function DashboardPage() {
                   <div className="space-y-4">
                     {filteredEditors.map((editor: any) => {
                       const isSaved = savedEditors?.some((s: any) => s.id === editor.id);
-                      const display = getEditorDisplayData(editor);
                       return (
                         <div key={editor.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-all duration-200 relative">
-                          {/* Boosted Label */}
-                          {display.boosted && (
-                            <div className="absolute top-4 right-16 flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                              <Zap className="w-3.5 h-3.5 fill-emerald-600 text-emerald-600" />
-                              Boosted
-                            </div>
-                          )}
-
                           <div className="flex flex-col md:flex-row md:items-start gap-4">
                             {/* Avatar column */}
                             <div className="flex-shrink-0 relative self-start">
@@ -699,24 +546,8 @@ export default function DashboardPage() {
                                     >
                                       {editor.name}
                                     </h3>
-                                    {display.badge === "Top Rated Plus" && (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-amber-500 text-white gap-0.5">
-                                        👑 Top Rated Plus
-                                      </span>
-                                    )}
-                                    {display.badge === "Top Rated" && (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-green-600 text-white gap-0.5">
-                                        ✓ Top Rated
-                                      </span>
-                                    )}
-                                    {display.badge === "Rising Talent" && (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-blue-500 text-white gap-0.5">
-                                        ★ Rising Talent
-                                      </span>
-                                    )}
                                   </div>
-                                  <p className="text-xs md:text-sm font-semibold text-gray-800 mt-0.5">{display.headline}</p>
-                                  <p className="text-[10px] md:text-xs text-gray-400 mt-0.5">{display.location}</p>
+                                  <p className="text-xs md:text-sm font-semibold text-gray-800 mt-0.5">{editor.bio ? editor.bio.split('\n')[0] : 'Video Editor'}</p>
                                 </div>
 
                                 {/* Buttons inside Card (Desktop only) */}
@@ -745,25 +576,11 @@ export default function DashboardPage() {
                               {/* Sub-info Row */}
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2.5 text-xs font-semibold text-gray-500">
                                 <div className="flex-shrink-0">
-                                  <span className="font-bold text-gray-900">${display.rate}/hr</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: '18px', height: '18px' }}>
-                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 18 18">
-                                      <circle cx="9" cy="9" r="7" stroke="#e5e7eb" strokeWidth="1.5" fill="transparent" />
-                                      <circle cx="9" cy="9" r="7" stroke="#16a34a" strokeWidth="1.5" fill="transparent"
-                                        strokeDasharray="44" strokeDashoffset={44 - (44 * display.jobSuccess) / 100} />
-                                    </svg>
-                                    <span className="absolute text-[8px] font-bold text-green-700" style={{ transform: 'translateY(-0.5px)' }}>%</span>
-                                  </div>
-                                  <span className="font-bold text-gray-900">{display.jobSuccess}% Job Success</span>
+                                  <span className="font-bold text-gray-900">{editor.rate ? `$${editor.rate}/hr` : 'Rate not set'}</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-emerald-600 flex-shrink-0">
                                   <Zap className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
-                                  <span>Available now</span>
-                                </div>
-                                <div className="text-gray-400 font-normal flex-shrink-0">
-                                  <span>{display.earned}</span>
+                                  <span>{editor.available ? 'Available now' : 'Currently busy'}</span>
                                 </div>
                               </div>
 
@@ -784,18 +601,6 @@ export default function DashboardPage() {
                                   ))}
                                 </div>
                               )}
-
-                              {/* Insights Box (Exactly like Upwork) */}
-                              <div className="mt-3.5 bg-gray-50/70 border border-gray-100 rounded-xl p-4 text-xs animate-fade-in">
-                                <div className="flex items-center gap-1.5 font-bold text-gray-700 mb-1.5">
-                                  <Sparkles className="w-4 h-4 text-amber-500" />
-                                  <span>Insights about {editor.name.split(' ')[0]}</span>
-                                </div>
-                                <ul className="list-disc pl-4 space-y-1 text-gray-600">
-                                  <li>{display.insight}</li>
-                                  <li>Top rated editor with multiple successfully completed orders.</li>
-                                </ul>
-                              </div>
 
                               {/* Mobile only buttons */}
                               <div className="flex md:hidden items-center gap-3 mt-5 pt-4 border-t border-gray-100">
@@ -849,7 +654,6 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-4">
                     {savedEditors.map((editor: any) => {
-                      const display = getEditorDisplayData(editor);
                       return (
                         <div key={editor.id} className="border border-gray-100 rounded-xl p-5 hover:border-gray-200 transition-all flex flex-col md:flex-row gap-4 items-start">
                           <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center flex-shrink-0">
@@ -867,8 +671,8 @@ export default function DashboardPage() {
                                 <h4 className="font-bold text-gray-900 hover:text-green-600 cursor-pointer" onClick={() => setShowProfileModal(editor.id)}>
                                   {editor.name}
                                 </h4>
-                                <p className="text-xs font-semibold text-gray-700 mt-0.5">{display.headline}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{display.location} • ${display.rate}/hr</p>
+                                <p className="text-xs font-semibold text-gray-700 mt-0.5">{editor.bio ? editor.bio.split('\n')[0] : 'Video Editor'}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{editor.rate ? `$${editor.rate}/hr` : 'Rate not set'}</p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <button

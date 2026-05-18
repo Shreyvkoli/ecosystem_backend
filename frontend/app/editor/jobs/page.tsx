@@ -184,13 +184,14 @@ export default function EditorJobsPage() {
         mimeType: file.type
       })
 
-      // Upload file to S3 (simplified - in production you'd use the actual upload URL)
-      const formData = new FormData()
-      formData.append('file', file)
-
-      // For now, create a temporary URL
-      const temporaryUrl = URL.createObjectURL(file)
-      setProfileForm(prev => ({ ...prev, avatarUrl: temporaryUrl }))
+      await fetch(uploadResponse.data.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
+      });
+      setProfileForm(prev => ({ ...prev, avatarUrl: uploadResponse.data.fileUrl }))
 
       alert('Photo uploaded successfully!')
     } catch (error: any) {
@@ -362,16 +363,16 @@ export default function EditorJobsPage() {
 
           {/* Editor Stats Banner */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {/* Stat 1: success score */}
+            {/* Stat 1: Completed Jobs */}
             <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-all duration-200 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 text-green-600">
                 <Award className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <span className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold truncate">Success Score</span>
+                <span className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold truncate">Completed Jobs</span>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <span className="text-base font-bold text-gray-900">98%</span>
-                  <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.2 rounded border border-green-100 whitespace-nowrap">Top Rated</span>
+                  <span className="text-base font-bold text-gray-900">{completedJobs.length}</span>
+                  <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.2 rounded border border-green-100 whitespace-nowrap">Verified</span>
                 </div>
               </div>
             </div>
@@ -419,7 +420,7 @@ export default function EditorJobsPage() {
               <div className="min-w-0">
                 <span className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold truncate">Typical Rate</span>
                 <span className="block text-base font-bold text-gray-900 mt-0.5 truncate">
-                  ₹{profileForm.rate ? Number(profileForm.rate).toLocaleString() : '5,000'}/job
+                  {profileForm.rate ? `₹${Number(profileForm.rate).toLocaleString()}/job` : 'Not set'}
                 </span>
               </div>
             </div>
@@ -576,12 +577,6 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {creators.map((creator: any) => {
-                    const charCode = creator.name?.charCodeAt(0) || 65;
-                    const niche = charCode % 3 === 0 ? 'Tech & Gaming' : charCode % 3 === 1 ? 'Lifestyle & Vlogs' : 'Finance & Business';
-                    const rating = (4.7 + (charCode % 4) * 0.1).toFixed(1);
-                    const reviews = 10 + (charCode % 25);
-                    const ordersCount = 1 + (charCode % 4);
-
                     return (
                       <div key={creator.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 relative group flex flex-col justify-between">
                         <div>
@@ -598,17 +593,8 @@ export default function EditorJobsPage() {
                             </div>
                             <div className="min-w-0">
                               <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-1">{creator.name}</h3>
-                              <p className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.2 rounded border border-green-100 inline-block mt-0.5">{niche}</p>
+                              <p className="text-[10px] text-gray-600 font-bold bg-gray-50 px-1.5 py-0.2 rounded border border-gray-100 inline-block mt-0.5">Content Creator</p>
                             </div>
-                          </div>
-
-                          <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3 bg-gray-50 px-2.5 py-1.5 rounded-xl border border-gray-100 font-medium font-semibold">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                              <span>{rating} ({reviews} reviews)</span>
-                            </div>
-                            <div className="w-px bg-gray-200 h-3"></div>
-                            <div>{ordersCount} active briefs</div>
                           </div>
                           
                           {creator.bio && (
