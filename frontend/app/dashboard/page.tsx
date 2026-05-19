@@ -528,6 +528,12 @@ export default function DashboardPage() {
                                       <Heart className="w-3.5 h-3.5" fill={isSaved ? "currentColor" : "none"} />
                                     </button>
                                   )}
+                                  <button
+                                    onClick={() => setShowProfileModal(editor.id)}
+                                    className="px-4 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full font-bold text-xs transition-all shadow-sm"
+                                  >
+                                    View Profile
+                                  </button>
                                   <Link
                                     href={`/orders/new?editorId=${editor.id}`}
                                     className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs transition-all shadow-sm"
@@ -542,10 +548,17 @@ export default function DashboardPage() {
                                 <div className="flex-shrink-0">
                                   <span className="font-bold text-gray-900">{editor.rate ? `$${editor.rate}/hr` : 'Rate not set'}</span>
                                 </div>
-                                <div className="flex items-center gap-1 text-emerald-600 flex-shrink-0">
-                                  <Zap className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
-                                  <span>{editor.available ? 'Available now' : 'Currently busy'}</span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <div className={`w-2 h-2 rounded-full ${editor.activeCount >= (editor.maxSlots || 2) ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+                                  <span className={editor.activeCount >= (editor.maxSlots || 2) ? 'text-amber-700' : 'text-emerald-700'}>
+                                    {editor.activeCount || 0}/{editor.maxSlots || 2} Active Tasks
+                                  </span>
                                 </div>
+                                {editor.nextAvailableAt && editor.activeCount >= (editor.maxSlots || 2) && (
+                                  <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
+                                    <span>Available ~{new Date(editor.nextAvailableAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Bio text */}
@@ -568,11 +581,17 @@ export default function DashboardPage() {
 
                               {/* Mobile only buttons */}
                               <div className="flex md:hidden items-center gap-3 mt-5 pt-4 border-t border-gray-100">
+                                <button
+                                  onClick={() => setShowProfileModal(editor.id)}
+                                  className="flex-1 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full font-bold text-xs text-center transition-all shadow-sm"
+                                >
+                                  View Profile
+                                </button>
                                 <Link
                                   href={`/orders/new?editorId=${editor.id}`}
                                   className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm"
                                 >
-                                  Invite to job
+                                  Invite
                                 </Link>
                                 {user.role === 'CREATOR' && (
                                   <button
