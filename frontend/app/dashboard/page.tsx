@@ -369,43 +369,7 @@ export default function DashboardPage() {
               {/* Sidebar Filters */}
               <div className="lg:col-span-1 space-y-6">
                 <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-6 shadow-sm">
-                  {/* Talent Badge Accordion */}
-                  <div className="border-b border-gray-100 pb-5">
-                    <button 
-                      onClick={() => setTalentBadgeOpen(!talentBadgeOpen)}
-                      className="w-full flex items-center justify-between font-bold text-sm text-gray-800 focus:outline-none"
-                    >
-                      <span className="flex items-center gap-2">
-                        Talent badge
-                        <span className="text-xs text-gray-400 font-normal">?</span>
-                      </span>
-                      {talentBadgeOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-                    </button>
-                    {talentBadgeOpen && (
-                      <div className="mt-4 space-y-3 pl-1">
-                        {["Top Rated Plus", "Top Rated", "Rising Talent"].map((badgeName) => {
-                          const isChecked = selectedBadges.includes(badgeName);
-                          return (
-                            <label key={badgeName} className="flex items-center gap-3 cursor-pointer text-sm text-gray-700">
-                              <input 
-                                type="checkbox" 
-                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                                checked={isChecked}
-                                onChange={() => {
-                                  if (isChecked) {
-                                    setSelectedBadges(selectedBadges.filter(b => b !== badgeName))
-                                  } else {
-                                    setSelectedBadges([...selectedBadges, badgeName])
-                                  }
-                                }}
-                              />
-                              <span>{badgeName}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+
 
                   {/* Hourly Rate Accordion */}
                   <div className="border-b border-gray-100 pb-5">
