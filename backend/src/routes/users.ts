@@ -38,6 +38,15 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
             }
           },
           orderBy: { createdAt: 'desc' }
+        },
+        editorOrders: {
+          where: {
+            status: {
+              in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
+            }
+          },
+          select: { deadline: true },
+          orderBy: { deadline: 'asc' }
         }
       },
       orderBy: {
@@ -45,20 +54,36 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
       }
     });
 
-    const profiles = editors.map(editor => ({
-      id: editor.id,
-      name: editor.name,
-      email: editor.email,
-      ...(editor.editorProfile && {
-        bio: editor.editorProfile.bio,
-        avatarUrl: editor.editorProfile.avatarUrl,
-        rate: editor.editorProfile.rate,
-        skills: editor.editorProfile.skills ? editor.editorProfile.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
-        portfolio: editor.editorProfile.portfolio ? editor.editorProfile.portfolio.split(',').map(s => s.trim()).filter(Boolean) : [],
-        available: editor.editorProfile.available,
-      }),
-      reviews: editor.reviewsReceived || []
-    }));
+    const profiles = editors.map((editor: any) => {
+      const activeJobs = editor.editorOrders || [];
+      const activeCount = activeJobs.length;
+      let nextAvailableAt = null;
+
+      if (activeCount > 0) {
+        const earliestJob = activeJobs.find((job: any) => job.deadline);
+        if (earliestJob) {
+          nextAvailableAt = earliestJob.deadline;
+        }
+      }
+
+      return {
+        id: editor.id,
+        name: editor.name,
+        email: editor.email,
+        ...(editor.editorProfile && {
+          bio: editor.editorProfile.bio,
+          avatarUrl: editor.editorProfile.avatarUrl,
+          rate: editor.editorProfile.rate,
+          skills: editor.editorProfile.skills ? editor.editorProfile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+          portfolio: editor.editorProfile.portfolio ? editor.editorProfile.portfolio.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+          available: editor.editorProfile.available,
+          maxSlots: editor.editorProfile.maxSlots || 2
+        }),
+        reviews: editor.reviewsReceived || [],
+        activeCount,
+        nextAvailableAt
+      };
+    });
 
     return res.json(profiles);
   } catch (error: any) {
