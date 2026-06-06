@@ -10,17 +10,17 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#00ed64',
-          dark: '#00c853',
-          light: '#e8f5e8',
+          DEFAULT: '#4F46E5', // Indigo 600
+          dark: '#4338CA', // Indigo 700
+          light: '#EEF2FF', // Indigo 50
         },
         mint: {
-          DEFAULT: '#c4ede0',
-          light: '#d4f5e9',
-          dark: '#a8e0cf',
+          DEFAULT: '#8B5CF6', // Violet 500
+          light: '#DDD6FE', // Violet 200
+          dark: '#7C3AED', // Violet 600
         },
-        charcoal: '#181818',
-        'soft-gray': '#fafafa',
+        charcoal: '#0F172A', // Slate 900
+        'soft-gray': '#F8FAFC', // Slate 50
         surface: '#ffffff',
       },
       borderRadius: {
@@ -39,11 +39,12 @@ module.exports = {
         'micro': ['0.6875rem', { lineHeight: '1.4', fontWeight: '600' }],
       },
       boxShadow: {
-        'card': '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
-        'card-hover': '0 8px 24px rgba(0,0,0,0.08)',
-        'elevated': '0 12px 40px rgba(0,0,0,0.08)',
-        'brand': '0 4px 16px rgba(0, 237, 100, 0.3)',
-        'brand-lg': '0 8px 32px rgba(0, 237, 100, 0.35)',
+        'card': '0 4px 20px -2px rgba(79, 70, 229, 0.1)',
+        'card-hover': '0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1)',
+        'elevated': '0 12px 40px rgba(79, 70, 229, 0.12)',
+        'brand': '0 4px 14px 0 rgba(79, 70, 229, 0.3)',
+        'brand-lg': '0 0 20px rgba(79, 70, 229, 0.5)',
+        'soft': '0 4px 20px -2px rgba(79, 70, 229, 0.1)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

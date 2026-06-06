@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 24, 24, 24;
-  --bg-a: 196, 237, 224;
-  --bg-b: 212, 245, 233;
-  --bg-c: 168, 224, 207;
+  --foreground-rgb: 15, 23, 42;
+  --bg-a: 238, 242, 255;
+  --bg-b: 221, 214, 254;
+  --bg-c: 224, 231, 255;
   
-  --primary: #00ed64;
-  --primary-hover: #00c853;
-  --charcoal: #181818;
-  --accent-warm: #f59e0b;
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --charcoal: #0F172A;
+  --accent-warm: #8B5CF6;
 }
 
 /* Smooth scroll */
@@ -21,7 +21,7 @@ html {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: #fafafa;
+  background-color: #F8FAFC;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -30,56 +30,56 @@ body {
 
 /* Selection Color */
 ::selection {
-  background: rgba(0, 237, 100, 0.2);
-  color: #00c853;
+  background: rgba(79, 70, 229, 0.2);
+  color: #4F46E5;
 }
 
 /* Premium Utilities */
 @layer components {
   /* ────── CARDS ────── */
   .pro-card {
-    @apply bg-white border border-gray-100 rounded-2xl p-7 transition-all duration-300;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    @apply bg-white border border-slate-100 rounded-xl p-7 transition-all duration-300;
+    box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.1);
   }
   .pro-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
+    transform: translateY(-4px);
   }
 
   .premium-card {
-    @apply bg-white border border-gray-100 rounded-2xl p-6 transition-all duration-300;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    @apply bg-white border border-slate-100 rounded-xl p-6 transition-all duration-300;
+    box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.1);
   }
   .premium-card:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15);
+    transform: translateY(-4px);
   }
 
   .glass-morphism {
-    @apply bg-white/80 backdrop-blur-xl border border-gray-100 rounded-xl;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    @apply bg-white/80 backdrop-blur-xl border border-slate-100 rounded-xl;
+    box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.1);
   }
 
   /* ────── BUTTONS ────── */
   .btn-base {
-    @apply px-7 py-3 rounded-xl font-bold text-center inline-flex items-center justify-center gap-2 transition-all duration-200 text-[15px] leading-snug;
+    @apply px-7 py-3 rounded-full font-semibold text-center inline-flex items-center justify-center gap-2 transition-all duration-200 text-[15px] leading-snug;
   }
 
   .btn-primary {
-    @apply btn-base bg-brand text-charcoal font-black hover:bg-[#00d95a] active:scale-[0.98] border-2 border-charcoal !rounded-lg;
-    box-shadow: 0 2px 0px rgba(15, 17, 21, 0.8);
+    @apply btn-base bg-gradient-to-r from-brand to-mint-dark text-white active:scale-[0.98] border-none;
+    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
   }
   .btn-primary:hover {
-    box-shadow: 0 3px 0px rgba(15, 17, 21, 0.9);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    transform: translateY(-2px);
   }
   .btn-primary:active {
-    box-shadow: 0 0px 0px rgba(15, 17, 21, 1);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
     transform: translateY(1px);
   }
 
   .btn-secondary {
-    @apply btn-base bg-white text-charcoal border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98];
+    @apply btn-base bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98];
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
@@ -96,7 +96,7 @@ body {
 
   /* ────── TEXT ────── */
   .text-gradient-primary {
-    @apply text-charcoal;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand to-mint-dark;
   }
   .text-highlight {
     @apply text-brand;
@@ -154,7 +154,7 @@ body {
   }
   .pulse-dot::after {
     content: '';
-    @apply absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full;
+    @apply absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-brand rounded-full;
     animation: pulse 2s ease-in-out infinite;
   }
   @keyframes pulse {

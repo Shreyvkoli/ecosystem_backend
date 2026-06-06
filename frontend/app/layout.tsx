@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import PWARegister from '@/components/PWARegister'
 import InstallPWA from '@/components/InstallPWA'
 
-const inter = Inter({ subsets: ['latin'] })
+const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Cutflow - Premium Video Editing Marketplace',
@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${plusJakartaSans.className} bg-soft-gray text-charcoal antialiased selection:bg-brand/20 selection:text-brand-dark`}>
         <Providers>
           <PWARegister />
           <InstallPWA />
