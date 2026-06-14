@@ -144,6 +144,9 @@ model EditorProfile {
   monthlyDisputeCount Int     @default(0)
   lastDisputeAt      DateTime?
 
+  // Showcase Video
+  showcaseVideoUrl String?
+
   // KYC Fields
   kycStatus       String   @default("NOT_STARTED") // NOT_STARTED, PENDING, VERIFIED, REJECTED
   kycIdUrl        String?

@@ -121,7 +121,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
       skills: z.union([z.array(z.string()), z.string()]).optional(),
       portfolio: z.union([z.array(z.string()), z.string()]).optional(),
       available: z.boolean().optional(),
-      avatarUrl: z.string().url().min(1, "Profile photo is mandatory for editors")
+      avatarUrl: z.string().url().min(1, "Profile photo is mandatory for editors"),
+      showcaseVideoUrl: z.string().url().optional().nullable()
     });
 
     const data = schema.parse(req.body);
@@ -142,7 +143,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
         skills,
         portfolio,
         available: data.available,
-        avatarUrl: data.avatarUrl
+        avatarUrl: data.avatarUrl,
+        showcaseVideoUrl: data.showcaseVideoUrl
       },
       create: {
         userId: req.userId!,
@@ -151,7 +153,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
         skills: skills ?? [],
         portfolio: portfolio ?? [],
         available: data.available ?? true,
-        avatarUrl: data.avatarUrl
+        avatarUrl: data.avatarUrl,
+        showcaseVideoUrl: data.showcaseVideoUrl
       }
     });
 
@@ -197,6 +200,40 @@ router.post('/wallet/topup', async (req: AuthRequest, res: Response) => {
     }
     console.error('Wallet topup error:', error);
     return res.status(500).json({ error: 'Failed to top up wallet' });
+  }
+});
+
+/**
+ * POST /api/editor/showcase-video
+ * Upload showcase video (returns S3 presigned URL)
+ */
+router.post('/showcase-video', async (req: AuthRequest, res: Response) => {
+  try {
+    const { fileName, fileSize, mimeType } = req.body;
+
+    if (!fileName || !fileSize || !mimeType) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!mimeType.startsWith('video/')) {
+      return res.status(400).json({ error: 'Only video files are allowed' });
+    }
+
+    if (fileSize > 100 * 1024 * 1024) {
+      return res.status(400).json({ error: 'File size too large. Maximum 100MB allowed.' });
+    }
+
+    const s3Key = `showcase-videos/${req.userId!}/${Date.now()}-${fileName}`;
+    const uploadUrl = `https://your-s3-bucket.s3.amazonaws.com/${s3Key}`;
+
+    return res.json({
+      uploadUrl,
+      s3Key,
+      fileUrl: `https://your-cdn-domain.com/${s3Key}`
+    });
+  } catch (error: any) {
+    console.error('Showcase video upload error:', error);
+    return res.status(500).json({ error: 'Failed to generate upload URL' });
   }
 });
 

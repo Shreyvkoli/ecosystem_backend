@@ -19,11 +19,8 @@ import {
   CheckCircle, 
   Heart, 
   Search, 
-  ChevronDown, 
-  ChevronUp, 
   Zap, 
   Sparkles, 
-  SlidersHorizontal, 
   MapPin, 
   Star 
 } from 'lucide-react'
@@ -39,13 +36,7 @@ export default function DashboardPage() {
   const [selectedSkill, setSelectedSkill] = useState('All')
   const queryClient = useQueryClient()
 
-  // Collapsible Filters State
-  const [hourlyRateOpen, setHourlyRateOpen] = useState(true)
-
   // Filters State Values
-  const [minRate, setMinRate] = useState<number | string>('')
-  const [maxRate, setMaxRate] = useState<number | string>('')
-
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -115,12 +106,7 @@ export default function DashboardPage() {
       (Array.isArray(editor.skills) && editor.skills.some((s: string) => s.toLowerCase() === selectedSkill.toLowerCase())) ||
       (typeof editor.skills === 'string' && editor.skills.toLowerCase().includes(selectedSkill.toLowerCase()));
 
-    // Filter by rate
-    const matchesMinRate = minRate === '' || (editor.rate && editor.rate >= Number(minRate));
-    const matchesMaxRate = maxRate === '' || (editor.rate && editor.rate <= Number(maxRate));
-    const matchesRate = matchesMinRate && matchesMaxRate;
-
-    return matchesSearch && matchesSkill && matchesRate;
+    return matchesSearch && matchesSkill;
   });
 
   const popularSkills = ['All', 'Gaming', 'Vlog', 'Short-form', 'Podcast', 'Documentary', 'Corporate'];
@@ -365,72 +351,9 @@ export default function DashboardPage() {
           </div>
 
           {activeTab === 'browse' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mt-6 animate-fade-in">
-              {/* Sidebar Filters */}
-              <div className="lg:col-span-1 space-y-6">
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-6 shadow-sm">
-
-
-                  {/* Hourly Rate Accordion */}
-                  <div className="border-b border-gray-100 pb-5">
-                    <button 
-                      onClick={() => setHourlyRateOpen(!hourlyRateOpen)}
-                      className="w-full flex items-center justify-between font-bold text-sm text-gray-800 focus:outline-none"
-                    >
-                      <span>Hourly rate</span>
-                      {hourlyRateOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-                    </button>
-                    {hourlyRateOpen && (
-                      <div className="mt-4">
-                        {/* Upwork Green Distribution Histogram */}
-                        <div className="flex items-end justify-between h-14 px-2 mb-4 bg-gray-50/50 rounded-lg pt-4 border border-gray-100">
-                          {[10, 25, 45, 80, 55, 30, 20, 15, 8, 4, 3, 2].map((height, i) => {
-                            const bucketRate = i * 8;
-                            const isActive = (minRate === '' || bucketRate >= Number(minRate)) && (maxRate === '' || bucketRate <= Number(maxRate));
-                            return (
-                              <div 
-                                key={i} 
-                                className={`w-2 rounded-t-sm transition-all duration-300 ${
-                                  isActive ? 'bg-green-600' : 'bg-gray-200'
-                                }`} 
-                                style={{ height: `${height}%` }}
-                              />
-                            );
-                          })}
-                        </div>
-                        {/* Inputs */}
-                        <div className="flex items-center gap-2">
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-2.5 text-gray-400 text-xs">$</span>
-                            <input 
-                              type="number" 
-                              placeholder="Min" 
-                              value={minRate || ''}
-                              onChange={(e) => setMinRate(Number(e.target.value))}
-                              className="w-full pl-6 pr-2 py-2 border border-gray-200 rounded-lg text-xs focus:ring-green-500 focus:border-green-500"
-                            />
-                          </div>
-                          <span className="text-gray-400 text-xs">/hr</span>
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-2.5 text-gray-400 text-xs">$</span>
-                            <input 
-                              type="number" 
-                              placeholder="Max" 
-                              value={maxRate || ''}
-                              onChange={(e) => setMaxRate(Number(e.target.value))}
-                              className="w-full pl-6 pr-2 py-2 border border-gray-200 rounded-lg text-xs focus:ring-green-500 focus:border-green-500"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-              </div>
-
+            <div className="mt-6 animate-fade-in">
               {/* Main content Area */}
-              <div className="lg:col-span-3 space-y-6">
+              <div className="space-y-6">
                 {/* Upwork style Search Bar */}
                 <div className="flex items-center gap-4">
                   <div className="relative flex-1">
@@ -499,6 +422,39 @@ export default function DashboardPage() {
                               <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${editor.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
                             </div>
 
+                            {/* Showcase Video Thumbnail */}
+                            {editor.showcaseVideoUrl && (
+                              <div 
+                                className="flex-shrink-0 hidden md:block"
+                                onMouseEnter={(e) => {
+                                  const video = e.currentTarget.querySelector('video');
+                                  if (video) { video.play().catch(() => {}); }
+                                }}
+                                onMouseLeave={(e) => {
+                                  const video = e.currentTarget.querySelector('video');
+                                  if (video) { video.pause(); video.currentTime = 0; }
+                                }}
+                              >
+                                <div className="w-36 aspect-video bg-gray-900 rounded-lg overflow-hidden relative cursor-pointer group">
+                                  <video
+                                    src={editor.showcaseVideoUrl}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    loop
+                                    preload="metadata"
+                                    playsInline
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
+                                    <div className="w-7 h-7 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                      <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Main content column */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-4">
@@ -545,9 +501,6 @@ export default function DashboardPage() {
 
                               {/* Sub-info Row */}
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2.5 text-xs font-semibold text-gray-500">
-                                <div className="flex-shrink-0">
-                                  <span className="font-bold text-gray-900">{editor.rate ? `$${editor.rate}/hr` : 'Rate not set'}</span>
-                                </div>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   <div className={`w-2 h-2 rounded-full ${editor.activeCount >= (editor.maxSlots || 2) ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
                                   <span className={editor.activeCount >= (editor.maxSlots || 2) ? 'text-amber-700' : 'text-emerald-700'}>
@@ -655,7 +608,6 @@ export default function DashboardPage() {
                                   {editor.name}
                                 </h4>
                                 <p className="text-xs font-semibold text-gray-700 mt-0.5">{editor.bio ? editor.bio.split('\n')[0] : 'Video Editor'}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{editor.rate ? `$${editor.rate}/hr` : 'Rate not set'}</p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <button

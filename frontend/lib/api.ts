@@ -102,6 +102,7 @@ export interface EditorProfile {
   skills: string[];
   portfolio: string[];
   available: boolean;
+  showcaseVideoUrl?: string | null;
 }
 
 export interface EditorProfileResponse {
@@ -270,7 +271,9 @@ export const editorApi = {
   updateProfile: (data: Partial<EditorProfile>) => api.put('/editor/profile', data),
   walletTopup: (amount: number) => api.post('/editor/wallet/topup', { amount }),
   uploadProfilePhoto: (data: { fileName: string; fileSize: number; mimeType: string }) =>
-    api.post<{ uploadUrl: string; s3Key: string; fileUrl: string }>('/editor/profile-photo', data)
+    api.post<{ uploadUrl: string; s3Key: string; fileUrl: string }>('/editor/profile-photo', data),
+  uploadShowcaseVideo: (data: { fileName: string; fileSize: number; mimeType: string }) =>
+    api.post<{ uploadUrl: string; s3Key: string; fileUrl: string }>('/editor/showcase-video', data)
 };
 
 // Files

@@ -77,7 +77,8 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
           skills: editor.editorProfile.skills ? editor.editorProfile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
           portfolio: editor.editorProfile.portfolio ? editor.editorProfile.portfolio.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
           available: editor.editorProfile.available,
-          maxSlots: editor.editorProfile.maxSlots || 2
+          maxSlots: editor.editorProfile.maxSlots || 2,
+          showcaseVideoUrl: editor.editorProfile.showcaseVideoUrl
         }),
         reviews: editor.reviewsReceived || [],
         activeCount,
@@ -179,6 +180,7 @@ router.get('/:userId/profile', async (req: AuthRequest, res: Response) => {
         skills: user.editorProfile.skills ? user.editorProfile.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
         portfolio: user.editorProfile.portfolio ? user.editorProfile.portfolio.split(',').map(s => s.trim()).filter(Boolean) : [],
         available: user.editorProfile.available,
+        showcaseVideoUrl: user.editorProfile.showcaseVideoUrl
       }),
       ...(user.creatorProfile && {
         bio: user.creatorProfile.bio,

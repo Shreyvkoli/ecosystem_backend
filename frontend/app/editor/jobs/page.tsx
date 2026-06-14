@@ -25,6 +25,7 @@ export default function EditorJobsPage() {
     portfolio: '',
     available: true,
     avatarUrl: '',
+    showcaseVideoUrl: '',
   })
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [selectedJob, setSelectedJob] = useState<any>(null)
@@ -85,6 +86,7 @@ export default function EditorJobsPage() {
       portfolio: Array.isArray(ep?.portfolio) ? ep.portfolio.join(', ') : (ep?.portfolio || ''),
       available: ep?.available ?? true,
       avatarUrl: ep?.avatarUrl || '',
+      showcaseVideoUrl: ep?.showcaseVideoUrl || '',
     })
   }, [profile])
 
@@ -142,6 +144,7 @@ export default function EditorJobsPage() {
         portfolio: profileForm.portfolio,
         available: profileForm.available,
         avatarUrl: profileForm.avatarUrl,
+        showcaseVideoUrl: profileForm.showcaseVideoUrl || null,
       } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
@@ -198,6 +201,46 @@ export default function EditorJobsPage() {
       alert(error?.response?.data?.error || 'Failed to upload photo')
     } finally {
       setUploadingPhoto(false)
+    }
+  }
+
+  const [uploadingShowcase, setUploadingShowcase] = useState(false)
+
+  const handleShowcaseVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('video/')) {
+      alert('Please select a video file')
+      return
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      alert('File size too large. Maximum 100MB allowed.')
+      return
+    }
+
+    setUploadingShowcase(true)
+    try {
+      const uploadResponse = await editorApi.uploadShowcaseVideo({
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type
+      })
+
+      await fetch(uploadResponse.data.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
+      });
+      setProfileForm(prev => ({ ...prev, showcaseVideoUrl: uploadResponse.data.fileUrl }))
+      alert('Showcase video uploaded successfully!')
+    } catch (error: any) {
+      alert(error?.response?.data?.error || 'Failed to upload showcase video')
+    } finally {
+      setUploadingShowcase(false)
     }
   }
 
@@ -995,6 +1038,40 @@ export default function EditorJobsPage() {
                           className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
                           placeholder="e.g. https://vimeo.com/mywork, https://youtube.com/mychannel"
                         />
+                      </div>
+
+                      {/* Showcase Video */}
+                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Showcase Video</label>
+                        <p className="text-[11px] text-gray-400 mb-3">Your best work sample — shows on your profile card. Creators can preview it on hover.</p>
+                        <input
+                          value={profileForm.showcaseVideoUrl}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, showcaseVideoUrl: e.target.value }))}
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 mb-3"
+                          placeholder="Paste video URL (Google Drive, Dropbox, YouTube, or direct link)"
+                        />
+                        <div className="flex items-center gap-3">
+                          <label className={`flex-1 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-full font-bold text-xs text-center transition-all shadow-sm cursor-pointer flex items-center justify-center ${uploadingShowcase ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {uploadingShowcase ? 'Uploading...' : 'Or upload video (max 100MB)'}
+                            <input
+                              type="file"
+                              accept="video/*"
+                              onChange={handleShowcaseVideoUpload}
+                              className="hidden"
+                              disabled={uploadingShowcase}
+                            />
+                          </label>
+                        </div>
+                        {profileForm.showcaseVideoUrl && (
+                          <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 bg-black">
+                            <video
+                              src={profileForm.showcaseVideoUrl}
+                              className="w-full max-h-48 object-contain"
+                              controls
+                              preload="metadata"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Availability Checkbox */}

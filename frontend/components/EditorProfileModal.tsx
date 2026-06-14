@@ -14,6 +14,7 @@ interface EditorProfile {
   portfolio: string[]
   available: boolean
   reviews?: any[]
+  showcaseVideoUrl?: string | null
 }
 
 interface EditorProfileModalProps {
@@ -111,6 +112,21 @@ export default function EditorProfileModal({ editorId, onClose }: EditorProfileM
                   </div>
                 </div>
               </div>
+
+              {/* Showcase Video */}
+              {profile.showcaseVideoUrl && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Showcase Video</h4>
+                  <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+                    <video
+                      src={profile.showcaseVideoUrl}
+                      className="w-full max-h-64 object-contain"
+                      controls
+                      preload="metadata"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Bio */}
               {profile.bio && (
