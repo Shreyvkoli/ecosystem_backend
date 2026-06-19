@@ -83,25 +83,22 @@ export default function DashboardPage() {
   // Pagination
   const [editorPage, setEditorPage] = useState(0)
   const [allEditors, setAllEditors] = useState<any[]>([])
-  const [hasMore, setHasMore] = useState(false)
 
   const { isLoading: isLoadingAllEditors, data: pageData } = useQuery({
     queryKey: ['all-editors', editorPage],
     queryFn: async () => {
       const response = await usersApi.listEditors({ limit: 12, offset: editorPage * 12 })
       const data = Array.isArray(response.data) ? response.data : response.data
-      const editors = (data.editors || data) as any[]
-      // hasMore: API tells us, or infer from less-than-limit response
-      const hasMoreFromApi = data.hasMore
-      if (hasMoreFromApi !== undefined) {
-        setHasMore(hasMoreFromApi)
-      } else {
-        setHasMore(editors.length >= 12)
-      }
-      return editors
+      return { editors: (data.editors || data) as any[], hasMore: data.hasMore, total: data.total }
     },
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
+
+  const hasMore = pageData
+    ? pageData.hasMore !== undefined
+      ? pageData.hasMore
+      : pageData.editors.length >= 12
+    : false
 
   // Accumulate pages
   useEffect(() => {
@@ -109,7 +106,7 @@ export default function DashboardPage() {
     setAllEditors(prev => {
       const start = editorPage * 12
       if (prev.length > start) return prev
-      return [...prev, ...pageData]
+      return [...prev, ...pageData.editors]
     })
   }, [pageData, editorPage])
 
