@@ -88,7 +88,7 @@ body {
     @apply btn-primary;
   }
   .premium-button-green {
-    @apply btn-primary;
+    @apply btn-base bg-gray-900 text-white active:scale-[0.98];
   }
   .glass-card {
     @apply pro-card;

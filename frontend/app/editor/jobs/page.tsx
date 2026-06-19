@@ -584,7 +584,7 @@ export default function EditorJobsPage() {
                           <button 
                             onClick={() => applyMutation.mutate(order.id)} 
                             disabled={applyMutation.isPending && applyMutation.variables === order.id} 
-                            className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
+                            className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
                           >
                             {applyMutation.isPending && applyMutation.variables === order.id ? 'Applying...' : 'Apply to Job'}
                           </button>
@@ -653,7 +653,7 @@ export default function EditorJobsPage() {
                           <button 
                             onClick={() => interestMutation.mutate(creator.id)}
                             disabled={interestMutation.isPending && interestMutation.variables === creator.id}
-                            className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
+                            className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
                           >
                             {interestMutation.isPending && interestMutation.variables === creator.id ? 'Sending...' : 'Express Interest'}
                           </button>
@@ -739,7 +739,7 @@ export default function EditorJobsPage() {
                                   disabled={!activeJobData?.canApply || (startJobMutation.isPending && startJobMutation.variables === order.id)}
                                   className={`flex items-center px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 ${!activeJobData?.canApply || (startJobMutation.isPending && startJobMutation.variables === order.id)
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                    : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
+                                    : 'bg-gray-900 hover:bg-gray-800 text-white shadow-sm'
                                     }`}
                                 >
                                   {startJobMutation.isPending && startJobMutation.variables === order.id ? 'Starting...' : 'Start Active Job'}
@@ -902,7 +902,7 @@ export default function EditorJobsPage() {
                         <button
                           onClick={() => topupMutation.mutate()}
                           disabled={topupMutation.isPending}
-                          className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
+                          className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
                         >
                           {topupMutation.isPending ? 'Adding...' : 'Add Test Funds'}
                         </button>
@@ -1089,7 +1089,7 @@ export default function EditorJobsPage() {
                       <button
                         onClick={() => updateProfileMutation.mutate()}
                         disabled={updateProfileMutation.isPending}
-                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
+                        className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
                       >
                         {updateProfileMutation.isPending ? 'Saving Profile...' : 'Save Profile Settings'}
                       </button>

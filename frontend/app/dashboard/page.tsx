@@ -531,7 +531,7 @@ export default function DashboardPage() {
                               </button>
                               <Link
                                 href={`/orders/new?editorId=${editor.id}`}
-                                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all active:scale-[0.98] text-center"
+                                className="flex-1 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-bold transition-all active:scale-[0.98] text-center"
                               >
                                 Invite
                               </Link>
@@ -594,7 +594,7 @@ export default function DashboardPage() {
                                 </button>
                                 <Link
                                   href={`/orders/new?editorId=${editor.id}`}
-                                  className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs shadow-sm transition-all"
+                                  className="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs shadow-sm transition-all"
                                 >
                                   Invite
                                 </Link>

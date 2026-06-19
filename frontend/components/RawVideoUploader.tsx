@@ -99,7 +99,7 @@ export default function RawVideoUploader({ orderId, onUploadComplete }: RawVideo
             {!uploading && (
               <button
                 onClick={handleUpload}
-                className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800"
               >
                 Upload Raw Video
               </button>

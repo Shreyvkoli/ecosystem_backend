@@ -522,7 +522,7 @@ export default function EditorJobDetailPage() {
                   </p>
                   <button
                     onClick={() => setShowReviewModal(true)}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                    className="w-full px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 text-sm"
                   >
                     Rate Creator
                   </button>
