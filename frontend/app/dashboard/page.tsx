@@ -80,17 +80,31 @@ export default function DashboardPage() {
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'interests',
   })
 
-  // All editors list for browsing
-  const { data: allEditorsData, isLoading: isLoadingAllEditors } = useQuery({
-    queryKey: ['all-editors'],
+  // Pagination
+  const [editorPage, setEditorPage] = useState(0)
+  const [allEditors, setAllEditors] = useState<any[]>([])
+  const [hasMore, setHasMore] = useState(false)
+
+  const { isLoading: isLoadingAllEditors, data: pageData } = useQuery({
+    queryKey: ['all-editors', editorPage],
     queryFn: async () => {
-      const response = await usersApi.listEditors()
-      return Array.isArray(response.data) ? response.data : response.data.editors
+      const response = await usersApi.listEditors({ limit: 12, offset: editorPage * 12 })
+      const data = Array.isArray(response.data) ? response.data : response.data
+      setHasMore(data.hasMore ?? false)
+      return (data.editors || data) as any[]
     },
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
 
-  const allEditors = allEditorsData
+  // Accumulate pages
+  useEffect(() => {
+    if (!pageData) return
+    setAllEditors(prev => {
+      const start = editorPage * 12
+      if (prev.length > start) return prev
+      return [...prev, ...pageData]
+    })
+  }, [pageData, editorPage])
 
   // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
@@ -413,41 +427,33 @@ export default function DashboardPage() {
                           <div className="relative">
                             {editor.showcaseVideoUrl ? (
                               <div
-                                className="aspect-[16/9] overflow-hidden cursor-pointer relative bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-slate-900"
+                                className="aspect-[16/9] overflow-hidden cursor-pointer relative bg-black"
                                 onMouseEnter={(e) => {
-                                  const el = e.currentTarget;
-                                  let video = el.querySelector('video');
-                                  if (!video) {
-                                    video = document.createElement('video');
-                                    video.className = 'w-full h-full object-cover absolute inset-0';
-                                    video.muted = true;
-                                    video.playsInline = true;
-                                    video.preload = 'none';
-                                    video.src = editor.showcaseVideoUrl;
-                                    el.prepend(video);
-                                    el.classList.add('has-video');
-                                    video.play().catch(() => {});
-                                  } else {
-                                    video.currentTime = 0;
-                                    video.play().catch(() => {});
-                                  }
+                                  const video = e.currentTarget.querySelector('video');
+                                  if (video) video.play().catch(() => {});
                                 }}
                                 onMouseLeave={(e) => {
                                   const video = e.currentTarget.querySelector('video');
-                                  if (video) { video.pause(); }
+                                  if (video) video.pause();
                                 }}
                                 onClick={() => setShowProfileModal(editor.id)}
                               >
+                                <video
+                                  src={editor.showcaseVideoUrl}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  playsInline
+                                  preload="auto"
+                                />
                                 {editor.showcaseThumbnailUrl && (
-                                  <img src={editor.showcaseThumbnailUrl} alt="" className="absolute inset-0 w-full h-full object-cover [.has-video_&]:opacity-0 transition-opacity duration-300" loading="lazy" />
+                                  <img src={editor.showcaseThumbnailUrl} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                                 )}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none [.has-video_&]:opacity-0 transition-opacity duration-300">
-                                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-white transition-all duration-300">
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
                                     <svg className="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M8 5v14l11-7z"/>
                                     </svg>
                                   </div>
-                                  <span className="text-[11px] text-white/50 font-medium tracking-wider uppercase">Showcase</span>
                                 </div>
                               </div>
                             ) : (
@@ -610,6 +616,16 @@ export default function DashboardPage() {
                         </div>
                       );
                     })}
+                    {hasMore && (
+                      <div className="sm:col-span-2 lg:col-span-3 flex justify-center mt-8">
+                        <button
+                          onClick={() => setEditorPage(p => p + 1)}
+                          className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-sm transition-all shadow-sm"
+                        >
+                          Load More Editors
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
