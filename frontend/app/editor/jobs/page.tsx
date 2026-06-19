@@ -26,6 +26,7 @@ export default function EditorJobsPage() {
     available: true,
     avatarUrl: '',
     showcaseVideoUrl: '',
+    showcaseThumbnailUrl: '',
   })
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [selectedJob, setSelectedJob] = useState<any>(null)
@@ -87,6 +88,7 @@ export default function EditorJobsPage() {
       available: ep?.available ?? true,
       avatarUrl: ep?.avatarUrl || '',
       showcaseVideoUrl: ep?.showcaseVideoUrl || '',
+      showcaseThumbnailUrl: ep?.showcaseThumbnailUrl || '',
     })
   }, [profile])
 
@@ -145,6 +147,7 @@ export default function EditorJobsPage() {
         available: profileForm.available,
         avatarUrl: profileForm.avatarUrl,
         showcaseVideoUrl: profileForm.showcaseVideoUrl || null,
+        showcaseThumbnailUrl: profileForm.showcaseThumbnailUrl || null,
       } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
@@ -1068,6 +1071,23 @@ export default function EditorJobsPage() {
                               controls
                               preload="metadata"
                             />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Showcase Thumbnail */}
+                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Showcase Thumbnail (Optional)</label>
+                        <p className="text-[11px] text-gray-400 mb-3">Custom thumbnail image for your showcase video. Shown when video is not playing.</p>
+                        <input
+                          value={profileForm.showcaseThumbnailUrl}
+                          onChange={(e) => setProfileForm((p) => ({ ...p, showcaseThumbnailUrl: e.target.value }))}
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200"
+                          placeholder="Paste thumbnail image URL (JPEG, PNG)"
+                        />
+                        {profileForm.showcaseThumbnailUrl && (
+                          <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                            <img src={profileForm.showcaseThumbnailUrl} alt="Thumbnail preview" className="w-full max-h-32 object-cover" loading="lazy" />
                           </div>
                         )}
                       </div>

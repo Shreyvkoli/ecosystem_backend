@@ -122,7 +122,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
       portfolio: z.union([z.array(z.string()), z.string()]).optional(),
       available: z.boolean().optional(),
       avatarUrl: z.string().url().min(1, "Profile photo is mandatory for editors"),
-      showcaseVideoUrl: z.string().url().optional().nullable()
+      showcaseVideoUrl: z.string().url().optional().nullable(),
+      showcaseThumbnailUrl: z.string().url().optional().nullable()
     });
 
     const data = schema.parse(req.body);
@@ -144,7 +145,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
         portfolio,
         available: data.available,
         avatarUrl: data.avatarUrl,
-        showcaseVideoUrl: data.showcaseVideoUrl
+        showcaseVideoUrl: data.showcaseVideoUrl,
+        showcaseThumbnailUrl: data.showcaseThumbnailUrl
       },
       create: {
         userId: req.userId!,
@@ -154,7 +156,8 @@ router.put('/profile', async (req: AuthRequest, res: Response) => {
         portfolio: portfolio ?? [],
         available: data.available ?? true,
         avatarUrl: data.avatarUrl,
-        showcaseVideoUrl: data.showcaseVideoUrl
+        showcaseVideoUrl: data.showcaseVideoUrl,
+        showcaseThumbnailUrl: data.showcaseThumbnailUrl
       }
     });
 

@@ -421,22 +421,27 @@ export default function DashboardPage() {
                                     video = document.createElement('video');
                                     video.className = 'w-full h-full object-cover absolute inset-0';
                                     video.muted = true;
-                                    video.loop = true;
                                     video.playsInline = true;
+                                    video.preload = 'none';
                                     video.src = editor.showcaseVideoUrl;
                                     el.prepend(video);
+                                    el.classList.add('has-video');
                                     video.play().catch(() => {});
                                   } else {
+                                    video.currentTime = 0;
                                     video.play().catch(() => {});
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   const video = e.currentTarget.querySelector('video');
-                                  if (video) { video.pause(); video.currentTime = 0; }
+                                  if (video) { video.pause(); }
                                 }}
                                 onClick={() => setShowProfileModal(editor.id)}
                               >
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                                {editor.showcaseThumbnailUrl && (
+                                  <img src={editor.showcaseThumbnailUrl} alt="" className="absolute inset-0 w-full h-full object-cover [.has-video_&]:opacity-0 transition-opacity duration-300" loading="lazy" />
+                                )}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none [.has-video_&]:opacity-0 transition-opacity duration-300">
                                   <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-white transition-all duration-300">
                                     <svg className="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M8 5v14l11-7z"/>

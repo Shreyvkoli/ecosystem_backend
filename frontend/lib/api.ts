@@ -100,6 +100,7 @@ export interface EditorProfile {
   portfolio: string[];
   available: boolean;
   showcaseVideoUrl?: string | null;
+  showcaseThumbnailUrl?: string | null;
 }
 
 export interface EditorProfileResponse {

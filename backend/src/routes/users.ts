@@ -92,7 +92,8 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
           portfolio: editor.editorProfile.portfolio ? editor.editorProfile.portfolio.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
           available: editor.editorProfile.available,
           maxSlots: editor.editorProfile.maxSlots || 2,
-          showcaseVideoUrl: editor.editorProfile.showcaseVideoUrl
+          showcaseVideoUrl: editor.editorProfile.showcaseVideoUrl,
+          showcaseThumbnailUrl: editor.editorProfile.showcaseThumbnailUrl
         }),
         reviews: editor.reviewsReceived || [],
         activeCount,
