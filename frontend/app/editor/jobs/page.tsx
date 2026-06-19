@@ -360,16 +360,14 @@ export default function EditorJobsPage() {
               </button>
               <button
                 onClick={() => setTab('active')}
-                className={`flex-shrink-0 whitespace-nowrap relative px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 flex items-center justify-center ${activeJobs.length > 0
-                  ? 'bg-brand text-white'
-                  : tab === 'active'
-                    ? 'bg-white text-charcoal shadow-sm'
-                    : 'text-gray-400 hover:text-gray-600'
+                className={`flex-shrink-0 whitespace-nowrap relative px-4 py-2 text-caption rounded-lg font-semibold transition-all duration-200 flex items-center justify-center ${tab === 'active'
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
                   }`}
               >
                 Active Jobs
                 {activeJobs.length > 0 && (
-                  <span className="ml-1.5 w-5 h-5 flex items-center justify-center bg-white/20 text-white text-micro font-bold rounded-full">
+                  <span className={`ml-1.5 w-5 h-5 flex items-center justify-center text-micro font-bold rounded-full ${tab === 'active' ? 'bg-brand/10 text-brand' : 'bg-gray-200 text-gray-500'}`}>
                     {activeJobs.length}
                   </span>
                 )}
