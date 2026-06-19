@@ -14,6 +14,8 @@ export interface CreateOrderData {
   description?: string;
   brief?: string;
   amount?: number;
+  budgetMin: number;
+  budgetMax: number;
   creatorId: string;
   editorId?: string;
   rawFootageDuration?: number;
@@ -120,7 +122,9 @@ export async function createOrder(data: CreateOrderData) {
       title: data.title,
       description: data.description,
       brief: data.brief,
-      amount: data.amount,
+      amount: data.budgetMax,
+      budgetMin: data.budgetMin,
+      budgetMax: data.budgetMax,
       creatorId: data.creatorId,
       editorId: data.editorId, // Optional direct assignment
       status: data.editorId ? OrderStatus.ASSIGNED : OrderStatus.OPEN,

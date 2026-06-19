@@ -31,6 +31,7 @@ export default function EditorJobsPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [selectedJob, setSelectedJob] = useState<any>(null)
   const [sortBy, setSortBy] = useState<'default' | 'money' | 'deadline' | 'level'>('default')
+  const [quoteAmount, setQuoteAmount] = useState<number>(0)
 
   useEffect(() => {
     if (!user) {
@@ -93,7 +94,7 @@ export default function EditorJobsPage() {
   }, [profile])
 
   const applyMutation = useMutation({
-    mutationFn: (orderId: string) => ordersApi.apply(orderId),
+    mutationFn: ({ orderId, quoteAmount }: { orderId: string; quoteAmount: number }) => ordersApi.apply(orderId, { quoteAmount }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders', 'available'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
@@ -528,13 +529,20 @@ export default function EditorJobsPage() {
                               <p className="text-[11px] text-gray-500 font-medium truncate">by {order.creator?.name}</p>
                             </div>
                           </div>
-                          {order.amount && (
+                          {order.budgetMin && order.budgetMax ? (
+                            <div className="text-right flex-shrink-0 ml-2">
+                              <span className="block text-[13px] font-extrabold text-gray-900 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
+                                ₹{order.budgetMin.toLocaleString()} – ₹{order.budgetMax.toLocaleString()}
+                              </span>
+                              <span className="text-[9px] text-gray-400 font-medium mt-0.5 block">Budget Range</span>
+                            </div>
+                          ) : order.amount ? (
                             <div className="text-right flex-shrink-0 ml-2">
                               <span className="block text-[15px] font-extrabold text-gray-900 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
                                 ₹{order.amount.toLocaleString()}
                               </span>
                             </div>
-                          )}
+                          ) : null}
                         </div>
 
                         {order.description && (
@@ -570,13 +578,16 @@ export default function EditorJobsPage() {
                       </div>
 
                       <div className="space-y-2 mt-2">
-                        <button
-                          onClick={() => setSelectedJob(order)}
-                          className="w-full flex items-center justify-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-full text-xs font-semibold transition-all duration-200"
-                        >
-                          <Eye className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
-                          View Details
-                        </button>
+                      <button
+                        onClick={() => {
+                          setQuoteAmount(order.budgetMin || 0);
+                          setSelectedJob(order);
+                        }}
+                        className="w-full flex items-center justify-center px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-full text-xs font-semibold transition-all duration-200"
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+                        View Details
+                      </button>
 
                         {/* Application Logic */}
                         {order.status === 'OPEN' &&
@@ -585,11 +596,13 @@ export default function EditorJobsPage() {
                           )) &&
                           order.editorId !== user?.id ? (
                           <button 
-                            onClick={() => applyMutation.mutate(order.id)} 
-                            disabled={applyMutation.isPending && applyMutation.variables === order.id} 
+                            onClick={() => {
+                              setQuoteAmount(order.budgetMin || 0);
+                              setSelectedJob(order);
+                            }} 
                             className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm flex items-center justify-center disabled:opacity-50"
                           >
-                            {applyMutation.isPending && applyMutation.variables === order.id ? 'Applying...' : 'Apply to Job'}
+                            Apply to Job
                           </button>
                         ) : (
                           <div className="text-center font-bold text-xs text-gray-600 py-2 bg-gray-50 rounded-full border border-gray-100">
@@ -1147,9 +1160,11 @@ export default function EditorJobsPage() {
                   </div>
                   <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
                   <div>
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Budget</span>
+                    <span className="text-xs font-semibold text-gray-500 uppercase">Budget Range</span>
                     <div className="text-gray-900 font-bold mt-1">
-                      ₹{selectedJob.amount?.toLocaleString()}
+                      {selectedJob.budgetMin && selectedJob.budgetMax
+                        ? `₹${selectedJob.budgetMin.toLocaleString()} – ₹${selectedJob.budgetMax.toLocaleString()}`
+                        : `₹${selectedJob.amount?.toLocaleString() || 'N/A'}`}
                     </div>
                   </div>
                   <div className="w-px bg-gray-200 h-10 hidden sm:block"></div>
@@ -1223,6 +1238,46 @@ export default function EditorJobsPage() {
                 </div>
               </div>
 
+              {/* Quote Amount Input */}
+              {(!selectedJob.applications?.some((app: any) => app.editorId === user?.id) && selectedJob.status === 'OPEN') && (
+                <div className="px-6 py-4 border-t bg-white">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div className="flex-1 w-full">
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">
+                        Your Quote (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min={selectedJob.budgetMin || 0}
+                        max={selectedJob.budgetMax || 999999}
+                        value={quoteAmount}
+                        onChange={(e) => setQuoteAmount(parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                      />
+                      {selectedJob.budgetMin && selectedJob.budgetMax && (
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          Creator expects ₹{selectedJob.budgetMin.toLocaleString()} – ₹{selectedJob.budgetMax.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (quoteAmount < (selectedJob.budgetMin || 0) || quoteAmount > (selectedJob.budgetMax || 999999)) {
+                          alert(`Quote must be between ₹${selectedJob.budgetMin?.toLocaleString() || 0} and ₹${selectedJob.budgetMax?.toLocaleString() || 'N/A'}`);
+                          return;
+                        }
+                        applyMutation.mutate({ orderId: selectedJob.id, quoteAmount });
+                        setSelectedJob(null);
+                      }}
+                      disabled={applyMutation.isPending || !quoteAmount}
+                      className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50"
+                    >
+                      {applyMutation.isPending ? 'Applying...' : 'Apply with Quote'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-gray-50 px-6 py-4 border-t flex justify-end gap-3">
                 <button
                   onClick={() => setSelectedJob(null)}
@@ -1230,26 +1285,6 @@ export default function EditorJobsPage() {
                 >
                   Close
                 </button>
-
-                {/* Show Apply button in modal too */}
-                {!user?.role || user.role === 'EDITOR' ? (
-                  selectedJob.applications?.some((app: any) => app.editorId === user?.id) ? (
-                    <button disabled className="px-4 py-2 bg-gray-300 text-white rounded-lg font-medium cursor-not-allowed">
-                      Already Applied
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        applyMutation.mutate(selectedJob.id);
-                        setSelectedJob(null);
-                      }}
-                      disabled={applyMutation.isPending}
-                      className="premium-button px-6 py-2"
-                    >
-                      Apply Now
-                    </button>
-                  )
-                ) : null}
               </div>
             </div>
           </div>

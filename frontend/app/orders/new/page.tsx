@@ -17,7 +17,8 @@ function NewOrderContent() {
     title: '',
     description: '',
     brief: '',
-    amount: '',
+    budgetMin: '',
+    budgetMax: '',
     editorId: '',
     rawFootageDuration: '',
     expectedDuration: '',
@@ -86,28 +87,42 @@ function NewOrderContent() {
 
     setRecommendedBudget(total)
 
-    // Auto-set the amount to the recommended budget description
-    setFormData(prev => ({ ...prev, amount: total.toString() }))
+    // Auto-set budgetMin from formula, budgetMax = budgetMin * 1.3
+    const suggested = total
+    setFormData(prev => ({
+      ...prev,
+      budgetMin: suggested.toString(),
+      budgetMax: (Math.ceil(suggested * 1.3 / 500) * 500 > suggested ? Math.ceil(suggested * 1.3 / 500) * 500 : suggested + 500).toString()
+    }))
     setBudgetError(null)
   }, [formData.expectedDuration, formData.rawFootageDuration, formData.editingLevel])
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBudgetMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
-    setFormData({ ...formData, amount: val })
+    setFormData(prev => {
+      const min = parseFloat(val) || 0
+      const max = parseFloat(prev.budgetMax) || 0
+      return {
+        ...prev,
+        budgetMin: val,
+        budgetMax: max < min ? val : prev.budgetMax
+      }
+    })
+    setBudgetError(null)
+  }
 
-    if (recommendedBudget && val) {
-      const numVal = parseFloat(val)
-      const min = recommendedBudget * 0.9
-      const max = recommendedBudget * 1.1
-
-      if (numVal < min || numVal > max) {
-        setBudgetError(`Budget must be within 10% (₹${Math.round(min)} - ₹${Math.round(max)}) to ensure quality.`)
+  const handleBudgetMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setFormData(prev => {
+      const min = parseFloat(prev.budgetMin) || 0
+      const max = parseFloat(val) || 0
+      if (max < min) {
+        setBudgetError('Budget maximum must be greater than or equal to budget minimum')
       } else {
         setBudgetError(null)
       }
-    } else {
-      setBudgetError(null)
-    }
+      return { ...prev, budgetMax: val }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +135,8 @@ function NewOrderContent() {
       title: formData.title,
       description: formData.description || undefined,
       brief: formData.brief || undefined,
-      amount: formData.amount ? parseFloat(formData.amount) : undefined,
+      budgetMin: formData.budgetMin ? parseInt(formData.budgetMin) : 0,
+      budgetMax: formData.budgetMax ? parseInt(formData.budgetMax) : 0,
       editorId: formData.editorId || undefined,
       rawFootageDuration: formData.rawFootageDuration ? parseFloat(formData.rawFootageDuration) : undefined,
       expectedDuration: formData.expectedDuration ? parseFloat(formData.expectedDuration) : undefined,
@@ -426,41 +442,75 @@ function NewOrderContent() {
               />
             </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                  Budget (₹)
-                </label>
+            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {recommendedBudget !== null
+                      ? `Suggested price: ₹${recommendedBudget.toLocaleString()}`
+                      : 'Enter durations above for a suggested price'}
+                  </p>
+                  {recommendedBudget !== null && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Your budget range: ₹{parseInt(formData.budgetMin || '0').toLocaleString()} – ₹{parseInt(formData.budgetMax || '0').toLocaleString()}
+                    </p>
+                  )}
+                </div>
                 {recommendedBudget !== null && (
-                  <div
-                    onClick={() => setFormData({ ...formData, amount: recommendedBudget.toString() })}
-                    className="cursor-pointer flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full hover:bg-green-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const suggested = recommendedBudget
+                      setFormData(prev => ({
+                        ...prev,
+                        budgetMin: suggested.toString(),
+                        budgetMax: (Math.ceil(suggested * 1.3 / 500) * 500 > suggested ? Math.ceil(suggested * 1.3 / 500) * 500 : suggested + 500).toString()
+                      }))
+                    }}
+                    className="text-xs font-semibold text-brand hover:text-brand-dark whitespace-nowrap"
                   >
-                    <span>✨ Recommended: ₹{recommendedBudget}</span>
-                  </div>
+                    Reset to suggested
+                  </button>
                 )}
               </div>
-              <input
-                type="number"
-                id="amount"
-                min="0"
-                step="0.01"
-                className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm px-3 py-2 text-gray-900 ${budgetError
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-brand focus:ring-brand'
-                  }`}
-                value={formData.amount}
-                onChange={handleAmountChange}
-                placeholder={recommendedBudget ? `Suggested: ₹${recommendedBudget}` : 'Enter amount'}
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="budgetMin" className="block text-micro text-gray-400 uppercase tracking-widest mb-1">
+                    Budget Min (₹)
+                  </label>
+                  <input
+                    type="number"
+                    id="budgetMin"
+                    min="0"
+                    step="500"
+                    value={formData.budgetMin}
+                    onChange={handleBudgetMinChange}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                    placeholder="Min"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="budgetMax" className="block text-micro text-gray-400 uppercase tracking-widest mb-1">
+                    Budget Max (₹)
+                  </label>
+                  <input
+                    type="number"
+                    id="budgetMax"
+                    min="0"
+                    step="500"
+                    value={formData.budgetMax}
+                    onChange={handleBudgetMaxChange}
+                    className={`w-full px-3 py-2 bg-white border rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand ${budgetError ? 'border-red-300' : 'border-gray-200'}`}
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
               {budgetError && (
-                <p className="mt-1 text-xs text-red-600 font-medium">
-                  {budgetError}
-                </p>
+                <p className="mt-1.5 text-xs text-red-600 font-medium">{budgetError}</p>
               )}
               {recommendedBudget !== null && !budgetError && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Based on {formData.expectedDuration} min {formData.editingLevel.toLowerCase()} edit + raw footage processing.
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Based on {formData.expectedDuration} min {formData.editingLevel.toLowerCase()} edit + raw footage processing. Editors will quote within this range.
                 </p>
               )}
             </div>

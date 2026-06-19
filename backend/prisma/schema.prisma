@@ -13,6 +13,7 @@ model OrderApplication {
   editorId        String
   status          String            @default("APPLIED")
   depositAmount   Float
+  quoteAmount     Int?
   createdAt       DateTime          @default(now())
   depositDeadline DateTime?
   editor          User              @relation("EditorApplications", fields: [editorId], references: [id], onDelete: Cascade)
@@ -167,6 +168,8 @@ model Order {
   status             String              @default("OPEN")
   riskLevel          String              @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
   amount             Float?
+  budgetMin          Int?
+  budgetMax          Int?
   currency           String              @default("INR")
   paymentGateway     String?
   paymentStatus      String              @default("PENDING")

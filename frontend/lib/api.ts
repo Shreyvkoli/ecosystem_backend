@@ -45,6 +45,8 @@ export interface Order {
   brief?: string;
   status: string;
   amount?: number;
+  budgetMin?: number;
+  budgetMax?: number;
   currency?: string;
   rawFootageDuration?: number;
   expectedDuration?: number;
@@ -86,6 +88,7 @@ export interface OrderApplication {
   editorId: string;
   status: 'APPLIED' | 'APPROVED' | 'REJECTED';
   depositAmount: number;
+  quoteAmount?: number;
   createdAt: string;
   editor?: User;
 }
@@ -226,7 +229,8 @@ export const ordersApi = {
     title: string;
     description?: string;
     brief?: string;
-    amount?: number;
+    budgetMin: number;
+    budgetMax: number;
     editorId?: string;
     rawFootageDuration?: number;
     expectedDuration?: number;
@@ -243,7 +247,7 @@ export const ordersApi = {
     api.post(`/orders/${id}/approve`),
   requestRevision: (id: string) =>
     api.post(`/orders/${id}/request-revision`),
-  apply: (id: string) => api.post(`/orders/${id}/apply`),
+  apply: (id: string, data?: { quoteAmount: number }) => api.post(`/orders/${id}/apply`, data || {}),
   listApplications: (id: string) => api.get<OrderApplication[]>(`/orders/${id}/applications`),
   approveEditor: (orderId: string, applicationId: string) =>
     api.post(`/orders/${orderId}/approve-editor`, { applicationId }),

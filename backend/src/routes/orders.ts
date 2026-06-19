@@ -178,27 +178,31 @@ router.delete('/:id', requireCreator, async (req: AuthRequest, res: Response) =>
  * POST /api/orders
  * Create a new order (CREATOR only)
  */
-router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
-  try {
-    const schema = z.object({
-      title: z.string().min(1, 'Title is required'),
-      description: z.string().optional(),
-      brief: z.string().optional(),
-      amount: z.number().positive().optional(),
-      editorId: z.string().uuid().optional(),
-      rawFootageDuration: z.number().min(0, "Duration must be positive").optional(),
-      expectedDuration: z.number().min(0, "Duration must be positive").optional(),
-      editingLevel: z.enum(['BASIC', 'PROFESSIONAL', 'PREMIUM']).optional(),
-      referenceLink: z.string().url().optional().or(z.literal('')),
-      deadline: z.string().datetime().optional()
-    });
+  router.post('/', requireCreator, async (req: AuthRequest, res: Response) => {
+    try {
+      const schema = z.object({
+        title: z.string().min(1, 'Title is required'),
+        description: z.string().optional(),
+        brief: z.string().optional(),
+        budgetMin: z.number().int().positive('Budget minimum must be a positive amount'),
+        budgetMax: z.number().int().positive('Budget maximum must be a positive amount'),
+        editorId: z.string().uuid().optional(),
+        rawFootageDuration: z.number().min(0, "Duration must be positive").optional(),
+        expectedDuration: z.number().min(0, "Duration must be positive").optional(),
+        editingLevel: z.enum(['BASIC', 'PROFESSIONAL', 'PREMIUM']).optional(),
+        referenceLink: z.string().url().optional().or(z.literal('')),
+        deadline: z.string().datetime().optional()
+      }).refine(d => d.budgetMax >= d.budgetMin, {
+        message: 'Budget maximum must be greater than or equal to budget minimum',
+        path: ['budgetMax']
+      });
 
-    const data = schema.parse(req.body);
+      const data = schema.parse(req.body);
 
-    const order = await createOrder({
-      ...data,
-      creatorId: req.userId!
-    });
+      const order = await createOrder({
+        ...data,
+        creatorId: req.userId!
+      });
 
     await invalidateOrdersCache(req.userId);
 
@@ -696,6 +700,20 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
       return res.status(400).json({ error: 'Already applied to this order' });
     }
 
+    // Validate quote amount
+    const quoteSchema = z.object({
+      quoteAmount: z.number().int().positive('Quote amount must be positive')
+    });
+    const { quoteAmount } = quoteSchema.parse(req.body);
+
+    if (order.budgetMin != null && order.budgetMax != null) {
+      if (quoteAmount < order.budgetMin || quoteAmount > order.budgetMax) {
+        return res.status(400).json({
+          error: `Quote amount must be between ₹${order.budgetMin} and ₹${order.budgetMax}`
+        });
+      }
+    }
+
     // Check active jobs
     const activeJobCount = await prisma.order.count({
       where: {
@@ -716,6 +734,7 @@ router.post('/:id/apply', requireRole(['EDITOR']), async (req: AuthRequest, res:
         orderId,
         editorId: userId,
         status: 'APPLIED',
+        quoteAmount,
         depositAmount: computeDepositAmount(order.editingLevel || 'BASIC', order.amount)
       },
       include: {
@@ -932,6 +951,9 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
         }
       });
 
+      // Set order amount to the approved editor's quote
+      const quoteAmount = targetApplication.quoteAmount || order.amount;
+
       // Reject all other pending applications
       const otherApplied = (order.applications || []).filter((a: any) => a.id !== applicationId && a.status === APPLICATION_STATUS.APPLIED);
       for (const app of otherApplied) {
@@ -946,6 +968,7 @@ router.post('/:id/approve-editor', requireCreator, async (req: AuthRequest, res:
         where: { id: req.params.id },
         data: {
           editorId: approved.editorId,
+          amount: quoteAmount,
           status: newStatus as any,
           assignedAt: newStatus === ORDER_STATUS.ASSIGNED ? new Date() : null, // Only set assignedAt if entering active state
           lastActivityAt: new Date(),

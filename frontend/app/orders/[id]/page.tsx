@@ -328,9 +328,13 @@ export default function OrderDetailPage() {
                   <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(order.status)}`}>
                     {order.status}
                   </span>
-                  {order.amount && (
+                  {order.budgetMin && order.budgetMax ? (
+                    <span className="text-sm text-gray-600">
+                      Budget: ₹{order.budgetMin.toLocaleString()} – ₹{order.budgetMax.toLocaleString()}
+                    </span>
+                  ) : order.amount ? (
                     <span className="text-sm text-gray-600">₹{order.amount.toLocaleString()}</span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -450,12 +454,21 @@ export default function OrderDetailPage() {
               {/* Editor Applications - Show only when no editor assigned */}
               {user.role === 'CREATOR' && (order.status === 'OPEN' || order.status === 'APPLIED') && !order.editorId && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="font-semibold mb-3">Editor Applications</h3>
+                  <h3 className="font-semibold mb-3">
+                    Editor Applications
+                    {applications && applications.length > 0 && (
+                      <span className="text-xs font-normal text-gray-400 ml-2">
+                        (sorted by quote)
+                      </span>
+                    )}
+                  </h3>
                   {!applications || applications.length === 0 ? (
                     <p className="text-sm text-gray-600">No applications yet.</p>
                   ) : (
                     <div className="space-y-3">
-                      {applications.map((app) => (
+                      {[...applications]
+                        .sort((a, b) => (a.quoteAmount || 0) - (b.quoteAmount || 0))
+                        .map((app) => (
                         <div key={app.id} className="border rounded p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
@@ -476,7 +489,12 @@ export default function OrderDetailPage() {
                               <div>
                                 <div className="text-sm font-medium text-gray-900">{app.editor?.name || 'Editor'}</div>
                                 <div className="text-xs text-gray-500">{app.editor?.email}</div>
-                                <div className="text-xs text-gray-500">Deposit: ₹{Number(app.depositAmount || 0).toLocaleString()}</div>
+                                <div className="text-xs font-bold text-brand mt-0.5">
+                                  Quote: ₹{Number(app.quoteAmount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  Deposit: ₹{Number(app.depositAmount || 0).toLocaleString()}
+                                </div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
