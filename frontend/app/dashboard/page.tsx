@@ -90,8 +90,15 @@ export default function DashboardPage() {
     queryFn: async () => {
       const response = await usersApi.listEditors({ limit: 12, offset: editorPage * 12 })
       const data = Array.isArray(response.data) ? response.data : response.data
-      setHasMore(data.hasMore ?? false)
-      return (data.editors || data) as any[]
+      const editors = (data.editors || data) as any[]
+      // hasMore: API tells us, or infer from less-than-limit response
+      const hasMoreFromApi = data.hasMore
+      if (hasMoreFromApi !== undefined) {
+        setHasMore(hasMoreFromApi)
+      } else {
+        setHasMore(editors.length >= 12)
+      }
+      return editors
     },
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
