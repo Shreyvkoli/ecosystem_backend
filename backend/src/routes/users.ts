@@ -22,38 +22,51 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const editors = await prisma.user.findMany({
-      where: {
-        role: 'EDITOR'
-      },
-      include: {
-        editorProfile: true,
-        reviewsReceived: {
-          include: {
-            reviewer: {
-              select: {
-                name: true,
-                creatorProfile: { select: { avatarUrl: true } }
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        },
-        editorOrders: {
-          where: {
-            status: {
-              in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
-            }
-          },
-          select: { deadline: true },
-          orderBy: { deadline: 'asc' }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
+    const querySchema = z.object({
+      limit: z.coerce.number().int().min(1).max(50).default(12),
+      offset: z.coerce.number().int().min(0).default(0),
     });
-    const total = editors.length;
+
+    const { limit, offset } = querySchema.parse(req.query);
+
+    const [editors, total] = await Promise.all([
+      prisma.user.findMany({
+        where: {
+          role: 'EDITOR'
+        },
+        include: {
+          editorProfile: true,
+          reviewsReceived: {
+            include: {
+              reviewer: {
+                select: {
+                  name: true,
+                  creatorProfile: { select: { avatarUrl: true } }
+                }
+              }
+            },
+            orderBy: { createdAt: 'desc' }
+          },
+          editorOrders: {
+            where: {
+              status: {
+                in: ['ASSIGNED', 'IN_PROGRESS', 'PREVIEW_SUBMITTED', 'REVISION_REQUESTED', 'FINAL_SUBMITTED']
+              }
+            },
+            select: { deadline: true },
+            orderBy: { deadline: 'asc' }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.user.count({
+        where: { role: 'EDITOR' }
+      }),
+    ]);
 
     const profiles = editors.map((editor: any) => {
       const activeJobs = editor.editorOrders || [];
@@ -91,6 +104,7 @@ router.get('/editors/profiles', async (req: AuthRequest, res: Response) => {
     return res.json({
       editors: profiles,
       total,
+      hasMore: offset + limit < total,
     });
   } catch (error: any) {
     console.error('Get editor profiles error:', error);
