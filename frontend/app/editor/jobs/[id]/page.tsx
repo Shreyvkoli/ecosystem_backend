@@ -27,6 +27,7 @@ export default function EditorJobDetailPage() {
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
+  const [showDepositSuccess, setShowDepositSuccess] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -420,30 +421,38 @@ export default function EditorJobDetailPage() {
                   </div>
                 )}
 
-              {/* Start work button */}
+              {/* Deposit / Start work section */}
               {order.status === 'ASSIGNED' && (
                 <div className="bg-white rounded-lg shadow p-4">
-                  {depositRequired && !depositPaid && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600">
-                        Security deposit required before starting work.
-                      </p>
+                  {depositRequired && !depositPaid ? (
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <ShieldCheck className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Deposit Required to Start</h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            A security deposit is required before you can begin working. This protects both you and the creator.
+                          </p>
+                        </div>
+                      </div>
                       <EditorDepositButton
                         orderId={orderId}
                         onSuccess={() => {
                           queryClient.invalidateQueries({ queryKey: ['order', orderId] })
                           queryClient.invalidateQueries({ queryKey: ['orders'] })
+                          setShowDepositSuccess(true)
                         }}
                       />
                     </div>
+                  ) : (
+                    <button
+                      onClick={() => handleStartWork()}
+                      disabled={updateStatusMutation.isPending}
+                      className="w-full px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand-dark disabled:opacity-50 font-medium"
+                    >
+                      {updateStatusMutation.isPending ? 'Starting...' : 'Start Working'}
+                    </button>
                   )}
-                  <button
-                    onClick={handleStartWork}
-                    disabled={updateStatusMutation.isPending || (depositRequired && !depositPaid)}
-                    className="w-full px-4 py-2 bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50"
-                  >
-                    {updateStatusMutation.isPending ? 'Starting...' : 'Start Working'}
-                  </button>
                 </div>
               )}
 
@@ -537,6 +546,29 @@ export default function EditorJobDetailPage() {
           orderId={orderId}
           revieweeName={order.creator?.name}
         />
+
+        {/* Deposit Success Modal */}
+        {showDepositSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 text-center">
+              <ShieldCheck className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Deposit Paid!</h2>
+              <p className="text-gray-600 mb-6">
+                Your security deposit has been paid successfully. You can now start working on this job.
+              </p>
+              <button
+                onClick={() => {
+                  handleStartWork()
+                  setShowDepositSuccess(false)
+                }}
+                disabled={updateStatusMutation.isPending}
+                className="w-full px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand-dark disabled:opacity-50 font-medium"
+              >
+                {updateStatusMutation.isPending ? 'Starting...' : 'Start Working'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Full Details Modal */}
         {showDetailsModal && (
