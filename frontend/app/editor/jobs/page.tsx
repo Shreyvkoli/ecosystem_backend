@@ -96,10 +96,11 @@ export default function EditorJobsPage() {
   const applyMutation = useMutation({
     mutationFn: ({ orderId, quoteAmount }: { orderId: string; quoteAmount: number }) => ordersApi.apply(orderId, { quoteAmount }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', 'available'] })
-      queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] })
+      setSelectedJob(null)
+      queryClient.refetchQueries({ queryKey: ['orders', 'available'] })
+      queryClient.refetchQueries({ queryKey: ['orders', 'mine'] })
+      queryClient.refetchQueries({ queryKey: ['activeJobCount'] })
       queryClient.invalidateQueries({ queryKey: ['editorProfile'] })
-      queryClient.invalidateQueries({ queryKey: ['activeJobCount'] })
     },
     onError: (err: any) => {
       alert(err?.response?.data?.error || 'Failed to apply')
@@ -1267,7 +1268,6 @@ export default function EditorJobsPage() {
                           return;
                         }
                         applyMutation.mutate({ orderId: selectedJob.id, quoteAmount });
-                        setSelectedJob(null);
                       }}
                       disabled={applyMutation.isPending || !quoteAmount}
                       className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-bold text-sm transition-all disabled:opacity-50"
