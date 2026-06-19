@@ -402,30 +402,16 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {filteredEditors.map((editor: any) => {
                       const isSaved = savedEditors?.some((s: any) => s.id === editor.id);
                       return (
-                        <div key={editor.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-all duration-200 relative">
-                          <div className="flex flex-col md:flex-row md:items-start gap-4">
-                            {/* Avatar column */}
-                            <div className="flex-shrink-0 relative self-start">
-                              <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
-                                {editor.avatarUrl ? (
-                                  <img src={editor.avatarUrl} alt={editor.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-base font-bold text-green-700 bg-green-50 w-full h-full flex items-center justify-center">
-                                    {editor.name.charAt(0).toUpperCase()}
-                                  </span>
-                                )}
-                              </div>
-                              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${editor.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                            </div>
-
-                            {/* Showcase Video Thumbnail */}
-                            {editor.showcaseVideoUrl && (
-                              <div 
-                                className="flex-shrink-0 hidden md:block"
+                        <div key={editor.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
+                          {/* Video Thumbnail - Full width top */}
+                          <div className="relative bg-gray-900">
+                            {editor.showcaseVideoUrl ? (
+                              <div
+                                className="aspect-[16/9] overflow-hidden cursor-pointer relative"
                                 onMouseEnter={(e) => {
                                   const video = e.currentTarget.querySelector('video');
                                   if (video) { video.play().catch(() => {}); }
@@ -434,131 +420,117 @@ export default function DashboardPage() {
                                   const video = e.currentTarget.querySelector('video');
                                   if (video) { video.pause(); video.currentTime = 0; }
                                 }}
+                                onClick={() => setShowProfileModal(editor.id)}
                               >
-                                <div className="w-36 aspect-video bg-gray-900 rounded-lg overflow-hidden relative cursor-pointer group">
-                                  <video
-                                    src={editor.showcaseVideoUrl}
-                                    className="w-full h-full object-cover"
-                                    muted
-                                    loop
-                                    preload="metadata"
-                                    playsInline
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
-                                    <div className="w-7 h-7 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                      <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
-                                      </svg>
-                                    </div>
+                                <video
+                                  src={editor.showcaseVideoUrl}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  loop
+                                  preload="metadata"
+                                  playsInline
+                                  poster={editor.showcaseVideoUrl + '#t=0.5'}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
+                                    <svg className="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M8 5v14l11-7z"/>
+                                    </svg>
                                   </div>
                                 </div>
+                                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+                              </div>
+                            ) : (
+                              <div className="aspect-[16/9] bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                                <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Card Body */}
+                          <div className="p-4">
+                            {/* User info row */}
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="flex-shrink-0 relative">
+                                <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                                  {editor.avatarUrl ? (
+                                    <img src={editor.avatarUrl} alt={editor.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-xs font-bold text-green-700 bg-green-50 w-full h-full flex items-center justify-center">
+                                      {editor.name.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full ${editor.available ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3
+                                  className="text-sm font-bold text-gray-900 hover:text-green-600 cursor-pointer truncate"
+                                  onClick={() => setShowProfileModal(editor.id)}
+                                >
+                                  {editor.name}
+                                </h3>
+                                <p className="text-xs text-gray-500 truncate">{editor.bio ? editor.bio.split('\n')[0] : 'Video Editor'}</p>
+                              </div>
+                              {user.role === 'CREATOR' && (
+                                <button
+                                  onClick={() => toggleSaveMutation.mutate(editor.id)}
+                                  className={`p-1.5 rounded-full border transition-all flex-shrink-0 ${
+                                    isSaved
+                                      ? 'text-red-500 bg-red-50 border-red-200'
+                                      : 'text-gray-300 bg-white border-gray-200 hover:text-red-400 hover:bg-red-50'
+                                  }`}
+                                >
+                                  <Heart className="w-3.5 h-3.5" fill={isSaved ? "currentColor" : "none"} />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Rating Row */}
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mb-2.5">
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                                <span className="font-semibold text-gray-800">{editor.rating || 'New'}</span>
+                                <span className="text-gray-400">({editor.reviews?.length || 0})</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <div className={`w-1.5 h-1.5 rounded-full ${editor.activeCount >= (editor.maxSlots || 2) ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                <span className={editor.activeCount >= (editor.maxSlots || 2) ? 'text-amber-600 font-medium' : 'text-emerald-600 font-medium'}>
+                                  {editor.activeCount || 0}/{editor.maxSlots || 2}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Skills */}
+                            {editor.skills?.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-3">
+                                {editor.skills.slice(0, 3).map((skill: string) => (
+                                  <span key={skill} className="px-2 py-0.5 bg-gray-50 text-gray-600 text-[11px] font-medium rounded-md border border-gray-100">
+                                    {skill}
+                                  </span>
+                                ))}
+                                {editor.skills.length > 3 && (
+                                  <span className="text-[11px] text-gray-400 font-medium px-1">+{editor.skills.length - 3}</span>
+                                )}
                               </div>
                             )}
 
-                            {/* Main content column */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-4">
-                                <div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <h3 
-                                      className="text-sm md:text-base font-bold text-gray-900 hover:text-green-600 cursor-pointer hover:underline"
-                                      onClick={() => setShowProfileModal(editor.id)}
-                                    >
-                                      {editor.name}
-                                    </h3>
-                                  </div>
-                                  <p className="text-xs md:text-sm font-semibold text-gray-800 mt-0.5">{editor.bio ? editor.bio.split('\n')[0] : 'Video Editor'}</p>
-                                </div>
-
-                                {/* Buttons inside Card (Desktop only) */}
-                                <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                                  {user.role === 'CREATOR' && (
-                                    <button
-                                      onClick={() => toggleSaveMutation.mutate(editor.id)}
-                                      className={`p-2 rounded-full border transition-all ${
-                                        isSaved 
-                                          ? 'text-red-500 bg-red-50 border-red-200' 
-                                          : 'text-gray-400 bg-white border-gray-200 hover:text-red-500 hover:bg-red-50'
-                                      }`}
-                                    >
-                                      <Heart className="w-3.5 h-3.5" fill={isSaved ? "currentColor" : "none"} />
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => setShowProfileModal(editor.id)}
-                                    className="px-4 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full font-bold text-xs transition-all shadow-sm"
-                                  >
-                                    View Profile
-                                  </button>
-                                  <Link
-                                    href={`/orders/new?editorId=${editor.id}`}
-                                    className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs transition-all shadow-sm"
-                                  >
-                                    Invite to job
-                                  </Link>
-                                </div>
-                              </div>
-
-                              {/* Sub-info Row */}
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2.5 text-xs font-semibold text-gray-500">
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  <div className={`w-2 h-2 rounded-full ${editor.activeCount >= (editor.maxSlots || 2) ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
-                                  <span className={editor.activeCount >= (editor.maxSlots || 2) ? 'text-amber-700' : 'text-emerald-700'}>
-                                    {editor.activeCount || 0}/{editor.maxSlots || 2} Active Tasks
-                                  </span>
-                                </div>
-                                {editor.nextAvailableAt && editor.activeCount >= (editor.maxSlots || 2) && (
-                                  <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
-                                    <span>Available ~{new Date(editor.nextAvailableAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Bio text */}
-                              {editor.bio && (
-                                <p className="text-sm text-gray-600 mt-2.5 line-clamp-2">
-                                  {editor.bio}
-                                </p>
-                              )}
-
-                              {/* Skills list */}
-                              {editor.skills?.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-2.5">
-                                  {editor.skills.map((skill: string) => (
-                                    <span key={skill} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
-                                      {skill}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Mobile only buttons */}
-                              <div className="flex md:hidden items-center gap-3 mt-5 pt-4 border-t border-gray-100">
-                                <button
-                                  onClick={() => setShowProfileModal(editor.id)}
-                                  className="flex-1 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full font-bold text-xs text-center transition-all shadow-sm"
-                                >
-                                  View Profile
-                                </button>
-                                <Link
-                                  href={`/orders/new?editorId=${editor.id}`}
-                                  className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-xs text-center transition-all shadow-sm"
-                                >
-                                  Invite
-                                </Link>
-                                {user.role === 'CREATOR' && (
-                                  <button
-                                    onClick={() => toggleSaveMutation.mutate(editor.id)}
-                                    className={`p-2.5 rounded-full border transition-all ${
-                                      isSaved 
-                                        ? 'text-red-500 bg-red-50 border-red-200' 
-                                        : 'text-gray-400 bg-white border-gray-200 hover:text-red-500'
-                                    }`}
-                                  >
-                                    <Heart className="w-4 h-4" fill={isSaved ? "currentColor" : "none"} />
-                                  </button>
-                                )}
-                              </div>
+                            {/* Action buttons */}
+                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                              <button
+                                onClick={() => setShowProfileModal(editor.id)}
+                                className="flex-1 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50 transition-all active:scale-[0.98]"
+                              >
+                                Profile
+                              </button>
+                              <Link
+                                href={`/orders/new?editorId=${editor.id}`}
+                                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all active:scale-[0.98] text-center"
+                              >
+                                Invite
+                              </Link>
                             </div>
                           </div>
                         </div>
