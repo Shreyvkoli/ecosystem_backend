@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { ordersApi, youtubeApi, usersApi } from '@/lib/api'
 import { getUser, getAuthToken, removeUser } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
@@ -80,17 +80,27 @@ export default function DashboardPage() {
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'interests',
   })
 
-  // All editors list for browsing
-  const { data: allEditorsData, isLoading: isLoadingAllEditors } = useQuery({
+  // Pagination
+  const {
+    data: pagesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingAllEditors,
+  } = useInfiniteQuery({
     queryKey: ['all-editors'],
-    queryFn: async () => {
-      const response = await usersApi.listEditors()
-      return Array.isArray(response.data) ? response.data : response.data.editors
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
+      const response = await usersApi.listEditors({ limit: 12, offset: pageParam * 12 })
+      const data = Array.isArray(response.data) ? response.data : response.data
+      return { editors: data.editors || data, hasMore: data.hasMore ?? false }
     },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => lastPage.hasMore ? allPages.length : undefined,
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
 
-  const allEditors = allEditorsData
+  const allEditors = useMemo(() => pagesData?.pages.flatMap(p => p.editors) ?? [], [pagesData])
+
 
   // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
@@ -413,24 +423,10 @@ export default function DashboardPage() {
                           <div className="relative">
                             {editor.showcaseVideoUrl ? (
                               <div
-                                className="aspect-[16/9] overflow-hidden cursor-pointer relative bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-slate-900"
+                                className="aspect-[16/9] overflow-hidden cursor-pointer relative bg-black"
                                 onMouseEnter={(e) => {
-                                  const el = e.currentTarget;
-                                  let video = el.querySelector('video');
-                                  if (!video) {
-                                    video = document.createElement('video');
-                                    video.className = 'w-full h-full object-cover absolute inset-0';
-                                    video.muted = true;
-                                    video.playsInline = true;
-                                    video.preload = 'none';
-                                    video.src = editor.showcaseVideoUrl;
-                                    el.prepend(video);
-                                    el.classList.add('has-video');
-                                    video.play().catch(() => {});
-                                  } else {
-                                    video.currentTime = 0;
-                                    video.play().catch(() => {});
-                                  }
+                                  const video = e.currentTarget.querySelector('video');
+                                  if (video) { video.play().catch(() => {}); }
                                 }}
                                 onMouseLeave={(e) => {
                                   const video = e.currentTarget.querySelector('video');
@@ -438,16 +434,22 @@ export default function DashboardPage() {
                                 }}
                                 onClick={() => setShowProfileModal(editor.id)}
                               >
+                                <video
+                                  src={editor.showcaseVideoUrl}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  playsInline
+                                  preload="auto"
+                                />
                                 {editor.showcaseThumbnailUrl && (
-                                  <img src={editor.showcaseThumbnailUrl} alt="" className="absolute inset-0 w-full h-full object-cover [.has-video_&]:opacity-0 transition-opacity duration-300" loading="lazy" />
+                                  <img src={editor.showcaseThumbnailUrl} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                                 )}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none [.has-video_&]:opacity-0 transition-opacity duration-300">
-                                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-white transition-all duration-300">
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
                                     <svg className="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M8 5v14l11-7z"/>
                                     </svg>
                                   </div>
-                                  <span className="text-[11px] text-white/50 font-medium tracking-wider uppercase">Showcase</span>
                                 </div>
                               </div>
                             ) : (
@@ -614,6 +616,17 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
+            {hasNextPage && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="px-8 py-3 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white rounded-full font-bold text-sm transition-all shadow-sm"
+                >
+                  {isFetchingNextPage ? 'Loading...' : 'Load More Editors'}
+                </button>
+              </div>
+            )}
           ) : (
             isLoading ? (
               <div className="pro-card text-center py-12">
