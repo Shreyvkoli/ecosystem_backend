@@ -620,7 +620,7 @@ export default function DashboardPage() {
                         </div>
                       );
                     })}
-                    {hasMore && (
+                    {(allEditors.length >= 12) && (
                       <div className="sm:col-span-2 lg:col-span-3 flex justify-center mt-8">
                         <button
                           onClick={() => setEditorPage(p => p + 1)}
