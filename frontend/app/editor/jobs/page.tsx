@@ -270,11 +270,11 @@ export default function EditorJobsPage() {
   const getJobCardGradient = (level?: string) => {
     switch (level) {
       case 'PREMIUM':
-        return 'bg-gradient-to-br from-orange-50 via-orange-100/40 to-white order-card-orange border-orange-200 hover:shadow-orange-200/50'
+        return 'bg-gradient-to-br from-purple-50 via-purple-100/40 to-white border-purple-200 hover:shadow-purple-200/50'
       case 'PROFESSIONAL':
-        return 'bg-gradient-to-br from-blue-50 via-blue-100/40 to-white order-card-blue border-blue-200 hover:shadow-blue-200/50'
+        return 'bg-gradient-to-br from-indigo-50 via-indigo-100/40 to-white border-indigo-200 hover:shadow-indigo-200/50'
       default: // BASIC
-        return 'bg-gradient-to-br from-green-50 via-green-100/40 to-white order-card-green border-green-200 hover:shadow-green-200/50'
+        return 'bg-gradient-to-br from-violet-50 via-violet-100/40 to-white border-violet-200 hover:shadow-violet-200/50'
     }
   }
 
@@ -371,9 +371,9 @@ export default function EditorJobsPage() {
                   }`}
               >
                 Active Jobs
-                {activeJobs.length > 0 && (
+                {activeJobData && activeJobData.activeJobs > 0 && (
                   <span className={`ml-1.5 w-5 h-5 flex items-center justify-center text-micro font-bold rounded-full ${tab === 'active' ? 'bg-brand/10 text-brand' : 'bg-gray-200 text-gray-500'}`}>
-                    {activeJobs.length}
+                    {activeJobData.activeJobs}
                   </span>
                 )}
               </button>
@@ -507,7 +507,7 @@ export default function EditorJobsPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {sortedOpenOrders.map((order) => (
-                    <div key={order.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 relative group flex flex-col justify-between">
+                    <div key={order.id} className={`bg-gradient-to-br from-purple-50 via-purple-100/40 to-white border-purple-200 rounded-2xl p-5 hover:shadow-lg hover:shadow-purple-200/50 transition-all duration-300 relative group flex flex-col justify-between`}>
                       <div>
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex items-center gap-2.5">
@@ -683,7 +683,7 @@ export default function EditorJobsPage() {
             </div>
           )}
 
-          {/* ACTIVE TAB: Applied & Ongoing */}
+          {/* ACTIVE TAB: Active Contracts first, then Pipeline, then Applied */}
           {tab === 'active' && (
             <div className="space-y-8">
               {myLoading ? (
@@ -692,31 +692,41 @@ export default function EditorJobsPage() {
                 </div>
               ) : (
                 <>
-                  {appliedJobs.length > 0 && (
+                  {activeJobs.length > 0 && (
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-xl mr-3 text-xs font-extrabold uppercase tracking-wider font-semibold">Applied</span>
-                        <span className="text-gray-400 text-xs font-semibold">{appliedJobs.length} active applications</span>
+                        <span className="bg-green-600 text-white px-3 py-1 rounded-xl mr-3 text-xs font-extrabold uppercase tracking-wider font-semibold">Active Contract</span>
+                        <span className="text-gray-400 text-xs font-semibold">{activeJobs.length} active jobs</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {/* Applied Jobs Map */}
-                        {appliedJobs.map((order) => (
-                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between">
+                        {activeJobs.map((order) => (
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between relative">
+                            <div className="absolute top-5 right-5 w-9 h-9 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0 z-20">
+                              {order.creator?.creatorProfile?.avatarUrl ? (
+                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-700 bg-gray-100">
+                                  {order.creator?.name?.charAt(0)}
+                                </div>
+                              )}
+                            </div>
                             <div>
-                              <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-bold text-sm text-gray-900 break-words group-hover:text-green-600 transition-colors">{order.title}</h3>
+                              <h3 className="font-bold text-sm text-gray-900 break-words pr-10 group-hover:text-green-600 transition-colors">{order.title}</h3>
+                              <div className="mt-1 flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 text-[9px] font-bold uppercase bg-green-500 text-white border border-green-600 rounded">
+                                  {order.status === 'ASSIGNED' ? 'ACTIVE' : order.status}
+                                </span>
                                 {order.amount && (
-                                  <span className="text-xs font-bold text-gray-900 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                                  <span className="text-xs font-bold text-gray-900">
                                     ₹{order.amount.toLocaleString()}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-gray-500 font-medium">Applied on {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'recently'}</p>
                             </div>
                             <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                              <span className="px-2.5 py-1 text-[10px] font-extrabold uppercase bg-amber-50 text-amber-700 rounded-full border border-amber-100">Pending Review</span>
-                              <span className="text-[11px] font-semibold text-green-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                View details <ArrowRight className="w-3.5 h-3.5" />
+                              <span className="text-[11px] text-gray-500 font-semibold truncate">Client: {order.creator?.name}</span>
+                              <span className="text-[11px] font-bold text-green-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                Open Editor Timeline <ArrowRight className="w-3.5 h-3.5" />
                               </span>
                             </div>
                           </Link>
@@ -726,7 +736,7 @@ export default function EditorJobsPage() {
                   )}
 
                   {pipelineJobs.length > 0 && (
-                    <div className="mt-8">
+                    <div className={activeJobs.length > 0 ? 'mt-8' : ''}>
                       <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                         <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-xl mr-3 text-xs font-extrabold uppercase tracking-wider font-semibold">Pipeline</span>
                         <span className="text-gray-400 text-xs font-semibold">{pipelineJobs.length} waiting jobs</span>
@@ -775,41 +785,30 @@ export default function EditorJobsPage() {
                     </div>
                   )}
 
-                  {activeJobs.length > 0 && (
-                    <div className="mt-8">
+                  {appliedJobs.length > 0 && (
+                    <div className={(activeJobs.length > 0 || pipelineJobs.length > 0) ? 'mt-8' : ''}>
                       <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-xl mr-3 text-xs font-extrabold uppercase tracking-wider font-semibold">Active Contract</span>
-                        <span className="text-gray-400 text-xs font-semibold">{activeJobs.length} active jobs</span>
+                        <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-xl mr-3 text-xs font-extrabold uppercase tracking-wider font-semibold">Applied</span>
+                        <span className="text-gray-400 text-xs font-semibold">{appliedJobs.length} active applications</span>
                       </h2>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {activeJobs.map((order) => (
-                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between relative">
-                            <div className="absolute top-5 right-5 w-9 h-9 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0 z-20">
-                              {order.creator?.creatorProfile?.avatarUrl ? (
-                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-700 bg-gray-100">
-                                  {order.creator?.name?.charAt(0)}
-                                </div>
-                              )}
-                            </div>
+                        {appliedJobs.map((order) => (
+                          <Link key={order.id} href={`/editor/jobs/${order.id}`} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between">
                             <div>
-                              <h3 className="font-bold text-sm text-gray-900 break-words pr-10 group-hover:text-green-600 transition-colors">{order.title}</h3>
-                              <div className="mt-1 flex items-center gap-1.5">
-                                <span className="px-2 py-0.5 text-[9px] font-bold uppercase bg-green-50 text-green-700 border border-green-100 rounded">
-                                  {order.status}
-                                </span>
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold text-sm text-gray-900 break-words group-hover:text-green-600 transition-colors">{order.title}</h3>
                                 {order.amount && (
-                                  <span className="text-xs font-bold text-gray-900">
+                                  <span className="text-xs font-bold text-gray-900 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
                                     ₹{order.amount.toLocaleString()}
                                   </span>
                                 )}
                               </div>
+                              <p className="text-[11px] text-gray-500 font-medium">Applied on {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'recently'}</p>
                             </div>
                             <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                              <span className="text-[11px] text-gray-500 font-semibold truncate">Client: {order.creator?.name}</span>
-                              <span className="text-[11px] font-bold text-green-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                                Open Editor Timeline <ArrowRight className="w-3.5 h-3.5" />
+                              <span className="px-2.5 py-1 text-[10px] font-extrabold uppercase bg-amber-50 text-amber-700 rounded-full border border-amber-100">Pending Review</span>
+                              <span className="text-[11px] font-semibold text-green-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                View details <ArrowRight className="w-3.5 h-3.5" />
                               </span>
                             </div>
                           </Link>
@@ -817,7 +816,7 @@ export default function EditorJobsPage() {
                       </div>
                     </div>
                   )}
-                  {activeJobs.length === 0 && appliedJobs.length === 0 && (
+                  {activeJobs.length === 0 && pipelineJobs.length === 0 && appliedJobs.length === 0 && (
                     <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-12 text-center text-gray-500 font-medium">
                       No active contracts found. Check out the "Available Jobs" tab to apply!
                     </div>
