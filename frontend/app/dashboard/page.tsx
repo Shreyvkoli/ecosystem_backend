@@ -378,7 +378,7 @@ export default function DashboardPage() {
                       onClick={() => setSelectedSkill(skill)}
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 whitespace-nowrap ${
                         selectedSkill === skill
-                          ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-700 shadow-sm'
                           : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
