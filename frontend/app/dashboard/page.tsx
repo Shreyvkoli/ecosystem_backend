@@ -80,35 +80,17 @@ export default function DashboardPage() {
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'interests',
   })
 
-  // Pagination
-  const [editorPage, setEditorPage] = useState(0)
-  const [allEditors, setAllEditors] = useState<any[]>([])
-
-  const { isLoading: isLoadingAllEditors, data: pageData } = useQuery({
-    queryKey: ['all-editors', editorPage],
+  // All editors list for browsing
+  const { data: allEditorsData, isLoading: isLoadingAllEditors } = useQuery({
+    queryKey: ['all-editors'],
     queryFn: async () => {
-      const response = await usersApi.listEditors({ limit: 12, offset: editorPage * 12 })
-      const data = Array.isArray(response.data) ? response.data : response.data
-      return { editors: (data.editors || data) as any[], hasMore: data.hasMore, total: data.total }
+      const response = await usersApi.listEditors()
+      return Array.isArray(response.data) ? response.data : response.data.editors
     },
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
 
-  const hasMore = pageData
-    ? pageData.hasMore !== undefined
-      ? pageData.hasMore
-      : pageData.editors.length >= 12
-    : false
-
-  // Accumulate pages
-  useEffect(() => {
-    if (!pageData) return
-    setAllEditors(prev => {
-      const start = editorPage * 12
-      if (prev.length > start) return prev
-      return [...prev, ...pageData.editors]
-    })
-  }, [pageData, editorPage])
+  const allEditors = allEditorsData
 
   // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
@@ -620,16 +602,6 @@ export default function DashboardPage() {
                         </div>
                       );
                     })}
-                    {(allEditors.length >= 12) && (
-                      <div className="sm:col-span-2 lg:col-span-3 flex justify-center mt-8">
-                        <button
-                          onClick={() => setEditorPage(p => p + 1)}
-                          className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-bold text-sm transition-all shadow-sm"
-                        >
-                          Load More Editors
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
