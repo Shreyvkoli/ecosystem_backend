@@ -55,13 +55,13 @@ export default function EditorJobsPage() {
   const { data: myOrders, isLoading: myLoading } = useQuery({
     queryKey: ['orders', 'mine'],
     queryFn: async () => (await ordersApi.list()).data,
-    enabled: !!user && user.role === 'EDITOR',
+    enabled: !!user && user.role === 'EDITOR' && (tab === 'active' || tab === 'history'),
   })
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['editorProfile'],
     queryFn: async () => (await editorApi.profile()).data,
-    enabled: !!user && user.role === 'EDITOR',
+    enabled: !!user && user.role === 'EDITOR' && tab === 'profile',
   })
 
   const { data: creators, isLoading: creatorsLoading } = useQuery({
@@ -509,7 +509,7 @@ export default function EditorJobsPage() {
                             {/* Avatar */}
                             <div className="relative w-10 h-10 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0">
                               {order.creator?.creatorProfile?.avatarUrl ? (
-                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-700 bg-gray-100">
                                   {order.creator?.name?.charAt(0)}
@@ -624,7 +624,7 @@ export default function EditorJobsPage() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className="relative w-12 h-12 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0">
                               {creator.avatarUrl ? (
-                                <img src={creator.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                <img src={creator.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-700 bg-gray-100">
                                   {creator.name?.charAt(0)}
@@ -769,7 +769,7 @@ export default function EditorJobsPage() {
                           <Link key={order.id} href={`/editor/jobs/${order.id}`} className="bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between relative">
                             <div className="absolute top-5 right-5 w-9 h-9 rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-50 flex-shrink-0 z-20">
                               {order.creator?.creatorProfile?.avatarUrl ? (
-                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                <img src={order.creator.creatorProfile.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-700 bg-gray-100">
                                   {order.creator?.name?.charAt(0)}

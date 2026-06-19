@@ -57,7 +57,7 @@ export default function DashboardPage() {
       const response = await ordersApi.list()
       return response.data
     },
-    enabled: !!user,
+    enabled: !!user && (activeTab === 'active' || activeTab === 'history'),
   })
 
   // Fetch Saved Editors
@@ -81,14 +81,16 @@ export default function DashboardPage() {
   })
 
   // All editors list for browsing
-  const { data: allEditors, isLoading: isLoadingAllEditors } = useQuery({
+  const { data: allEditorsData, isLoading: isLoadingAllEditors } = useQuery({
     queryKey: ['all-editors'],
     queryFn: async () => {
       const response = await usersApi.listEditors()
-      return response.data
+      return Array.isArray(response.data) ? response.data : response.data.editors
     },
     enabled: !!user && user.role === 'CREATOR' && activeTab === 'browse',
   })
+
+  const allEditors = allEditorsData
 
   // Filtered Editors logic
   const filteredEditors = allEditors?.filter((editor: any) => {
@@ -413,8 +415,20 @@ export default function DashboardPage() {
                               <div
                                 className="aspect-[16/9] overflow-hidden cursor-pointer relative"
                                 onMouseEnter={(e) => {
-                                  const video = e.currentTarget.querySelector('video');
-                                  if (video) { video.play().catch(() => {}); }
+                                  const el = e.currentTarget;
+                                  let video = el.querySelector('video');
+                                  if (!video) {
+                                    video = document.createElement('video');
+                                    video.className = 'w-full h-full object-cover absolute inset-0';
+                                    video.muted = true;
+                                    video.loop = true;
+                                    video.playsInline = true;
+                                    video.src = editor.showcaseVideoUrl;
+                                    el.prepend(video);
+                                    video.play().catch(() => {});
+                                  } else {
+                                    video.play().catch(() => {});
+                                  }
                                 }}
                                 onMouseLeave={(e) => {
                                   const video = e.currentTarget.querySelector('video');
@@ -422,14 +436,6 @@ export default function DashboardPage() {
                                 }}
                                 onClick={() => setShowProfileModal(editor.id)}
                               >
-                                <video
-                                  src={editor.showcaseVideoUrl}
-                                  className="w-full h-full object-cover"
-                                  muted
-                                  loop
-                                  preload="metadata"
-                                  playsInline
-                                />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-center justify-center">
                                   <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-white transition-all duration-300">
                                     <svg className="w-5 h-5 text-gray-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -454,7 +460,7 @@ export default function DashboardPage() {
                               <div className="flex-shrink-0 relative">
                                 <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
                                   {editor.avatarUrl ? (
-                                    <img src={editor.avatarUrl} alt={editor.name} className="w-full h-full object-cover" />
+                                    <img src={editor.avatarUrl} alt={editor.name} className="w-full h-full object-cover" loading="lazy" />
                                   ) : (
                                     <span className="text-xs font-bold text-green-700 bg-green-50 w-full h-full flex items-center justify-center">
                                       {editor.name.charAt(0).toUpperCase()}
